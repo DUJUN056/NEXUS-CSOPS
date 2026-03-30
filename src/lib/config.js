@@ -301,41 +301,44 @@ const ChannelMgr = (() => {
 })();
 
 /* ══════════════════════════════════════════════════════════
-   THEME MANAGER
+   THEME IMAGE MANAGER
    ══════════════════════════════════════════════════════════ */
-const ThemeMgr = {
-  get() {
-    return localStorage.getItem("nx_theme") || "dark";
+const ThemeImageMgr = {
+  /* حفظ صورة */
+  set(theme, page, url) {
+    try {
+      localStorage.setItem(
+        `nx_img_${theme}_${page}`, url
+      );
+    } catch(e) {}
   },
 
-  set(themeId, user) {
-    const theme = THEMES_ALL.find(t => t.id === themeId);
-    if (!theme) return;
-
-    /* Pirate King: للمالك فقط */
-    if (theme.ownerOnly && !RC.isOwner(user)) return;
-
-    localStorage.setItem("nx_theme", themeId);
-    document.documentElement.setAttribute("data-theme", themeId);
-  },
-
-  apply(user) {
-    const themeId = this.get();
-    const theme   = THEMES_ALL.find(t => t.id === themeId);
-
-    /* إذا كان الثيم للمالك فقط ولم يكن مالكاً */
-    if (theme?.ownerOnly && !RC.isOwner(user)) {
-      this.set("dark", user);
-      return;
+  /* جلب صورة (sync) */
+  getSync(theme, page) {
+    try {
+      const key = `nx_img_${theme}_${page}`;
+      return localStorage.getItem(key) || null;
+    } catch(e) {
+      return null;
     }
-
-    document.documentElement.setAttribute("data-theme", themeId);
   },
 
-  getAvailable(user) {
-    return THEMES_ALL.filter(t =>
-      !t.ownerOnly || RC.isOwner(user)
-    );
+  /* حذف صورة */
+  remove(theme, page) {
+    try {
+      localStorage.removeItem(
+        `nx_img_${theme}_${page}`
+      );
+    } catch(e) {}
+  },
+
+  /* حذف كل الصور */
+  clear() {
+    try {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith("nx_img_"))
+        .forEach(k => localStorage.removeItem(k));
+    } catch(e) {}
   }
 };
 
