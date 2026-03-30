@@ -887,7 +887,7 @@ function LoginPage({ onLogin }) {
   }
 
   /* Get login background */
-  const loginBg = ThemeImageMgr.getSync(theme, "Login");
+  const loginBg = null;
 
   return React.createElement("div", {
     style: {
