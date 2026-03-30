@@ -1,102 +1,92 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="nika">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport"
-    content="width=device-width,
-    initial-scale=1.0,
-    maximum-scale=1.0,
-    user-scalable=no"/>
-  <meta name="theme-color" content="#0A0A0F"/>
+    content="width=device-width, initial-scale=1.0,
+             maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0d0d0d" />
   <meta name="apple-mobile-web-app-capable"
-    content="yes"/>
-  <meta
-    name="apple-mobile-web-app-status-bar-style"
-    content="black-translucent"/>
-  <title>⚡ NEXUS-CSOPS v4.1.0</title>
+    content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent" />
 
-  <!-- CSS -->
-  <link rel="stylesheet"
-    href="src/styles/style1.css"/>
-  <link rel="stylesheet"
-    href="src/styles/style2.css"/>
+  <title>NEXUS — CS Operations</title>
 
-  <!-- React 18 -->
-  <script crossorigin src=
-"https://unpkg.com/react@18/umd/react.production.min.js">
-  </script>
-  <script crossorigin src=
-"https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">
-  </script>
+  <!-- Favicon -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
 
-  <!-- Supabase -->
-  <script src=
-"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-  </script>
-
-  <!-- Babel -->
-  <script src=
-"https://unpkg.com/@babel/standalone/babel.min.js">
-  </script>
+  <!-- Styles -->
+  <link rel="stylesheet" href="src/styles/style1.css" />
+  <link rel="stylesheet" href="src/styles/themes-live.css" />
+  <link rel="stylesheet" href="src/styles/style2.css" />
 
   <style>
-    *,*::before,*::after{
-      box-sizing:border-box;
-      margin:0;padding:0;
+    /* Critical inline styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    body{
-      background:#0A0A0F;
-      color:#F0F0FF;
-      font-family:'Inter',
-        system-ui,sans-serif;
-      overflow-x:hidden;
+    html {
+      scroll-behavior: smooth;
     }
-    #root,#portal-root{
-      min-height:100vh;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
-    #portal-root{
-      position:fixed;
-      top:0;left:0;
-      pointer-events:none;
-      z-index:9999;
+    #root {
+      min-height: 100vh;
     }
-    #portal-root>*{
-      pointer-events:all;
+    /* Initial loading flash prevention */
+    html[data-theme="nika"] body {
+      background: #0d0d0d;
     }
-    .spinner-white{
-      border-color:
-        rgba(255,255,255,0.2)!important;
-      border-top-color:#fff!important;
+    html[data-theme="zoro"] body {
+      background: #0a0a0a;
+    }
+    html[data-theme="porsche"] body {
+      background: #0f0f0f;
+    }
+    html[data-theme="raptor"] body {
+      background: #0c0c0c;
     }
   </style>
 </head>
 <body>
+
   <div id="root"></div>
-  <div id="portal-root"></div>
 
-  <!-- ENV Keys -->
-  <script>
-    window.ENV_SUPABASE_URL=
-      "https://nrcnadkrnsjzbdzgrtgg.supabase.co";
-    window.ENV_SUPABASE_KEY=
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY25hZGtybnNqemJkemdydGdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDkzMjksImV4cCI6MjA5MDEyNTMyOX0.SLYEKj01VAbwnyEUNq6l2VUnfvoRs-zivplF01-oDLQ";
+  <!-- React 18 -->
+  <script crossorigin
+    src="https://unpkg.com/react@18/umd/react.production.min.js">
+  </script>
+  <script crossorigin
+    src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">
   </script>
 
-  <!-- JS Files -->
-  <script type="text/babel"
-    src="src/lib/config.js">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
   </script>
-  <script type="text/babel"
-    src="src/components/components.js">
+
+  <!-- XLSX (for Excel upload) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js">
   </script>
-  <script type="text/babel"
-    src="src/screens/screens1.js">
-  </script>
-  <script type="text/babel"
-    src="src/screens/screens2.js">
-  </script>
-  <script type="text/babel"
-    src="src/screens/app.js">
-  </script>
+
+  <!-- App Files -->
+  <script src="src/lib/config.js"></script>
+  <script src="src/components/components.js"></script>
+  <script src="src/screens/screens1.js"></script>
+  <script src="src/screens/screens2.js"></script>
+  <script src="src/screens/screens3.js"></script>
+  <script src="src/screens/screens4.js"></script>
+  <script src="src/app.js"></script>
+
 </body>
 </html>
