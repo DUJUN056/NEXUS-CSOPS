@@ -1,2157 +1,3428 @@
 /* ============================================================
-   S13: PERFORMANCE
+   NEXUS-CSOPS v4.2.0
+   screens2.js — Part A
+   SEC 10: Attendance + SEC 11: LiveFloor
+   Owner: Mohammed Nasser Althurwi
    ============================================================ */
-function Performance({emp}){
-  const [tab,    setTab]    =useState("my");
-  const [data,   setData]   =useState([]);
-  const [loading,setLoading]=useState(true);
-  const [period, setPeriod] =useState("week");
-  const canViewAll=isMgr(emp?.role);
 
-  useEffect(()=>{load();},[tab,period]);
+/* ══════════════════════════════════════════════════════════
+   SEC 10 — ATTENDANCE
+   ══════════════════════════════════════════════════════════ */
+function AttendancePage({ user }) {
+  const [record,    setRecord]    = useState(null);
+  const [loading,   setLoading]   = useState(true);
+  const [clocking,  setClocking]  = useState(false);
+  const [gpsStatus, setGpsStatus] = useState("idle");
+  const [location,  setLocation]  = useState(null);
+  const [officePos, setOfficePos] = useState(null);
+  const [distance,  setDistance]  = useState(null);
+  const [history,   setHistory]   = useState([]);
+  const [showHist,  setShowHist]  = useState(false);
+  const [now,       setNow]       = useState(new Date());
 
-  async function load(){
-    setLoading(true);
-    try{
-      const days=period==="week"?7
-        :period==="month"?30:90;
-      const from=new Date(
-        Date.now()-days*24*3600*1000
-      ).toISOString();
-      let q=sb.from("performance_records")
-        .select(
-          "*,employee:employees("+
-          "full_name,role,department)"
-        )
-        .gte("created_at",from)
-        .order("created_at",{ascending:false});
-      if(tab==="my")
-        q=q.eq("employee_id",emp.id);
-      const {data:d}=await withRetry(()=>q);
-      setData(d||[]);
-    }finally{setLoading(false);}
-  }
+  /* تحديث الساعة كل ثانية */
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
-  const stats=useMemo(()=>{
-    if(!data.length) return null;
-    const myData=data.filter(
-      d=>d.employee_id===emp.id
-    );
-    const src=tab==="my"?data:myData;
-    return{
-      total:src.length,
-      avg:src.length
-        ?Math.round(
-          src.reduce(
-            (a,b)=>a+(b.score||0),0
-          )/src.length
-        ):0,
-      trend:src.length>=2
-        ?(src[0].score||0)-
-          (src[src.length-1].score||0)
-        :0
-    };
-  },[data,tab,emp.id]);
+  useEffect(() => {
+    loadConfig();
+    loadTodayRecord();
+    loadHistory();
+  }, []);
 
-  return(
-    <div className="page-enter">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">
-            📊 Performance
-          </h1>
-          <p className="page-subtitle">
-            Track scores and metrics
-          </p>
-        </div>
-        <select className="input"
-          style={{width:"auto",minWidth:130}}
-          value={period}
-          onChange={e=>setPeriod(e.target.value)}>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-          <option value="quarter">Quarter</option>
-        </select>
-      </div>
-
-      {canViewAll&&(
-        <div className="tabs"
-          style={{marginBottom:20}}>
-          <button
-            className={
-              "tab"+(tab==="my"?" active":"")
-            }
-            onClick={()=>setTab("my")}>
-            👤 My Performance
-          </button>
-          <button
-            className={
-              "tab"+(tab==="team"?" active":"")
-            }
-            onClick={()=>setTab("team")}>
-            👥 Team Performance
-          </button>
-        </div>
-      )}
-
-      {/* Stats */}
-      {stats&&(
-        <div style={{
-          display:"grid",
-          gridTemplateColumns:
-            "repeat(auto-fill,minmax(150px,1fr))",
-          gap:12,marginBottom:20
-        }}>
-          {[
-            {
-              l:"Total Records",
-              v:stats.total,
-              i:"📋",c:"var(--primary)"
-            },
-            {
-              l:"Average Score",
-              v:stats.avg+"%",
-              i:"📊",
-              c:stats.avg>=80
-                ?"var(--success)"
-                :stats.avg>=60
-                  ?"var(--warning)"
-                  :"var(--danger)"
-            },
-            {
-              l:"Trend",
-              v:(stats.trend>=0?"+":"")+
-                stats.trend+"%",
-              i:stats.trend>=0?"📈":"📉",
-              c:stats.trend>=0
-                ?"var(--success)"
-                :"var(--danger)"
-            }
-          ].map(s=>(
-            <div key={s.l}
-              className="stat-card"
-              style={{padding:"18px 12px"}}>
-              <span className="stat-icon">
-                {s.i}
-              </span>
-              <div className="stat-value"
-                style={{
-                  color:s.c,fontSize:22
-                }}>
-                {s.v}
-              </div>
-              <div className="stat-label">
-                {s.l}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Records */}
-      {loading?(
-        <div style={{
-          display:"flex",flexDirection:"column",
-          gap:8
-        }}>
-          {[1,2,3].map(i=>(
-            <div key={i} className="skeleton"
-              style={{height:80}}/>
-          ))}
-        </div>
-      ):data.length===0?(
-        <EmptyState icon="📊"
-          title="No performance records"
-          desc="Records will appear here"/>
-      ):(
-        <div style={{
-          display:"flex",flexDirection:"column",
-          gap:8
-        }}>
-          {data.map(r=>(
-            <PerformanceCard key={r.id}
-              record={r} emp={emp}
-              showName={tab==="team"}/>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── PerformanceCard ── */
-function PerformanceCard({
-  record:r,emp,showName
-}){
-  const score=r.score||0;
-  const color=score>=80
-    ?"var(--success)"
-    :score>=60
-      ?"var(--warning)"
-      :"var(--danger)";
-
-  return(
-    <div className="card fade-in">
-      <div style={{
-        display:"flex",
-        alignItems:"center",gap:12
-      }}>
-        {showName&&r.employee&&(
-          <div style={{
-            width:40,height:40,borderRadius:10,
-            background:`linear-gradient(135deg,
-              ${RC[r.employee.role]?.c||"#64748B"},
-              ${RC[r.employee.role]?.c||"#64748B"}88)`,
-            display:"flex",alignItems:"center",
-            justifyContent:"center",
-            fontSize:18,flexShrink:0
-          }}>
-            {RC[r.employee.role]?.i||"👤"}
-          </div>
-        )}
-        <div style={{flex:1,minWidth:0}}>
-          {showName&&(
-            <div style={{
-              fontSize:13,fontWeight:700,
-              color:"var(--text)",marginBottom:4
-            }} dir="auto">
-              {r.employee?.full_name}
-            </div>
-          )}
-          <div style={{
-            display:"flex",
-            alignItems:"center",
-            gap:8,marginBottom:6,flexWrap:"wrap"
-          }}>
-            {r.metric_name&&(
-              <span style={{
-                fontSize:11,fontWeight:700,
-                color:"var(--text-sub)"
-              }}>
-                {r.metric_name}
-              </span>
-            )}
-            <span style={{
-              fontSize:10,
-              color:"var(--text-muted)"
-            }}>
-              {fmt.ago(r.created_at)}
-            </span>
-          </div>
-          <div className="score-bar-wrap">
-            <div className="score-bar" style={{
-              width:score+"%",background:color
-            }}/>
-          </div>
-        </div>
-        <div style={{
-          fontSize:20,fontWeight:800,
-          color,flexShrink:0,
-          minWidth:52,textAlign:"right"
-        }}>
-          {score}%
-        </div>
-      </div>
-      {r.notes&&(
-        <div style={{
-          marginTop:10,fontSize:12,
-          color:"var(--text-muted)",
-          lineHeight:1.5,
-          padding:"8px 12px",
-          background:"var(--glass2)",
-          borderRadius:8
-        }} dir="auto">
-          {r.notes}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ============================================================
-   S14: QUEUE MONITOR
-   ============================================================ */
-function QueueMonitor({emp}){
-  const [queues, setQueues] =useState([]);
-  const [loading,setLoading]=useState(true);
-  const [showAdd,setShowAdd]=useState(false);
-  const canEdit=isMgr(emp?.role);
-
-  useEffect(()=>{
-    load();
-    ChannelMgr.sub(
-      "queue-rt","queue_stats",()=>load()
-    );
-    return()=>ChannelMgr.unsub("queue-rt");
-  },[]);
-
-  async function load(){
-    const {data}=await withRetry(()=>
-      sb.from("queue_stats")
-        .select("*")
-        .order("updated_at",{ascending:false})
-    );
-    setQueues(data||[]);
-    setLoading(false);
-  }
-
-  const totals=useMemo(()=>({
-    waiting:queues.reduce(
-      (a,q)=>a+(q.waiting||0),0
-    ),
-    handling:queues.reduce(
-      (a,q)=>a+(q.handling||0),0
-    ),
-    avgWait:queues.length
-      ?Math.round(
-        queues.reduce(
-          (a,q)=>a+(q.avg_wait_sec||0),0
-        )/queues.length
-      ):0
-  }),[queues]);
-
-  return(
-    <div className="page-enter">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">
-            🎧 Queue Monitor
-          </h1>
-          <p className="page-subtitle">
-            Real-time queue overview
-          </p>
-        </div>
-        {canEdit&&(
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={()=>setShowAdd(true)}>
-            + Update Queue
-          </button>
-        )}
-      </div>
-
-      {/* Totals */}
-      <div style={{
-        display:"grid",
-        gridTemplateColumns:"1fr 1fr 1fr",
-        gap:12,marginBottom:20
-      }}>
-        {[
-          {
-            l:"Waiting",v:totals.waiting,
-            i:"⏳",
-            c:totals.waiting>20
-              ?"var(--danger)"
-              :totals.waiting>10
-                ?"var(--warning)"
-                :"var(--success)"
-          },
-          {
-            l:"Handling",v:totals.handling,
-            i:"🎧",c:"var(--primary)"
-          },
-          {
-            l:"Avg Wait",
-            v:totals.avgWait>60
-              ?Math.floor(totals.avgWait/60)+"m"
-              :totals.avgWait+"s",
-            i:"⏱️",
-            c:totals.avgWait>300
-              ?"var(--danger)"
-              :totals.avgWait>120
-                ?"var(--warning)"
-                :"var(--success)"
-          }
-        ].map(s=>(
-          <div key={s.l} className="stat-card">
-            <span className="stat-icon">
-              {s.i}
-            </span>
-            <div className="stat-value"
-              style={{color:s.c}}>
-              {s.v}
-            </div>
-            <div className="stat-label">
-              {s.l}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Queue Cards */}
-      {loading?(
-        <div style={{
-          display:"flex",flexDirection:"column",
-          gap:8
-        }}>
-          {[1,2,3].map(i=>(
-            <div key={i} className="skeleton"
-              style={{height:100}}/>
-          ))}
-        </div>
-      ):queues.length===0?(
-        <EmptyState icon="🎧"
-          title="No queue data"
-          desc="Queue stats will appear here"/>
-      ):(
-        <div style={{
-          display:"grid",
-          gridTemplateColumns:
-            "repeat(auto-fill,minmax(280px,1fr))",
-          gap:12
-        }}>
-          {queues.map(q=>(
-            <QueueCard key={q.id}
-              queue={q} canEdit={canEdit}
-              onUpdate={load}/>
-          ))}
-        </div>
-      )}
-
-      {showAdd&&(
-        <QueueUpdateModal emp={emp}
-          onClose={()=>setShowAdd(false)}
-          onDone={()=>{
-            setShowAdd(false);load();
-          }}/>
-      )}
-    </div>
-  );
-}
-
-/* ── QueueCard ── */
-function QueueCard({queue:q,canEdit,onUpdate}){
-  const waitColor=
-    (q.waiting||0)>20?"var(--danger)"
-    :(q.waiting||0)>10?"var(--warning)"
-    :"var(--success)";
-  const slaColor=
-    (q.sla_pct||100)>=90?"var(--success)"
-    :(q.sla_pct||100)>=75?"var(--warning)"
-    :"var(--danger)";
-
-  return(
-    <div className="card" style={{
-      borderTop:"3px solid "+waitColor
-    }}>
-      <div style={{
-        display:"flex",
-        alignItems:"flex-start",
-        justifyContent:"space-between",
-        marginBottom:14
-      }}>
-        <div>
-          <div style={{
-            fontSize:14,fontWeight:800,
-            color:"var(--text)",marginBottom:4
-          }}>
-            {q.queue_name||"Queue"}
-          </div>
-          <div style={{
-            fontSize:11,color:"var(--text-muted)"
-          }}>
-            Updated {fmt.ago(q.updated_at)}
-          </div>
-        </div>
-        <div style={{
-          width:10,height:10,
-          borderRadius:"50%",
-          background:waitColor,marginTop:4,
-          animation:(q.waiting||0)>0
-            ?"pulse 2s infinite":"none"
-        }}/>
-      </div>
-
-      <div style={{
-        display:"grid",
-        gridTemplateColumns:"1fr 1fr",
-        gap:10,marginBottom:12
-      }}>
-        {[
-          {
-            l:"Waiting",
-            v:q.waiting||0,c:waitColor
-          },
-          {
-            l:"Handling",
-            v:q.handling||0,
-            c:"var(--primary)"
-          },
-          {
-            l:"Avg Wait",
-            v:(q.avg_wait_sec||0)>60
-              ?Math.floor(
-                (q.avg_wait_sec||0)/60
-              )+"m"
-              :(q.avg_wait_sec||0)+"s",
-            c:"var(--text-sub)"
-          },
-          {
-            l:"SLA",
-            v:(q.sla_pct||100)+"%",
-            c:slaColor
-          }
-        ].map(item=>(
-          <div key={item.l} style={{
-            background:"var(--glass2)",
-            border:"1px solid var(--border)",
-            borderRadius:10,
-            padding:"10px 12px",
-            textAlign:"center"
-          }}>
-            <div style={{
-              fontSize:10,fontWeight:700,
-              color:"var(--text-muted)",
-              marginBottom:4,
-              textTransform:"uppercase",
-              letterSpacing:0.5
-            }}>{item.l}</div>
-            <div style={{
-              fontSize:18,fontWeight:800,
-              color:item.c,
-              fontVariantNumeric:"tabular-nums"
-            }}>{item.v}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* SLA Bar */}
-      <div>
-        <div style={{
-          display:"flex",
-          justifyContent:"space-between",
-          fontSize:10,fontWeight:700,
-          color:"var(--text-muted)",
-          marginBottom:4
-        }}>
-          <span>SLA</span>
-          <span style={{color:slaColor}}>
-            {q.sla_pct||100}%
-          </span>
-        </div>
-        <div className="score-bar-wrap">
-          <div className="score-bar" style={{
-            width:(q.sla_pct||100)+"%",
-            background:slaColor
-          }}/>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── QueueUpdateModal ── */
-function QueueUpdateModal({emp,onClose,onDone}){
-  const {showToast}=useApp();
-  const [form,setForm]=useState({
-    queue_name:"",waiting:0,
-    handling:0,avg_wait_sec:0,sla_pct:100
-  });
-  const [loading,setLoading]=useState(false);
-  function upd(k,v){setForm(f=>({...f,[k]:v}));}
-
-  async function submit(e){
-    e.preventDefault();
-    if(!form.queue_name.trim()){
-      showToast("Queue name required","warning");
-      return;
-    }
-    setLoading(true);
-    try{
-      await withRetry(()=>
-        sb.from("queue_stats").upsert(
-          {
-            queue_name:form.queue_name.trim(),
-            waiting:parseInt(form.waiting)||0,
-            handling:parseInt(form.handling)||0,
-            avg_wait_sec:
-              parseInt(form.avg_wait_sec)||0,
-            sla_pct:
-              parseInt(form.sla_pct)||100,
-            updated_by:emp.id,
-            updated_at:new Date().toISOString()
-          },
-          {onConflict:"queue_name"}
-        )
+  async function loadConfig() {
+    try {
+      const { data } = await withRetry(() =>
+        sb.from("system_settings")
+          .select("key, value")
+          .in("key", ["office_lat","office_lng","gps_radius"])
       );
-      showToast("Queue updated ✅","success");
-      onDone();
-    }catch(err){
-      showToast("Failed: "+err.message,"error");
-    }finally{setLoading(false);}
+      const map = {};
+      (data || []).forEach(r => { map[r.key] = r.value; });
+      if (map.office_lat && map.office_lng) {
+        setOfficePos({
+          lat:    parseFloat(map.office_lat),
+          lng:    parseFloat(map.office_lng),
+          radius: parseInt(map.gps_radius) || 10
+        });
+      }
+    } catch(e) {}
   }
 
-  return(
-    <Portal>
-      <div className="modal-overlay"
-        onClick={e=>
-          e.target===e.currentTarget&&
-          onClose()}>
-        <div className="modal modal-sm">
-          <div className="modal-header">
-            <h3 className="modal-title">
-              🎧 Update Queue
-            </h3>
-            <button
-              className="btn-icon btn-icon-sm"
-              onClick={onClose}>×</button>
-          </div>
-          <form onSubmit={submit}>
-            <div className="input-group"
-              style={{marginBottom:14}}>
-              <label className="input-label">
-                Queue Name *
-              </label>
-              <input type="text"
-                className="input"
-                value={form.queue_name}
-                onChange={e=>
-                  upd("queue_name",
-                    e.target.value)}
-                placeholder="e.g. KFOOD Inbound"
-                required/>
-            </div>
-            <div style={{
-              display:"grid",
-              gridTemplateColumns:"1fr 1fr",
-              gap:12,marginBottom:14
-            }}>
-              <div className="input-group">
-                <label className="input-label">
-                  Waiting
-                </label>
-                <input type="number"
-                  className="input" min="0"
-                  value={form.waiting}
-                  onChange={e=>
-                    upd("waiting",
-                      e.target.value)}/>
-              </div>
-              <div className="input-group">
-                <label className="input-label">
-                  Handling
-                </label>
-                <input type="number"
-                  className="input" min="0"
-                  value={form.handling}
-                  onChange={e=>
-                    upd("handling",
-                      e.target.value)}/>
-              </div>
-            </div>
-            <div style={{
-              display:"grid",
-              gridTemplateColumns:"1fr 1fr",
-              gap:12,marginBottom:20
-            }}>
-              <div className="input-group">
-                <label className="input-label">
-                  Avg Wait (sec)
-                </label>
-                <input type="number"
-                  className="input" min="0"
-                  value={form.avg_wait_sec}
-                  onChange={e=>
-                    upd("avg_wait_sec",
-                      e.target.value)}/>
-              </div>
-              <div className="input-group">
-                <label className="input-label">
-                  SLA %
-                </label>
-                <input type="number"
-                  className="input"
-                  min="0" max="100"
-                  value={form.sla_pct}
-                  onChange={e=>
-                    upd("sla_pct",
-                      e.target.value)}/>
-              </div>
-            </div>
-            <div className="modal-footer" style={{
-              paddingTop:0,borderTop:"none",
-              marginTop:0
-            }}>
-              <button type="button"
-                className="btn btn-ghost"
-                style={{flex:1}}
-                onClick={onClose}>
-                Cancel
-              </button>
-              <button type="submit"
-                className="btn btn-primary"
-                style={{flex:1}}
-                disabled={loading}>
-                {loading
-                  ?<><Spinner size="sm" white/>
-                     {" "}Saving...</>
-                  :"✅ Update"
-                }
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Portal>
-  );
-}
-
-/* ============================================================
-   S15: LIVE FLOOR
-   ============================================================ */
-function LiveFloor({emp}){
-  const [agents,  setAgents]  =useState([]);
-  const [loading, setLoading] =useState(true);
-  const [search,  setSearch]  =useState("");
-  const [filter,  setFilter]  =useState("all");
-  const [view,    setView]    =useState("grid");
-
-  useEffect(()=>{
-    load();
-    ChannelMgr.sub(
-      "floor-rt","employees",()=>load()
-    );
-    return()=>ChannelMgr.unsub("floor-rt");
-  },[]);
-
-  async function load(){
-    const {data}=await withRetry(()=>
-      sb.from("employees")
-        .select(
-          "id,full_name,role,department,"+
-          "status,status_since,"+
-          "last_heartbeat,is_suspended"
-        )
-        .eq("is_suspended",false)
-        .order("full_name")
-    );
-    setAgents(data||[]);
-    setLoading(false);
-  }
-
-  const filtered=useMemo(()=>{
-    let list=agents;
-    if(search){
-      const s=search.toLowerCase();
-      list=list.filter(a=>
-        a.full_name?.toLowerCase().includes(s)||
-        a.role?.toLowerCase().includes(s)||
-        a.department?.toLowerCase().includes(s)
+  async function loadTodayRecord() {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const { data } = await withRetry(() =>
+        sb.from("attendance")
+          .select("*")
+          .eq("employee_id", user.id)
+          .eq("date", today)
+          .single()
       );
+      setRecord(data || null);
+    } catch(e) {
+      setRecord(null);
+    } finally {
+      setLoading(false);
     }
-    if(filter!=="all"){
-      list=list.filter(a=>
-        filter==="online"
-          ?["Online","On Call"]
-             .includes(a.status)
-          :filter==="break"
-            ?["Break","Short Break",
-               "Lunch","Prayer"]
-               .includes(a.status)
-            :filter==="busy"
-              ?["Busy","Meeting","Training"]
-                 .includes(a.status)
-              :a.status===filter
+  }
+
+  async function loadHistory() {
+    try {
+      const { data } = await withRetry(() =>
+        sb.from("attendance")
+          .select("*")
+          .eq("employee_id", user.id)
+          .order("date", { ascending: false })
+          .limit(30)
       );
-    }
-    return list;
-  },[agents,search,filter]);
-
-  const onlineCount=agents.filter(a=>
-    ["Online","On Call"].includes(a.status)
-  ).length;
-
-  const breakCount=agents.filter(a=>
-    ["Break","Short Break","Lunch","Prayer"]
-      .includes(a.status)
-  ).length;
-
-  return(
-    <div className="page-enter">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">
-            🖥️ Live Floor
-          </h1>
-          <p className="page-subtitle">
-            Real-time team status
-          </p>
-        </div>
-        <div style={{
-          display:"flex",alignItems:"center",
-          gap:8
-        }}>
-          <button
-            className={
-              "btn btn-ghost btn-sm"+
-              (view==="grid"?" btn-active":"")
-            }
-            onClick={()=>setView("grid")}>
-            ⊞
-          </button>
-          <button
-            className={
-              "btn btn-ghost btn-sm"+
-              (view==="list"?" btn-active":"")
-            }
-            onClick={()=>setView("list")}>
-            ☰
-          </button>
-        </div>
-      </div>
-
-      {/* Summary */}
-      <div style={{
-        display:"grid",
-        gridTemplateColumns:
-          "repeat(auto-fill,minmax(110px,1fr))",
-        gap:10,marginBottom:20
-      }}>
-        {[
-          {
-            l:"Total",v:agents.length,
-            c:"var(--text)",i:"👥",
-            f:"all"
-          },
-          {
-            l:"Online",v:onlineCount,
-            c:"var(--success)",i:"🟢",
-            f:"online"
-          },
-          {
-            l:"On Break",v:breakCount,
-            c:"var(--warning)",i:"☕",
-            f:"break"
-          },
-          {
-            l:"Offline",
-            v:agents.filter(
-              a=>a.status==="Offline"
-            ).length,
-            c:"var(--text-muted)",i:"⚫",
-            f:"offline"
-          }
-        ].map(s=>(
-          <div key={s.l}
-            className="stat-card"
-            style={{cursor:"pointer"}}
-            onClick={()=>setFilter(s.f)}>
-            <span className="stat-icon"
-              style={{fontSize:20}}>
-              {s.i}
-            </span>
-            <div className="stat-value"
-              style={{
-                color:s.c,fontSize:20
-              }}>
-              {s.v}
-            </div>
-            <div className="stat-label">
-              {s.l}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Search + Filter */}
-      <div style={{
-        display:"flex",gap:10,
-        marginBottom:16,flexWrap:"wrap"
-      }}>
-        <input type="search" className="input"
-          style={{flex:1,minWidth:180}}
-          value={search}
-          onChange={e=>setSearch(e.target.value)}
-          placeholder="🔍 Search agents..."/>
-        <select className="input"
-          style={{width:"auto",minWidth:130}}
-          value={filter}
-          onChange={e=>setFilter(e.target.value)}>
-          <option value="all">All Status</option>
-          <option value="online">
-            🟢 Online
-          </option>
-          <option value="break">
-            ☕ On Break
-          </option>
-          <option value="busy">
-            🔴 Busy
-          </option>
-          <option value="offline">
-            ⚫ Offline
-          </option>
-        </select>
-      </div>
-
-      {loading?(
-        <div style={{
-          display:"grid",
-          gridTemplateColumns:
-            view==="grid"
-              ?"repeat(auto-fill,"+
-                "minmax(200px,1fr))"
-              :"1fr",
-          gap:10
-        }}>
-          {[1,2,3,4,5,6].map(i=>(
-            <div key={i} className="skeleton"
-              style={{
-                height:view==="grid"?120:64
-              }}/>
-          ))}
-        </div>
-      ):filtered.length===0?(
-        <EmptyState icon="🖥️"
-          title="No agents found"
-          desc="Try adjusting your filters"/>
-      ):view==="grid"?(
-        <div style={{
-          display:"grid",
-          gridTemplateColumns:
-            "repeat(auto-fill,minmax(200px,1fr))",
-          gap:10
-        }}>
-          {filtered.map(a=>(
-            <AgentCard key={a.id}
-              agent={a} view="grid"/>
-          ))}
-        </div>
-      ):(
-        <div style={{
-          display:"flex",flexDirection:"column",
-          gap:6
-        }}>
-          {filtered.map(a=>(
-            <AgentCard key={a.id}
-              agent={a} view="list"/>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ── AgentCard ── */
-function AgentCard({agent:a,view}){
-  const sc2=SC[a.status]||SC["Offline"];
-  const rc2=RC[a.role]||RC.Agent;
-  const timer=useTimer(
-    ["Online","On Call","Busy",
-     "Meeting","Training"]
-      .includes(a.status)
-      ?a.status_since:null
-  );
-  const isOnline=
-    a.last_heartbeat&&
-    Date.now()-
-    new Date(a.last_heartbeat)<120000;
-
-  if(view==="list") return(
-    <div className="card fade-in"
-      style={{padding:"10px 14px"}}>
-      <div style={{
-        display:"flex",
-        alignItems:"center",gap:12
-      }}>
-        <div style={{
-          width:38,height:38,borderRadius:10,
-          background:`linear-gradient(135deg,
-            ${rc2.c},${rc2.c}88)`,
-          display:"flex",alignItems:"center",
-          justifyContent:"center",
-          fontSize:18,flexShrink:0,
-          position:"relative"
-        }}>
-          {rc2.i}
-          <div style={{
-            position:"absolute",
-            bottom:-2,right:-2,
-            width:10,height:10,
-            borderRadius:"50%",
-            background:isOnline
-              ?"var(--success)"
-              :"var(--text-muted)",
-            border:"2px solid var(--card)"
-          }}/>
-        </div>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{
-            fontSize:13,fontWeight:700,
-            color:"var(--text)",
-            overflow:"hidden",
-            textOverflow:"ellipsis",
-            whiteSpace:"nowrap"
-          }} dir="auto">
-            {a.full_name}
-          </div>
-          <div style={{
-            fontSize:11,
-            color:"var(--text-muted)",marginTop:1
-          }}>
-            {a.role} · {a.department}
-          </div>
-        </div>
-        <div style={{
-          display:"flex",flexDirection:"column",
-          alignItems:"flex-end",
-          gap:4,flexShrink:0
-        }}>
-          <StatusBadge
-            status={a.status||"Offline"}
-            size="sm"/>
-          {timer!=="--"&&(
-            <span style={{
-              fontSize:10,
-              color:"var(--text-muted)",
-              fontVariantNumeric:"tabular-nums"
-            }}>{timer}</span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  return(
-    <div className="card fade-in" style={{
-      padding:"16px 14px",textAlign:"center"
-    }}>
-      <div style={{
-        position:"relative",
-        display:"inline-block",marginBottom:10
-      }}>
-        <div style={{
-          width:52,height:52,borderRadius:14,
-          background:`linear-gradient(135deg,
-            ${rc2.c},${rc2.c}88)`,
-          display:"flex",alignItems:"center",
-          justifyContent:"center",fontSize:24
-        }}>{rc2.i}</div>
-        <div style={{
-          position:"absolute",
-          bottom:-2,right:-2,
-          width:14,height:14,
-          borderRadius:"50%",
-          background:sc2.c,
-          border:"2px solid var(--card)",
-          animation:sc2.pulse
-            ?"pulse 2s infinite":"none",
-          ...(a.status==="Prayer"?{
-            animation:
-              "prayerPulse 2.5s ease-in-out "+
-              "infinite"
-          }:{})
-        }}/>
-      </div>
-      <div style={{
-        fontSize:12,fontWeight:800,
-        color:"var(--text)",marginBottom:3,
-        overflow:"hidden",
-        textOverflow:"ellipsis",
-        whiteSpace:"nowrap"
-      }} dir="auto">{a.full_name}</div>
-      <div style={{
-        fontSize:10,color:"var(--text-muted)",
-        marginBottom:8
-      }}>{a.role}</div>
-      <StatusBadge
-        status={a.status||"Offline"} size="sm"/>
-      {timer!=="--"&&(
-        <div style={{
-          fontSize:10,color:"var(--text-muted)",
-          marginTop:6,
-          fontVariantNumeric:"tabular-nums"
-        }}>{timer}</div>
-      )}
-      {a.last_heartbeat&&(
-        <div style={{
-          fontSize:9,color:"var(--text-muted)",
-          marginTop:4,opacity:0.7
-        }}>
-          {fmt.ago(a.last_heartbeat)}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ============================================================
-   S16: NOTIFICATIONS
-   ============================================================ */
-function Notifications({emp}){
-  const {showToast}=useApp();
-  const [notifs, setNotifs] =useState([]);
-  const [loading,setLoading]=useState(true);
-  const [filter, setFilter] =useState("all");
-
-  useEffect(()=>{
-    load();
-    ChannelMgr.sub(
-      "notif-page-rt","notifications",
-      ()=>load(),
-      {filter:"employee_id=eq."+emp.id}
-    );
-    return()=>
-      ChannelMgr.unsub("notif-page-rt");
-  },[]);
-
-  async function load(){
-    const {data}=await withRetry(()=>
-      sb.from("notifications")
-        .select("*")
-        .eq("employee_id",emp.id)
-        .order("created_at",{ascending:false})
-        .limit(50)
-    );
-    setNotifs(data||[]);
-    setLoading(false);
+      setHistory(data || []);
+    } catch(e) {}
   }
 
-  async function markRead(id){
-    await withRetry(()=>
-      sb.from("notifications")
-        .update({is_read:true})
-        .eq("id",id)
-    );
-    setNotifs(n=>n.map(x=>
-      x.id===id?{...x,is_read:true}:x
-    ));
-  }
-
-  async function markAllRead(){
-    const unread=notifs
-      .filter(n=>!n.is_read)
-      .map(n=>n.id);
-    if(!unread.length) return;
-    await withRetry(()=>
-      sb.from("notifications")
-        .update({is_read:true})
-        .in("id",unread)
-    );
-    setNotifs(n=>
-      n.map(x=>({...x,is_read:true}))
-    );
-    showToast(
-      "All marked as read ✅","success"
-    );
-  }
-
-  async function deleteNotif(id){
-    await withRetry(()=>
-      sb.from("notifications")
-        .delete().eq("id",id)
-    );
-    setNotifs(n=>n.filter(x=>x.id!==id));
-  }
-
-  const filtered=useMemo(()=>
-    filter==="unread"
-      ?notifs.filter(n=>!n.is_read)
-      :notifs
-  ,[notifs,filter]);
-
-  const unreadCount=notifs.filter(
-    n=>!n.is_read
-  ).length;
-
-  const typeIcon={
-    info:"ℹ️",success:"✅",
-    warning:"⚠️",error:"❌",
-    mention:"💬",system:"🔔"
-  };
-  const typeColor={
-    info:"var(--primary)",
-    success:"var(--success)",
-    warning:"var(--warning)",
-    error:"var(--danger)",
-    mention:"#8B5CF6",
-    system:"var(--text-muted)"
-  };
-
-  return(
-    <div className="page-enter">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">
-            🔔 Notifications
-          </h1>
-          <p className="page-subtitle">
-            {unreadCount>0
-              ?unreadCount+" unread"
-              :"All caught up"
-            }
-          </p>
-        </div>
-        {unreadCount>0&&(
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={markAllRead}>
-            ✅ Mark all read
-          </button>
-        )}
-      </div>
-
-      <div className="tabs"
-        style={{marginBottom:20}}>
-        <button
-          className={
-            "tab"+(filter==="all"?" active":"")
-          }
-          onClick={()=>setFilter("all")}>
-          All ({notifs.length})
-        </button>
-        <button
-          className={
-            "tab"+
-            (filter==="unread"?" active":"")
-          }
-          onClick={()=>setFilter("unread")}>
-          Unread ({unreadCount})
-        </button>
-      </div>
-
-      {loading?(
-        <div style={{
-          display:"flex",flexDirection:"column",
-          gap:8
-        }}>
-          {[1,2,3,4].map(i=>(
-            <div key={i} className="skeleton"
-              style={{height:72}}/>
-          ))}
-        </div>
-      ):filtered.length===0?(
-        <EmptyState icon="🔔"
-          title="No notifications"
-          desc={filter==="unread"
-            ?"You're all caught up!"
-            :"Nothing here yet"
-          }/>
-      ):(
-        <div style={{
-          display:"flex",flexDirection:"column",
-          gap:6
-        }}>
-          {filtered.map(n=>{
-            const ic=typeIcon[n.type]||"🔔";
-            const tc=typeColor[n.type]
-              ||"var(--text-muted)";
-            return(
-              <div key={n.id}
-                className="card fade-in"
-                style={{
-                  padding:"12px 14px",
-                  borderLeft:"3px solid "+(
-                    n.is_read
-                      ?"var(--border)":tc
-                  ),
-                  opacity:n.is_read?0.75:1,
-                  cursor:"pointer"
-                }}
-                onClick={()=>
-                  !n.is_read&&markRead(n.id)
-                }>
-                <div style={{
-                  display:"flex",
-                  alignItems:"flex-start",
-                  gap:12
-                }}>
-                  <div style={{
-                    width:36,height:36,
-                    borderRadius:10,
-                    background:tc+"15",
-                    border:"1px solid "+tc+"25",
-                    display:"flex",
-                    alignItems:"center",
-                    justifyContent:"center",
-                    fontSize:18,flexShrink:0
-                  }}>{ic}</div>
-                  <div style={{
-                    flex:1,minWidth:0
-                  }}>
-                    <div style={{
-                      fontSize:13,fontWeight:700,
-                      color:"var(--text)",
-                      marginBottom:3
-                    }} dir="auto">
-                      {n.title}
-                    </div>
-                    {n.body&&(
-                      <div style={{
-                        fontSize:12,
-                        color:"var(--text-sub)",
-                        lineHeight:1.5,
-                        marginBottom:4
-                      }} dir="auto">
-                        {n.body}
-                      </div>
-                    )}
-                    <div style={{
-                      fontSize:10,
-                      color:"var(--text-muted)"
-                    }}>
-                      {fmt.ago(n.created_at)}
-                    </div>
-                  </div>
-                  <div style={{
-                    display:"flex",
-                    flexDirection:"column",
-                    alignItems:"flex-end",
-                    gap:6,flexShrink:0
-                  }}>
-                    {!n.is_read&&(
-                      <div style={{
-                        width:8,height:8,
-                        borderRadius:"50%",
-                        background:tc,
-                        animation:
-                          "pulse 2s infinite"
-                      }}/>
-                    )}
-                    <button
-                      className="btn-icon btn-icon-sm"
-                      style={{
-                        width:24,height:24,
-                        fontSize:12
-                      }}
-                      onClick={e=>{
-                        e.stopPropagation();
-                        deleteNotif(n.id);
-                      }}>×</button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ============================================================
-   S17: MY PROFILE
-   ============================================================ */
-function MyProfile({emp,onUpdate}){
-  const {showToast}=useApp();
-  const [editing, setEditing] =useState(false);
-  const [form,    setForm]    =useState({
-    full_name:emp.full_name||"",
-    phone:emp.phone||"",
-    bio:emp.bio||""
-  });
-  const [loading, setLoading] =useState(false);
-  const [showPw,  setShowPw]  =useState(false);
-  const [pwForm,  setPwForm]  =useState({
-    next:"",confirm:""
-  });
-  const [pwLoad,  setPwLoad]  =useState(false);
-  const [stats,   setStats]   =useState(null);
-
-  useEffect(()=>{loadStats();},[]);
-
-  async function loadStats(){
-    const [att,perf]=await Promise.all([
-      sb.from("attendance")
-        .select("id,clock_in,clock_out")
-        .eq("employee_id",emp.id)
-        .order("clock_in",{ascending:false})
-        .limit(30),
-      sb.from("performance_records")
-        .select("score")
-        .eq("employee_id",emp.id)
-        .order("created_at",{ascending:false})
-        .limit(20)
-    ]);
-    const attData=att.data||[];
-    const perfData=perf.data||[];
-    const totalMs=attData.reduce((a,r)=>{
-      if(!r.clock_out) return a;
-      return a+
-        new Date(r.clock_out)-
-        new Date(r.clock_in);
-    },0);
-    setStats({
-      days:attData.length,
-      totalHours:Math.round(totalMs/3600000),
-      avgScore:perfData.length
-        ?Math.round(
-          perfData.reduce(
-            (a,b)=>a+(b.score||0),0
-          )/perfData.length
-        ):null
+  /* الحصول على GPS */
+  async function getGPS() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("GPS not supported on this device"));
+        return;
+      }
+      setGpsStatus("scanning");
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          setGpsStatus("success");
+          resolve({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy
+          });
+        },
+        err => {
+          setGpsStatus("error");
+          reject(new Error(
+            err.code === 1 ? "GPS permission denied" :
+            err.code === 2 ? "GPS position unavailable" :
+            "GPS timeout"
+          ));
+        },
+        { enableHighAccuracy: true, timeout: 15000,
+          maximumAge: 0 }
+      );
     });
   }
 
-  async function saveProfile(e){
-    e.preventDefault();
-    if(!form.full_name.trim()){
-      showToast("Name required","warning");
-      return;
-    }
-    setLoading(true);
-    try{
-      await withRetry(()=>
-        sb.from("employees").update({
-          full_name:form.full_name.trim(),
-          phone:form.phone.trim()||null,
-          bio:form.bio.trim()||null
-        }).eq("id",emp.id)
-      );
-      showToast("Profile updated ✅","success");
-      setEditing(false);
-      if(onUpdate) onUpdate({
-        ...emp,
-        full_name:form.full_name.trim(),
-        phone:form.phone.trim()||null,
-        bio:form.bio.trim()||null
-      });
-    }catch(err){
-      showToast("Failed: "+err.message,"error");
-    }finally{setLoading(false);}
-  }
+  /* Clock In */
+  async function handleClockIn() {
+    setClocking(true);
+    try {
+      let pos = null;
+      let dist = null;
+      let withinRange = true;
 
-  async function changePw(e){
-    e.preventDefault();
-    if(pwForm.next.length<6){
-      showToast("Min 6 characters","warning");
-      return;
-    }
-    if(pwForm.next!==pwForm.confirm){
+      /* GPS Check */
+      if (officePos) {
+        try {
+          pos = await getGPS();
+          dist = haversine(
+            pos.lat, pos.lng,
+            officePos.lat, officePos.lng
+          );
+          setDistance(dist);
+          setLocation(pos);
+          withinRange = dist <= officePos.radius;
+        } catch(gpsErr) {
+          showToast(gpsErr.message, "warning");
+          /* السماح بالتسجيل مع تحذير */
+        }
+      }
+
+      if (!withinRange) {
+        showToast(
+          `You are ${dist}m away. Must be within ${officePos.radius}m`,
+          "error"
+        );
+        setClocking(false);
+        return;
+      }
+
+      /* حساب الحالة */
+      const now        = new Date();
+      const today      = now.toISOString().split("T")[0];
+      const clockInISO = now.toISOString();
+
+      /* جلب إعدادات الوقت */
+      const { data: cfg } = await withRetry(() =>
+        sb.from("system_settings")
+          .select("key, value")
+          .in("key", ["work_start","late_minutes"])
+      );
+      const cfgMap = {};
+      (cfg || []).forEach(r => { cfgMap[r.key] = r.value; });
+
+      const workStart    = cfgMap.work_start || "08:00";
+      const lateMinutes  = parseInt(cfgMap.late_minutes) || 7;
+      const [wh, wm]     = workStart.split(":").map(Number);
+      const workStartMin = wh * 60 + wm;
+      const nowMin       = now.getHours() * 60 + now.getMinutes();
+      const attStatus    = nowMin > workStartMin + lateMinutes
+        ? "late" : "on_time";
+
+      /* إدراج السجل */
+      const { data: newRec } = await withRetry(() =>
+        sb.from("attendance").insert({
+          employee_id:  user.id,
+          date:         today,
+          clock_in:     clockInISO,
+          clock_out:    null,
+          status:       attStatus,
+          lat_in:       pos?.lat || null,
+          lng_in:       pos?.lng || null,
+          distance_in:  dist || null,
+          created_at:   clockInISO
+        }).select("*").single()
+      );
+
+      /* تحديث حالة الموظف */
+      await withRetry(() =>
+        sb.from("employees")
+          .update({
+            status:    "online",
+            is_online: true,
+            last_seen: clockInISO
+          })
+          .eq("id", user.id)
+      );
+
+      await logAudit("CLOCK_IN",
+        `${attStatus} — ${dist ? dist+"m" : "no GPS"}`,
+        user.id
+      );
+
+      setRecord(newRec);
+      loadHistory();
       showToast(
-        "Passwords don't match","warning"
+        attStatus === "late"
+          ? "⚠️ Clocked in — LATE"
+          : "✅ Clocked in — On Time",
+        attStatus === "late" ? "warning" : "success"
       );
-      return;
+
+    } catch(e) {
+      showToast("Clock in failed: " + e.message, "error");
+    } finally {
+      setClocking(false);
+      setGpsStatus("idle");
     }
-    setPwLoad(true);
-    try{
-      const {error}=
-        await sb.auth.updateUser({
-          password:pwForm.next
-        });
-      if(error) throw error;
-      showToast("Password changed ✅","success");
-      setShowPw(false);
-      setPwForm({next:"",confirm:""});
-    }catch(err){
-      showToast("Failed: "+err.message,"error");
-    }finally{setPwLoad(false);}
   }
 
-  const rc2=RC[emp.role]||RC.Agent;
+  /* Clock Out */
+  async function handleClockOut() {
+    if (!record) return;
+    setClocking(true);
+    try {
+      const now        = new Date();
+      const clockOutISO = now.toISOString();
 
-  return(
-    <div className="page-enter">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">
-            👤 My Profile
-          </h1>
-          <p className="page-subtitle">
-            Manage your account
-          </p>
-        </div>
-        <button
-          className={
-            "btn btn-sm "+
-            (editing?"btn-ghost":"btn-primary")
+      /* حساب مدة العمل */
+      const clockIn   = new Date(record.clock_in);
+      const workSecs  = Math.floor(
+        (now - clockIn) / 1000
+      );
+
+      let pos  = null;
+      let dist = null;
+
+      if (officePos) {
+        try {
+          pos  = await getGPS();
+          dist = haversine(
+            pos.lat, pos.lng,
+            officePos.lat, officePos.lng
+          );
+        } catch(e) {}
+      }
+
+      await withRetry(() =>
+        sb.from("attendance")
+          .update({
+            clock_out:    clockOutISO,
+            work_seconds: workSecs,
+            lat_out:      pos?.lat  || null,
+            lng_out:      pos?.lng  || null,
+            distance_out: dist      || null,
+          })
+          .eq("id", record.id)
+      );
+
+      /* تحديث حالة الموظف */
+      await withRetry(() =>
+        sb.from("employees")
+          .update({
+            status:    "offline",
+            is_online: false,
+            last_seen: clockOutISO
+          })
+          .eq("id", user.id)
+      );
+
+      await logAudit("CLOCK_OUT",
+        `Duration: ${fmtDuration(workSecs)}`, user.id
+      );
+
+      setRecord(p => ({
+        ...p,
+        clock_out:    clockOutISO,
+        work_seconds: workSecs
+      }));
+      loadHistory();
+      showToast("✅ Clocked out successfully", "success");
+
+    } catch(e) {
+      showToast("Clock out failed: " + e.message, "error");
+    } finally {
+      setClocking(false);
+      setGpsStatus("idle");
+    }
+  }
+
+  /* حساب مدة العمل الحالية */
+  const currentWorkSecs = record?.clock_in && !record?.clock_out
+    ? Math.floor(
+        (now - new Date(record.clock_in)) / 1000
+      )
+    : record?.work_seconds || 0;
+
+  const isClockedIn  = !!record?.clock_in && !record?.clock_out;
+  const isClockedOut = !!record?.clock_out;
+
+  if (loading) return React.createElement(LoadingPage,
+    { message: "Loading attendance..." });
+
+  return React.createElement("div", {
+    className: "nx-page-enter"
+  },
+    React.createElement(PageHeader, {
+      title: "Attendance",
+      icon:  "✅",
+      subtitle: now.toLocaleDateString("en-GB", {
+        weekday:"long", day:"2-digit",
+        month:"long", year:"numeric"
+      })
+    }),
+
+    React.createElement("div", {
+      className: "nx-grid-2",
+      style: { gap: 20 }
+    },
+
+      /* Clock Card */
+      React.createElement("div", { className: "nx-card" },
+        /* Clock Display */
+        React.createElement("div", {
+          style: {
+            textAlign: "center",
+            padding: "24px 0 20px"
           }
-          onClick={()=>setEditing(s=>!s)}>
-          {editing?"✕ Cancel":"✏️ Edit"}
-        </button>
-      </div>
-
-      {/* Profile Card */}
-      <div className="card"
-        style={{marginBottom:16}}>
-        <div style={{
-          display:"flex",alignItems:"center",
-          gap:16,marginBottom:20
-        }}>
-          <div style={{
-            width:72,height:72,borderRadius:20,
-            background:`linear-gradient(135deg,
-              ${rc2.c},${rc2.c}88)`,
-            display:"flex",alignItems:"center",
-            justifyContent:"center",
-            fontSize:36,flexShrink:0
-          }}>{rc2.i}</div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{
-              fontSize:20,fontWeight:800,
-              color:"var(--text)",marginBottom:6
-            }} dir="auto">
-              {emp.full_name}
-            </div>
-            <div style={{
-              display:"flex",
-              alignItems:"center",
-              gap:8,flexWrap:"wrap"
-            }}>
-              <RoleBadge role={emp.role}/>
-              <DeptBadge dept={emp.department}/>
-            </div>
-            {emp.is_owner&&(
-              <div style={{
-                marginTop:6,fontSize:12,
-                fontWeight:700,color:"#EAB308"
-              }}>
-                👑 System Owner
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div style={{
-          display:"grid",
-          gridTemplateColumns:"1fr 1fr",
-          gap:10,marginBottom:16
-        }}>
-          {[
-            {l:"Email",v:emp.email,i:"📧"},
-            {
-              l:"Phone",
-              v:emp.phone||"Not set",i:"📱"
-            },
-            {
-              l:"Status",
-              v:emp.status||"Offline",i:"🟢"
-            },
-            {
-              l:"Member since",
-              v:fmt.date(emp.created_at),
-              i:"📅"
+        },
+          React.createElement("div", {
+            style: {
+              fontSize: 48,
+              fontWeight: 900,
+              color: "var(--text)",
+              letterSpacing: -2,
+              fontVariantNumeric: "tabular-nums"
             }
-          ].map(item=>(
-            <div key={item.l} style={{
-              background:"var(--glass2)",
-              border:"1px solid var(--border)",
-              borderRadius:10,
-              padding:"10px 12px"
-            }}>
-              <div style={{
-                fontSize:10,fontWeight:700,
-                color:"var(--text-muted)",
-                marginBottom:4,
-                textTransform:"uppercase",
-                letterSpacing:0.5
-              }}>
-                {item.i} {item.l}
-              </div>
-              <div style={{
-                fontSize:12,fontWeight:600,
-                color:"var(--text)",
-                overflow:"hidden",
-                textOverflow:"ellipsis",
-                whiteSpace:"nowrap"
-              }}>
-                {item.v}
-              </div>
-            </div>
-          ))}
-        </div>
+          },
+            now.toLocaleTimeString("en-GB", {
+              hour:"2-digit", minute:"2-digit",
+              second:"2-digit"
+            })
+          ),
+          React.createElement("div", {
+            style: {
+              fontSize: 13,
+              color: "var(--text-muted)",
+              marginTop: 4
+            }
+          }, getSaudiPeriod().toUpperCase() + " — KSA")
+        ),
 
-        {emp.bio&&!editing&&(
-          <div style={{
-            background:"var(--glass2)",
-            border:"1px solid var(--border)",
-            borderRadius:10,
-            padding:"12px 14px",
-            fontSize:13,
-            color:"var(--text-sub)",
-            lineHeight:1.6
-          }} dir="auto">
-            {emp.bio}
-          </div>
-        )}
-      </div>
+        /* Status */
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 20
+          }
+        },
+          isClockedOut
+            ? React.createElement("span", {
+                className: "nx-badge nx-badge-neutral"
+              }, "✅ Shift Complete")
+            : isClockedIn
+            ? React.createElement("span", {
+                className: "nx-badge nx-badge-success"
+              },
+                React.createElement("span", {
+                  className: "nx-live-dot green",
+                  style: { marginRight: 4 }
+                }),
+                "Clocked In"
+              )
+            : React.createElement("span", {
+                className: "nx-badge nx-badge-neutral"
+              }, "⏸ Not Clocked In")
+        ),
 
-      {/* Stats */}
-      {stats&&(
-        <div style={{
-          display:"grid",
-          gridTemplateColumns:
-            "repeat(auto-fill,minmax(130px,1fr))",
-          gap:10,marginBottom:16
-        }}>
-          {[
-            {
-              l:"Days Worked",
-              v:stats.days,
-              i:"📅",c:"var(--primary)"
-            },
-            {
-              l:"Total Hours",
-              v:stats.totalHours+"h",
-              i:"⏱️",c:"var(--success)"
-            },
-            ...(stats.avgScore!==null?[{
-              l:"Avg Score",
-              v:stats.avgScore+"%",
-              i:"📊",
-              c:stats.avgScore>=80
-                ?"var(--success)"
-                :stats.avgScore>=60
-                  ?"var(--warning)"
-                  :"var(--danger)"
-            }]:[])
-          ].map(s=>(
-            <div key={s.l} className="stat-card">
-              <span className="stat-icon">
-                {s.i}
-              </span>
-              <div className="stat-value"
-                style={{color:s.c,fontSize:20}}>
-                {s.v}
-              </div>
-              <div className="stat-label">
-                {s.l}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+        /* GPS Status */
+        gpsStatus === "scanning" &&
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            marginBottom: 16,
+            fontSize: 13,
+            color: "var(--primary)"
+          }
+        },
+          React.createElement("span", {
+            className: "nx-gps-scan",
+            style: { fontSize: 20 }
+          }, "📡"),
+          "Getting GPS location..."
+        ),
 
-      {/* Edit Form */}
-      {editing&&(
-        <div className="card"
-          style={{marginBottom:16}}>
-          <div className="card-title"
-            style={{marginBottom:16}}>
-            ✏️ Edit Profile
-          </div>
-          <form onSubmit={saveProfile}>
-            <div className="input-group"
-              style={{marginBottom:14}}>
-              <label className="input-label">
-                Full Name *
-              </label>
-              <input type="text"
-                className="input"
-                value={form.full_name}
-                onChange={e=>setForm(f=>({
-                  ...f,
-                  full_name:e.target.value
-                }))}
-                dir="auto" required/>
-            </div>
-            <div className="input-group"
-              style={{marginBottom:14}}>
-              <label className="input-label">
-                Phone
-              </label>
-              <input type="tel"
-                className="input"
-                value={form.phone}
-                onChange={e=>setForm(f=>({
-                  ...f,phone:e.target.value
-                }))}
-                placeholder="+966 5x xxx xxxx"/>
-            </div>
-            <div className="input-group"
-              style={{marginBottom:20}}>
-              <label className="input-label">
-                Bio
-              </label>
-              <textarea className="input"
-                value={form.bio}
-                onChange={e=>setForm(f=>({
-                  ...f,bio:e.target.value
-                }))}
-                placeholder=
-                  "Tell us about yourself..."
-                rows={3} dir="auto"/>
-            </div>
-            <div style={{display:"flex",gap:10}}>
-              <button type="button"
-                className="btn btn-ghost"
-                style={{flex:1}}
-                onClick={()=>setEditing(false)}>
-                Cancel
-              </button>
-              <button type="submit"
-                className="btn btn-primary"
-                style={{flex:1}}
-                disabled={loading}>
-                {loading
-                  ?<><Spinner size="sm" white/>
-                     {" "}Saving...</>
-                  :"✅ Save Changes"
+        distance !== null &&
+        React.createElement("div", {
+          style: {
+            textAlign: "center",
+            marginBottom: 16,
+            fontSize: 12,
+            color: distance <= (officePos?.radius || 10)
+              ? "var(--success)" : "var(--danger)"
+          }
+        },
+          `📍 ${distance}m from office `,
+          `(max: ${officePos?.radius || 10}m)`
+        ),
+
+        /* Work Duration */
+        isClockedIn &&
+        React.createElement("div", {
+          style: {
+            textAlign: "center",
+            marginBottom: 20
+          }
+        },
+          React.createElement("div", {
+            style: {
+              fontSize: 13,
+              color: "var(--text-muted)",
+              marginBottom: 4
+            }
+          }, "Work Duration"),
+          React.createElement("div", {
+            style: {
+              fontSize: 28,
+              fontWeight: 800,
+              color: "var(--primary)",
+              fontVariantNumeric: "tabular-nums"
+            }
+          }, fmtDuration(currentWorkSecs))
+        ),
+
+        /* Clock In/Out Button */
+        !isClockedOut &&
+        React.createElement("button", {
+          className: `nx-btn nx-btn-full nx-btn-lg ${
+            isClockedIn
+              ? "nx-btn-danger"
+              : "nx-btn-primary"}`,
+          onClick: isClockedIn
+            ? handleClockOut : handleClockIn,
+          disabled: clocking,
+          style: { marginTop: 8 }
+        },
+          clocking
+            ? React.createElement("span", {
+                style: {
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  justifyContent: "center"
                 }
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+              },
+                React.createElement(Spinner),
+                gpsStatus === "scanning"
+                  ? "Getting GPS..." : "Processing..."
+              )
+            : isClockedIn
+            ? "🔴 Clock Out"
+            : "🟢 Clock In"
+        ),
 
-      {/* Change Password */}
-      <div className="card">
-        <div style={{
-          display:"flex",alignItems:"center",
-          justifyContent:"space-between",
-          marginBottom:showPw?16:0
-        }}>
-          <div>
-            <div className="card-title">
-              🔒 Change Password
-            </div>
-            <div className="card-subtitle">
-              Update your login password
-            </div>
-          </div>
-          <button
-            className={
-              "btn btn-sm "+
-              (showPw?"btn-ghost":"btn-primary")
+        isClockedOut &&
+        React.createElement("div", {
+          className: "nx-alert nx-alert-success",
+          style: { marginTop: 8 }
+        },
+          React.createElement("span", {
+            className: "nx-alert-icon"
+          }, "✅"),
+          React.createElement("div", null,
+            React.createElement("strong", null,
+              "Shift Complete"),
+            React.createElement("div", {
+              style: { fontSize: 12, marginTop: 2 }
+            },
+              `Duration: ${fmtDuration(record.work_seconds)}`
+            )
+          )
+        )
+      ),
+
+      /* Today's Info Card */
+      React.createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          gap: 16
+        }
+      },
+        /* Today Record */
+        React.createElement("div", { className: "nx-card" },
+          React.createElement(SectionHeader, {
+            title: "📋 Today's Record"
+          }),
+          React.createElement("div", {
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              marginTop: 16
             }
-            onClick={()=>setShowPw(s=>!s)}>
-            {showPw?"✕ Cancel":"Change"}
-          </button>
-        </div>
-        {showPw&&(
-          <form onSubmit={changePw}>
-            <div className="input-group"
-              style={{marginBottom:14}}>
-              <label className="input-label">
-                New Password *
-              </label>
-              <input type="password"
-                className="input"
-                value={pwForm.next}
-                onChange={e=>setPwForm(f=>({
-                  ...f,next:e.target.value
-                }))}
-                placeholder="Min 6 characters"
-                required/>
-            </div>
-            <div className="input-group"
-              style={{marginBottom:20}}>
-              <label className="input-label">
-                Confirm Password *
-              </label>
-              <input type="password"
-                className="input"
-                value={pwForm.confirm}
-                onChange={e=>setPwForm(f=>({
-                  ...f,confirm:e.target.value
-                }))}
-                placeholder="Type again"
-                required/>
-            </div>
-            <button type="submit"
-              className="btn btn-primary btn-full"
-              disabled={pwLoad}>
-              {pwLoad
-                ?<><Spinner size="sm" white/>
-                   {" "}Changing...</>
-                :"🔒 Change Password"
+          },
+            [
+              {
+                label: "Clock In",
+                value: record?.clock_in
+                  ? fmtTime(record.clock_in) : "—",
+                icon: "🟢"
+              },
+              {
+                label: "Clock Out",
+                value: record?.clock_out
+                  ? fmtTime(record.clock_out) : "—",
+                icon: "🔴"
+              },
+              {
+                label: "Status",
+                value: record?.status || "—",
+                icon: "📊"
+              },
+              {
+                label: "Work Time",
+                value: record?.work_seconds
+                  ? fmtDuration(record.work_seconds)
+                  : isClockedIn
+                  ? fmtDuration(currentWorkSecs)
+                  : "—",
+                icon: "⏱️"
+              },
+              {
+                label: "GPS Distance",
+                value: record?.distance_in
+                  ? `${record.distance_in}m`
+                  : "—",
+                icon: "📍"
+              },
+            ].map(item =>
+              React.createElement("div", {
+                key: item.label,
+                style: {
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 12px",
+                  background: "var(--card2)",
+                  borderRadius: "var(--radius-sm)"
+                }
+              },
+                React.createElement("span", {
+                  style: {
+                    fontSize: 12,
+                    color: "var(--text-sub)"
+                  }
+                },
+                  `${item.icon} ${item.label}`
+                ),
+                React.createElement("span", {
+                  style: {
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "var(--text)"
+                  }
+                }, item.value)
+              )
+            )
+          )
+        ),
+
+        /* Status Badge */
+        record?.status &&
+        React.createElement("div", {
+          className: "nx-card",
+          style: { textAlign: "center", padding: "16px" }
+        },
+          React.createElement("div", {
+            style: {
+              fontSize: 32,
+              marginBottom: 8
+            }
+          },
+            record.status === "on_time" ? "✅" :
+            record.status === "late"    ? "⚠️" :
+            record.status === "absent"  ? "❌" : "📋"
+          ),
+          React.createElement("div", {
+            style: {
+              fontSize: 16,
+              fontWeight: 800,
+              color:
+                record.status === "on_time"
+                  ? "var(--success)" :
+                record.status === "late"
+                  ? "var(--warning)" :
+                "var(--danger)"
+            }
+          },
+            record.status === "on_time" ? "ON TIME" :
+            record.status === "late"    ? "LATE"    :
+            record.status.toUpperCase()
+          )
+        )
+      )
+    ),
+
+    /* History Toggle */
+    React.createElement("div", {
+      style: { marginTop: 24 }
+    },
+      React.createElement("button", {
+        className: "nx-btn nx-btn-secondary",
+        onClick: () => setShowHist(p => !p)
+      }, showHist
+        ? "▲ Hide History"
+        : `▼ Show History (${history.length} records)`
+      )
+    ),
+
+    /* History Table */
+    showHist && React.createElement("div", {
+      className: "nx-table-wrap",
+      style: { marginTop: 12 }
+    },
+      React.createElement("table", { className: "nx-table" },
+        React.createElement("thead", null,
+          React.createElement("tr", null,
+            ["Date","Clock In","Clock Out",
+             "Duration","Status","Distance"].map(h =>
+              React.createElement("th", { key: h }, h)
+            )
+          )
+        ),
+        React.createElement("tbody", null,
+          history.map(r =>
+            React.createElement("tr", { key: r.id },
+              React.createElement("td", {
+                style: { fontWeight: 600 }
+              }, fmtDate(r.date)),
+              React.createElement("td", null,
+                fmtTime(r.clock_in)),
+              React.createElement("td", null,
+                r.clock_out ? fmtTime(r.clock_out) : "—"),
+              React.createElement("td", null,
+                r.work_seconds
+                  ? fmtDuration(r.work_seconds) : "—"),
+              React.createElement("td", null,
+                React.createElement("span", {
+                  className: `nx-badge ${
+                    r.status === "on_time"
+                      ? "nx-badge-success" :
+                    r.status === "late"
+                      ? "nx-badge-warning" :
+                    "nx-badge-danger"}`
+                }, r.status?.replace("_"," ").toUpperCase())
+              ),
+              React.createElement("td", {
+                style: { fontSize: 11 }
+              }, r.distance_in ? `${r.distance_in}m` : "—")
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   SEC 11 — LIVE FLOOR
+   ══════════════════════════════════════════════════════════ */
+function LiveFloorPage({ user }) {
+  const [employees,    setEmployees]    = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [deptFilter,   setDeptFilter]   = useState("all");
+  const [search,       setSearch]       = useState("");
+  const [depts,        setDepts]        = useState([]);
+  const [selected,     setSelected]     = useState(null);
+  const [viewMode,     setViewMode]     = useState("grid");
+  const lastUpdate = useRef(new Date());
+
+  useEffect(() => {
+    loadEmployees();
+
+    /* Realtime */
+    ChannelMgr.sub(
+      "live_floor",
+      "employees",
+      null,
+      () => loadEmployees()
+    );
+
+    return () => ChannelMgr.unsub("live_floor");
+  }, []);
+
+  async function loadEmployees() {
+    try {
+      const { data } = await withRetry(() =>
+        sb.from("employees")
+          .select("id, full_name, role, department, status, is_online, last_seen, avatar_url, is_suspended")
+          .eq("is_active", true)
+          .order("full_name")
+      );
+      setEmployees(data || []);
+      lastUpdate.current = new Date();
+
+      const uniqueDepts = [...new Set(
+        (data || [])
+          .map(e => e.department)
+          .filter(Boolean)
+      )];
+      setDepts(uniqueDepts);
+    } catch(e) {
+      showToast("Failed to load floor", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleStatusChange(empId, newStatus) {
+    if (!RC.isMgr(user)) return;
+    try {
+      await withRetry(() =>
+        sb.from("employees")
+          .update({
+            status:    newStatus,
+            last_seen: new Date().toISOString()
+          })
+          .eq("id", empId)
+      );
+      await logAudit("CHANGE_STATUS",
+        `→ ${newStatus}`, user.id, empId);
+      showToast(`Status updated: ${newStatus}`, "success");
+    } catch(e) {
+      showToast("Failed", "error");
+    }
+  }
+
+  async function handleInstantKick(emp) {
+    if (!RC.isOwner(user)) return;
+    try {
+      await withRetry(() =>
+        sb.from("employees")
+          .update({
+            is_online: false,
+            status:    "offline",
+            last_seen: new Date().toISOString()
+          })
+          .eq("id", emp.id)
+      );
+      await logAudit("INSTANT_KICK",
+        emp.full_name, user.id, emp.id);
+      showToast(`⚡ ${emp.full_name} kicked`, "warning");
+      setSelected(null);
+    } catch(e) {
+      showToast("Failed", "error");
+    }
+  }
+
+  /* Filtered List */
+  const filtered = useMemo(() => {
+    return employees.filter(e => {
+      const matchSearch = !search ||
+        e.full_name?.toLowerCase()
+          .includes(search.toLowerCase());
+      const matchStatus =
+        statusFilter === "all" ||
+        e.status === statusFilter;
+      const matchDept =
+        deptFilter === "all" ||
+        e.department === deptFilter;
+      return matchSearch && matchStatus && matchDept;
+    });
+  }, [employees, search, statusFilter, deptFilter]);
+
+  /* Stats */
+  const stats = useMemo(() => ({
+    total:     employees.length,
+    online:    employees.filter(e => e.is_online).length,
+    onBreak:   employees.filter(e =>
+                 e.status === "onbreak").length,
+    inCall:    employees.filter(e =>
+                 e.status === "incall").length,
+    offline:   employees.filter(e => !e.is_online).length,
+  }), [employees]);
+
+  if (loading) return React.createElement(LoadingPage,
+    { message: "Loading live floor..." });
+
+  return React.createElement("div", {
+    className: "nx-page-enter"
+  },
+    React.createElement(PageHeader, {
+      title: "Live Floor",
+      icon:  "🖥️",
+      subtitle: React.createElement("span", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 6
+        }
+      },
+        React.createElement("span", {
+          className: "nx-live-dot green"
+        }),
+        `${stats.online} online — Last update: ${
+          fmtTime(lastUpdate.current.toISOString())}`
+      )
+    }),
+
+    /* Quick Stats */
+    React.createElement("div", {
+      className: "nx-grid-4",
+      style: { marginBottom: 20 }
+    },
+      [
+        { label:"Total",    value:stats.total,
+          color:"var(--text)",    icon:"👥" },
+        { label:"Online",   value:stats.online,
+          color:"#22C55E",        icon:"🟢" },
+        { label:"On Break", value:stats.onBreak,
+          color:"#EAB308",        icon:"☕" },
+        { label:"In Call",  value:stats.inCall,
+          color:"#3B82F6",        icon:"📞" },
+      ].map(s =>
+        React.createElement("div", {
+          key: s.label,
+          className: "nx-stat-card nx-card-enter",
+          style: { cursor: "pointer" },
+          onClick: () => setStatusFilter(
+            s.label === "Total"    ? "all" :
+            s.label === "Online"   ? "online" :
+            s.label === "On Break" ? "onbreak" :
+            "incall"
+          )
+        },
+          React.createElement("div", {
+            style: {
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }
+          },
+            React.createElement("span", {
+              className: "nx-stat-label"
+            }, s.label),
+            React.createElement("span", {
+              style: { fontSize: 18 }
+            }, s.icon)
+          ),
+          React.createElement("div", {
+            className: "nx-stat-value",
+            style: { color: s.color, fontSize: 24 }
+          }, s.value)
+        )
+      )
+    ),
+
+    /* Controls */
+    React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 10,
+        marginBottom: 20,
+        flexWrap: "wrap",
+        alignItems: "center"
+      }
+    },
+      React.createElement(SearchInput, {
+        value: search,
+        onChange: setSearch,
+        placeholder: "Search employees..."
+      }),
+
+      /* Status Filter */
+      React.createElement("select", {
+        className: "nx-select",
+        value: statusFilter,
+        onChange: e => setStatusFilter(e.target.value),
+        style: { width: "auto", minWidth: 130 }
+      },
+        React.createElement("option", { value:"all" },
+          "All Statuses"),
+        Object.entries(STATUS_MAP).map(([k, v]) =>
+          React.createElement("option", {
+            key: k, value: k
+          }, `${v.icon} ${v.label}`)
+        )
+      ),
+
+      /* Dept Filter */
+      depts.length > 0 &&
+      React.createElement("select", {
+        className: "nx-select",
+        value: deptFilter,
+        onChange: e => setDeptFilter(e.target.value),
+        style: { width: "auto", minWidth: 140 }
+      },
+        React.createElement("option", { value:"all" },
+          "All Departments"),
+        depts.map(d =>
+          React.createElement("option", {
+            key: d, value: d
+          }, d)
+        )
+      ),
+
+      /* View Mode */
+      React.createElement("div", {
+        style: { display: "flex", gap: 4, marginLeft: "auto" }
+      },
+        React.createElement("button", {
+          className: `nx-btn nx-btn-icon nx-btn-sm ${
+            viewMode === "grid"
+              ? "nx-btn-primary" : "nx-btn-secondary"}`,
+          onClick: () => setViewMode("grid"),
+          title: "Grid View"
+        }, "⊞"),
+        React.createElement("button", {
+          className: `nx-btn nx-btn-icon nx-btn-sm ${
+            viewMode === "list"
+              ? "nx-btn-primary" : "nx-btn-secondary"}`,
+          onClick: () => setViewMode("list"),
+          title: "List View"
+        }, "☰")
+      )
+    ),
+
+    /* Count */
+    React.createElement("p", {
+      style: {
+        fontSize: 12,
+        color: "var(--text-muted)",
+        marginBottom: 16
+      }
+    }, `Showing ${filtered.length} of ${employees.length}`),
+
+    /* Grid View */
+    viewMode === "grid" &&
+    React.createElement("div", {
+      style: {
+        display: "grid",
+        gridTemplateColumns:
+          "repeat(auto-fill, minmax(200px, 1fr))",
+        gap: 12
+      }
+    },
+      filtered.length === 0
+        ? React.createElement(EmptyState, {
+            icon: "👥",
+            title: "No employees found",
+            desc: "Try adjusting your filters"
+          })
+        : filtered.map(emp =>
+            React.createElement(LiveFloorCard, {
+              key:      emp.id,
+              emp,
+              user,
+              onSelect: () => setSelected(emp),
+              onKick:   handleInstantKick,
+              onStatusChange: handleStatusChange
+            })
+          )
+    ),
+
+    /* List View */
+    viewMode === "list" &&
+    React.createElement("div", { className: "nx-table-wrap" },
+      React.createElement("table", { className: "nx-table" },
+        React.createElement("thead", null,
+          React.createElement("tr", null,
+            ["Employee","Role","Status","Department",
+             "Last Seen","Actions"].map(h =>
+              React.createElement("th", { key: h }, h)
+            )
+          )
+        ),
+        React.createElement("tbody", null,
+          filtered.length === 0
+            ? React.createElement("tr", null,
+                React.createElement("td", {
+                  colSpan: 6,
+                  style: {
+                    textAlign: "center",
+                    padding: "30px",
+                    color: "var(--text-muted)"
+                  }
+                }, "No employees found")
+              )
+            : filtered.map(emp =>
+                React.createElement("tr", { key: emp.id },
+                  React.createElement("td", null,
+                    React.createElement("div", {
+                      style: {
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8
+                      }
+                    },
+                      React.createElement(NxAvatar, {
+                        user: emp, size: "xs"
+                      }),
+                      React.createElement("span", {
+                        style: {
+                          fontSize: 13,
+                          fontWeight: 600
+                        }
+                      }, emp.full_name)
+                    )
+                  ),
+                  React.createElement("td", null,
+                    React.createElement(RoleBadge,
+                      { role: emp.role })
+                  ),
+                  React.createElement("td", null,
+                    React.createElement(StatusBadge, {
+                      status: emp.status || "offline"
+                    })
+                  ),
+                  React.createElement("td", {
+                    style: {
+                      fontSize: 12,
+                      color: "var(--text-sub)"
+                    }
+                  }, emp.department || "—"),
+                  React.createElement("td", {
+                    style: {
+                      fontSize: 11,
+                      color: "var(--text-muted)"
+                    }
+                  }, fmtRelative(emp.last_seen)),
+                  React.createElement("td", null,
+                    React.createElement("div", {
+                      style: { display: "flex", gap: 4 }
+                    },
+                      React.createElement("button", {
+                        className: "nx-btn nx-btn-secondary nx-btn-icon-sm",
+                        onClick: () => setSelected(emp),
+                        title: "View Details"
+                      }, "👁️"),
+                      RC.isOwner(user) && emp.is_online &&
+                      React.createElement("button", {
+                        className: "nx-btn nx-btn-danger nx-btn-icon-sm",
+                        onClick: () => handleInstantKick(emp),
+                        title: "Instant Kick"
+                      }, "⚡")
+                    )
+                  )
+                )
+              )
+        )
+      )
+    ),
+
+    /* Employee Detail Modal */
+    selected && React.createElement(EmployeeDetailModal, {
+      emp:    selected,
+      user,
+      onClose: () => setSelected(null),
+      onKick:  handleInstantKick,
+      onStatusChange: handleStatusChange
+    })
+  );
+}
+
+/* Live Floor Card */
+function LiveFloorCard({ emp, user, onSelect,
+                         onKick, onStatusChange }) {
+  const s = STATUS_MAP[emp.status] || STATUS_MAP.unknown;
+  const isOnline = emp.is_online;
+
+  return React.createElement("div", {
+    className: `nx-employee-card nx-card-enter ${
+      emp.status === "onbreak" &&
+      !emp.is_online ? "nx-card-break-exceeded" : ""}`,
+    style: {
+      borderColor: `${s.color}33`,
+      cursor: "pointer"
+    },
+    onClick: onSelect
+  },
+    /* Avatar + Status */
+    React.createElement("div", {
+      className: "nx-employee-card-header"
+    },
+      React.createElement("div", {
+        style: { position: "relative" }
+      },
+        React.createElement(NxAvatar, {
+          user: emp, size: "md"
+        }),
+        React.createElement("span", {
+          className: `status-dot ${s.css}`,
+          style: {
+            position: "absolute",
+            bottom: 0, right: 0,
+            width: 12, height: 12,
+            background: s.color,
+            border: "2px solid var(--card)"
+          }
+        })
+      ),
+      React.createElement("div", {
+        className: "nx-employee-card-info"
+      },
+        React.createElement("div", {
+          className: "nx-employee-name"
+        }, emp.full_name),
+        React.createElement("div", {
+          style: {
+            fontSize: 10,
+            color: RC.color[emp.role],
+            marginTop: 2
+          }
+        }, `${RC.icon[emp.role]} ${emp.role}`)
+      ),
+
+      /* Kick Button (Owner only) */
+      RC.isOwner(user) && isOnline &&
+      React.createElement("button", {
+        className: "nx-btn nx-btn-danger nx-btn-icon-sm",
+        onClick: e => {
+          e.stopPropagation();
+          onKick(emp);
+        },
+        title: "Instant Kick"
+      }, "⚡")
+    ),
+
+    /* Status Badge */
+    React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between"
+      }
+    },
+      React.createElement("span", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+          fontSize: 12,
+          fontWeight: 600,
+          color: s.color
+        }
+      },
+        React.createElement("span", {
+          className: `status-dot ${s.css}`,
+          style: {
+            background: s.color,
+            width: 8, height: 8
+          }
+        }),
+        s.label
+      ),
+      React.createElement("span", {
+        style: {
+          fontSize: 10,
+          color: "var(--text-muted)"
+        }
+      }, fmtRelative(emp.last_seen))
+    ),
+
+    /* Dept */
+    emp.department &&
+    React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: "var(--text-muted)",
+        marginTop: 4
+      }
+    }, `🏢 ${emp.department}`)
+  );
+}
+
+/* Employee Detail Modal */
+function EmployeeDetailModal({ emp, user, onClose,
+                               onKick, onStatusChange }) {
+  const s = STATUS_MAP[emp.status] || STATUS_MAP.unknown;
+
+  return React.createElement("div", {
+    className: "nx-modal-backdrop",
+    onClick: onClose
+  },
+    React.createElement("div", {
+      className: "nx-modal nx-modal-sm",
+      onClick: e => e.stopPropagation()
+    },
+      React.createElement("div", { className: "nx-modal-header" },
+        React.createElement("span", {
+          className: "nx-modal-title"
+        }, "👤 Employee Details"),
+        React.createElement("button", {
+          className: "nx-btn nx-btn-ghost nx-btn-icon",
+          onClick: onClose
+        }, "✕")
+      ),
+
+      React.createElement("div", { className: "nx-modal-body" },
+        /* Avatar + Name */
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: 20
+          }
+        },
+          React.createElement(NxAvatar, {
+            user: emp, size: "xl"
+          }),
+          React.createElement("div", {
+            style: { textAlign: "center" }
+          },
+            React.createElement("h3", {
+              style: {
+                fontSize: 16,
+                fontWeight: 800,
+                color: "var(--text)"
               }
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
+            }, emp.full_name),
+            React.createElement(RoleBadge,
+              { role: emp.role }),
+            emp.department &&
+            React.createElement("div", {
+              style: {
+                fontSize: 12,
+                color: "var(--text-muted)",
+                marginTop: 4
+              }
+            }, `🏢 ${emp.department}`)
+          )
+        ),
+
+        /* Status */
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 16
+          }
+        },
+          React.createElement(StatusBadge,
+            { status: emp.status || "offline" })
+        ),
+
+        /* Info */
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            flexDirection: "column",
+            gap: 8
+          }
+        },
+          [
+            { label:"Last Seen",
+              value: fmtRelative(emp.last_seen) },
+            { label:"Online",
+              value: emp.is_online ? "Yes ✅" : "No ❌" },
+          ].map(item =>
+            React.createElement("div", {
+              key: item.label,
+              style: {
+                display: "flex",
+                justifyContent: "space-between",
+                padding: "8px 12px",
+                background: "var(--card2)",
+                borderRadius: "var(--radius-sm)"
+              }
+            },
+              React.createElement("span", {
+                style: {
+                  fontSize: 12,
+                  color: "var(--text-sub)"
+                }
+              }, item.label),
+              React.createElement("span", {
+                style: {
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "var(--text)"
+                }
+              }, item.value)
+            )
+          )
+        ),
+
+        /* Status Change (Manager) */
+        RC.isMgr(user) &&
+        React.createElement("div", {
+          style: { marginTop: 16 }
+        },
+          React.createElement("label", {
+            className: "nx-label",
+            style: { marginBottom: 8, display: "block" }
+          }, "Change Status"),
+          React.createElement("div", {
+            style: {
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 6
+            }
+          },
+            Object.entries(STATUS_MAP)
+              .filter(([k]) =>
+                !["absent","unknown"].includes(k))
+              .map(([k, v]) =>
+                React.createElement("button", {
+                  key: k,
+                  className: `nx-btn nx-btn-sm ${
+                    emp.status === k
+                      ? "nx-btn-primary"
+                      : "nx-btn-secondary"}`,
+                  onClick: () => {
+                    onStatusChange(emp.id, k);
+                    onClose();
+                  },
+                  style: { fontSize: 11 }
+                },
+                  `${v.icon} ${v.label}`
+                )
+              )
+          )
+        )
+      ),
+
+      React.createElement("div", { className: "nx-modal-footer" },
+        RC.isOwner(user) && emp.is_online &&
+        React.createElement("button", {
+          className: "nx-btn nx-btn-danger",
+          onClick: () => {
+            onKick(emp);
+            onClose();
+          }
+        }, "⚡ Instant Kick"),
+        React.createElement("button", {
+          className: "nx-btn nx-btn-secondary",
+          onClick: onClose
+        }, "Close")
+      )
+    )
   );
 }
 
 /* ============================================================
-   S18: MY WORKSPACE
+   screens2.js — Part B
+   SEC 12: BreakManagement
+   SEC 13: MyBreakSchedule
+   SEC 14: MyRequests
+   SEC 15: ShiftHandover
    ============================================================ */
-function MyWorkspace({emp}){
-  const {showToast}=useApp();
-  const [notes,   setNotes]   =useState([]);
-  const [loading, setLoading] =useState(true);
-  const [showAdd, setShowAdd] =useState(false);
-  const [editNote,setEditNote]=useState(null);
 
-  useEffect(()=>{load();},[]);
+/* ══════════════════════════════════════════════════════════
+   SEC 12 — BREAK MANAGEMENT
+   ══════════════════════════════════════════════════════════ */
+function BreakManagementPage({ user }) {
+  const [breaks,      setBreaks]      = useState([]);
+  const [employees,   setEmployees]   = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [config,      setConfig]      = useState({
+    max_break_minutes: 15,
+    break_count_day:   2
+  });
+  const [now,         setNow]         = useState(new Date());
+  const [filter,      setFilter]      = useState("active");
+  const [deptFilter,  setDeptFilter]  = useState("all");
+  const [depts,       setDepts]       = useState([]);
 
-  async function load(){
-    setLoading(true);
-    const {data}=await withRetry(()=>
-      sb.from("workspace_notes")
-        .select("*")
-        .eq("employee_id",emp.id)
-        .order("updated_at",{ascending:false})
-    );
-    setNotes(data||[]);
-    setLoading(false);
+  /* تحديث الوقت كل ثانية */
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    loadConfig();
+    loadData();
+    ChannelMgr.sub("break_mgmt", "breaks", null, loadData);
+    return () => ChannelMgr.unsub("break_mgmt");
+  }, []);
+
+  async function loadConfig() {
+    try {
+      const { data } = await withRetry(() =>
+        sb.from("system_settings")
+          .select("key, value")
+          .in("key", ["max_break_minutes","break_count_day"])
+      );
+      const map = {};
+      (data || []).forEach(r => { map[r.key] = r.value; });
+      setConfig({
+        max_break_minutes: parseInt(map.max_break_minutes) || 15,
+        break_count_day:   parseInt(map.break_count_day)   || 2
+      });
+    } catch(e) {}
   }
 
-  async function deleteNote(id){
-    if(!confirm("Delete this note?")) return;
-    try{
-      await withRetry(()=>
-        sb.from("workspace_notes")
-          .delete().eq("id",id)
-      );
-      showToast("Note deleted","success");
-      setNotes(n=>n.filter(x=>x.id!==id));
-    }catch(err){
-      showToast("Failed: "+err.message,"error");
+  async function loadData() {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+
+      const [breaksRes, empsRes] = await Promise.all([
+        withRetry(() =>
+          sb.from("breaks")
+            .select(`
+              *,
+              employee:employees!breaks_employee_id_fkey(
+                id, full_name, role, department, avatar_url
+              )
+            `)
+            .eq("date", today)
+            .order("start_time", { ascending: false })
+        ),
+        withRetry(() =>
+          sb.from("employees")
+            .select("id, full_name, role, department, status, avatar_url")
+            .eq("is_active", true)
+            .eq("is_online", true)
+            .order("full_name")
+        )
+      ]);
+
+      setBreaks(breaksRes.data || []);
+      setEmployees(empsRes.data || []);
+
+      const uniqueDepts = [...new Set(
+        (empsRes.data || [])
+          .map(e => e.department)
+          .filter(Boolean)
+      )];
+      setDepts(uniqueDepts);
+    } catch(e) {
+      showToast("Failed to load breaks", "error");
+    } finally {
+      setLoading(false);
     }
   }
 
-  const pinned=notes.filter(n=>n.is_pinned);
-  const unpinned=notes.filter(n=>!n.is_pinned);
+  /* منح بريك */
+  async function grantBreak(empId, empName) {
+    try {
+      const today = new Date().toISOString().split("T")[0];
 
-  const NOTE_COLORS=[
-    "#3B82F6","#10B981","#F59E0B",
-    "#EF4444","#8B5CF6","#EC4899",
-    "#06B6D4","#84CC16"
+      /* عدد البريكات اليوم */
+      const todayBreaks = breaks.filter(
+        b => b.employee_id === empId
+      );
+      if (todayBreaks.length >= config.break_count_day) {
+        showToast(
+          `${empName} has used all ${config.break_count_day} breaks today`,
+          "warning"
+        );
+        return;
+      }
+
+      /* هل هناك بريك مفتوح؟ */
+      const openBreak = todayBreaks.find(b => !b.end_time);
+      if (openBreak) {
+        showToast(`${empName} is already on break`, "warning");
+        return;
+      }
+
+      const now = new Date().toISOString();
+
+      await withRetry(() =>
+        sb.from("breaks").insert({
+          employee_id:  empId,
+          date:         today,
+          start_time:   now,
+          end_time:     null,
+          duration_minutes: null,
+          granted_by:   user.id,
+          status:       "active",
+          created_at:   now
+        })
+      );
+
+      /* تحديث حالة الموظف */
+      await withRetry(() =>
+        sb.from("employees")
+          .update({ status: "onbreak" })
+          .eq("id", empId)
+      );
+
+      await logAudit("GRANT_BREAK", empName, user.id, empId);
+      showToast(`☕ Break granted to ${empName}`, "success");
+    } catch(e) {
+      showToast("Failed to grant break", "error");
+    }
+  }
+
+  /* إنهاء بريك */
+  async function endBreak(breakRecord) {
+    try {
+      const now      = new Date();
+      const start    = new Date(breakRecord.start_time);
+      const duration = Math.floor((now - start) / 60000);
+      const exceeded = duration > config.max_break_minutes;
+
+      await withRetry(() =>
+        sb.from("breaks")
+          .update({
+            end_time:         now.toISOString(),
+            duration_minutes: duration,
+            status:           exceeded ? "exceeded" : "completed"
+          })
+          .eq("id", breakRecord.id)
+      );
+
+      /* إعادة حالة الموظف */
+      await withRetry(() =>
+        sb.from("employees")
+          .update({ status: "online" })
+          .eq("id", breakRecord.employee_id)
+      );
+
+      await logAudit(
+        "END_BREAK",
+        `${duration} min${exceeded ? " (EXCEEDED)" : ""}`,
+        user.id,
+        breakRecord.employee_id
+      );
+
+      if (exceeded) {
+        showToast(
+          `⚠️ Break exceeded by ${duration - config.max_break_minutes} min`,
+          "warning"
+        );
+      } else {
+        showToast("✅ Break ended", "success");
+      }
+    } catch(e) {
+      showToast("Failed to end break", "error");
+    }
+  }
+
+  /* حساب مدة البريك الحالية */
+  function getBreakDuration(startTime) {
+    return Math.floor(
+      (now - new Date(startTime)) / 1000
+    );
+  }
+
+  /* فلترة البريكات */
+  const filteredBreaks = useMemo(() => {
+    let list = breaks;
+    if (filter === "active") {
+      list = list.filter(b => !b.end_time);
+    } else if (filter === "exceeded") {
+      list = list.filter(b => b.status === "exceeded");
+    } else if (filter === "completed") {
+      list = list.filter(b => b.end_time);
+    }
+    if (deptFilter !== "all") {
+      list = list.filter(b =>
+        b.employee?.department === deptFilter
+      );
+    }
+    return list;
+  }, [breaks, filter, deptFilter]);
+
+  /* الموظفون المتاحون للبريك */
+  const availableEmps = useMemo(() =>
+    employees.filter(e => {
+      if (e.status === "onbreak") return false;
+      const todayBreaks = breaks.filter(
+        b => b.employee_id === e.id
+      );
+      return todayBreaks.length < config.break_count_day;
+    }),
+  [employees, breaks, config]);
+
+  /* إحصائيات */
+  const stats = useMemo(() => ({
+    active:    breaks.filter(b => !b.end_time).length,
+    exceeded:  breaks.filter(b => b.status === "exceeded").length,
+    completed: breaks.filter(b => b.end_time).length,
+    total:     breaks.length
+  }), [breaks]);
+
+  if (loading) return React.createElement(LoadingPage,
+    { message: "Loading break management..." });
+
+  return React.createElement("div", {
+    className: "nx-page-enter"
+  },
+    React.createElement(PageHeader, {
+      title: "Break Management",
+      icon:  "☕",
+      subtitle: `Max ${config.max_break_minutes} min × ${config.break_count_day}/day`
+    }),
+
+    /* Stats */
+    React.createElement("div", {
+      className: "nx-grid-4",
+      style: { marginBottom: 20 }
+    },
+      [
+        { label:"On Break",  value:stats.active,
+          color:"#EAB308", icon:"☕" },
+        { label:"Exceeded",  value:stats.exceeded,
+          color:"#EF4444", icon:"⚠️" },
+        { label:"Completed", value:stats.completed,
+          color:"#22C55E", icon:"✅" },
+        { label:"Total",     value:stats.total,
+          color:"var(--primary)", icon:"📊" },
+      ].map(s =>
+        React.createElement("div", {
+          key: s.label,
+          className: "nx-stat-card"
+        },
+          React.createElement("div", {
+            style: {
+              display:"flex", justifyContent:"space-between"
+            }
+          },
+            React.createElement("span", {
+              className: "nx-stat-label"
+            }, s.label),
+            React.createElement("span", {
+              style: { fontSize: 18 }
+            }, s.icon)
+          ),
+          React.createElement("div", {
+            className: "nx-stat-value",
+            style: { color: s.color, fontSize: 24 }
+          }, s.value)
+        )
+      )
+    ),
+
+    React.createElement("div", {
+      className: "nx-grid-2",
+      style: { gap: 20 }
+    },
+
+      /* Grant Break Panel */
+      React.createElement("div", { className: "nx-card" },
+        React.createElement(SectionHeader, {
+          title: `✋ Grant Break (${availableEmps.length} available)`
+        }),
+        availableEmps.length === 0
+          ? React.createElement("div", {
+              style: {
+                textAlign: "center",
+                padding: "20px",
+                color: "var(--text-muted)",
+                fontSize: 13
+              }
+            }, "No employees available for break")
+          : React.createElement("div", {
+              style: {
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                marginTop: 12,
+                maxHeight: 320,
+                overflowY: "auto"
+              }
+            },
+              availableEmps
+                .filter(e => deptFilter === "all" ||
+                  e.department === deptFilter)
+                .map(emp => {
+                  const todayCount = breaks.filter(
+                    b => b.employee_id === emp.id
+                  ).length;
+                  return React.createElement("div", {
+                    key: emp.id,
+                    style: {
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "8px 12px",
+                      background: "var(--card2)",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--border)"
+                    }
+                  },
+                    React.createElement("div", {
+                      style: {
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8
+                      }
+                    },
+                      React.createElement(NxAvatar, {
+                        user: emp, size: "xs"
+                      }),
+                      React.createElement("div", null,
+                        React.createElement("div", {
+                          style: {
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: "var(--text)"
+                          }
+                        }, emp.full_name),
+                        React.createElement("div", {
+                          style: {
+                            fontSize: 10,
+                            color: "var(--text-muted)"
+                          }
+                        },
+                          `${todayCount}/${config.break_count_day} used`
+                        )
+                      )
+                    ),
+                    React.createElement("button", {
+                      className: "nx-btn nx-btn-primary nx-btn-sm",
+                      onClick: () => grantBreak(
+                        emp.id, emp.full_name
+                      )
+                    }, "☕ Grant")
+                  );
+                })
+            )
+      ),
+
+      /* Active Breaks Panel */
+      React.createElement("div", { className: "nx-card" },
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 12
+          }
+        },
+          React.createElement("h3", {
+            className: "nx-section-title"
+          }, "⏱️ Active Breaks"),
+          React.createElement("div", {
+            style: { display: "flex", gap: 6 }
+          },
+            ["all","active","exceeded","completed"].map(f =>
+              React.createElement("button", {
+                key: f,
+                className: `nx-btn nx-btn-sm ${
+                  filter === f
+                    ? "nx-btn-primary"
+                    : "nx-btn-secondary"}`,
+                onClick: () => setFilter(f),
+                style: { fontSize: 10, padding: "4px 8px" }
+              },
+                f.charAt(0).toUpperCase() + f.slice(1)
+              )
+            )
+          )
+        ),
+
+        filteredBreaks.length === 0
+          ? React.createElement("div", {
+              style: {
+                textAlign: "center",
+                padding: "20px",
+                color: "var(--text-muted)",
+                fontSize: 13
+              }
+            }, "No breaks to show")
+          : React.createElement("div", {
+              style: {
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                maxHeight: 320,
+                overflowY: "auto"
+              }
+            },
+              filteredBreaks.map(b => {
+                const secs     = b.end_time
+                  ? (b.duration_minutes || 0) * 60
+                  : getBreakDuration(b.start_time);
+                const exceeded = !b.end_time &&
+                  secs > config.max_break_minutes * 60;
+                const mins     = Math.floor(secs / 60);
+
+                return React.createElement("div", {
+                  key: b.id,
+                  className: exceeded
+                    ? "nx-card-break-exceeded" : "",
+                  style: {
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 12px",
+                    background: exceeded
+                      ? "rgba(248,81,73,0.08)"
+                      : "var(--card2)",
+                    borderRadius: "var(--radius-sm)",
+                    border: `1px solid ${exceeded
+                      ? "rgba(248,81,73,0.30)"
+                      : "var(--border)"}`
+                  }
+                },
+                  React.createElement("div", {
+                    style: {
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8
+                    }
+                  },
+                    React.createElement(NxAvatar, {
+                      user: b.employee, size: "xs"
+                    }),
+                    React.createElement("div", null,
+                      React.createElement("div", {
+                        style: {
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: "var(--text)"
+                        }
+                      }, b.employee?.full_name || "—"),
+                      React.createElement("div", {
+                        style: {
+                          fontSize: 10,
+                          color: "var(--text-muted)"
+                        }
+                      }, fmtTime(b.start_time))
+                    )
+                  ),
+
+                  React.createElement("div", {
+                    style: {
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8
+                    }
+                  },
+                    React.createElement(TimerDisplay, {
+                      seconds: secs,
+                      exceeded: exceeded
+                    }),
+                    !b.end_time &&
+                    React.createElement("button", {
+                      className: "nx-btn nx-btn-sm nx-btn-secondary",
+                      onClick: () => endBreak(b)
+                    }, "End")
+                  )
+                );
+              })
+            )
+      )
+    ),
+
+    /* Dept Filter */
+    depts.length > 0 &&
+    React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        marginTop: 16,
+        flexWrap: "wrap"
+      }
+    },
+      React.createElement("button", {
+        className: `nx-btn nx-btn-sm ${
+          deptFilter === "all"
+            ? "nx-btn-primary" : "nx-btn-secondary"}`,
+        onClick: () => setDeptFilter("all")
+      }, "All Depts"),
+      depts.map(d =>
+        React.createElement("button", {
+          key: d,
+          className: `nx-btn nx-btn-sm ${
+            deptFilter === d
+              ? "nx-btn-primary" : "nx-btn-secondary"}`,
+          onClick: () => setDeptFilter(d)
+        }, d)
+      )
+    )
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   SEC 13 — MY BREAK SCHEDULE
+   ══════════════════════════════════════════════════════════ */
+function MyBreakSchedulePage({ user }) {
+  const [breaks,   setBreaks]   = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [config,   setConfig]   = useState({
+    max_break_minutes: 15,
+    break_count_day:   2
+  });
+  const [now,      setNow]      = useState(new Date());
+  const [activeBreak, setActiveBreak] = useState(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    loadConfig();
+    loadMyBreaks();
+    ChannelMgr.sub(
+      `my_breaks_${user.id}`,
+      "breaks",
+      `employee_id=eq.${user.id}`,
+      loadMyBreaks
+    );
+    return () =>
+      ChannelMgr.unsub(`my_breaks_${user.id}`);
+  }, []);
+
+  async function loadConfig() {
+    try {
+      const { data } = await withRetry(() =>
+        sb.from("system_settings")
+          .select("key, value")
+          .in("key", ["max_break_minutes","break_count_day"])
+      );
+      const map = {};
+      (data || []).forEach(r => { map[r.key] = r.value; });
+      setConfig({
+        max_break_minutes: parseInt(map.max_break_minutes) || 15,
+        break_count_day:   parseInt(map.break_count_day)   || 2
+      });
+    } catch(e) {}
+  }
+
+  async function loadMyBreaks() {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const { data } = await withRetry(() =>
+        sb.from("breaks")
+          .select("*")
+          .eq("employee_id", user.id)
+          .eq("date", today)
+          .order("start_time", { ascending: false })
+      );
+      setBreaks(data || []);
+      const open = (data || []).find(b => !b.end_time);
+      setActiveBreak(open || null);
+    } catch(e) {} finally {
+      setLoading(false);
+    }
+  }
+
+  const todayCount    = breaks.length;
+  const remaining     = config.break_count_day - todayCount;
+  const canTakeBreak  = remaining > 0 && !activeBreak;
+
+  const currentSecs   = activeBreak
+    ? Math.floor(
+        (now - new Date(activeBreak.start_time)) / 1000
+      )
+    : 0;
+
+  const maxSecs       = config.max_break_minutes * 60;
+  const remainingSecs = Math.max(0, maxSecs - currentSecs);
+  const exceeded      = activeBreak && currentSecs > maxSecs;
+
+  if (loading) return React.createElement(LoadingPage,
+    { message: "Loading your breaks..." });
+
+  return React.createElement("div", {
+    className: "nx-page-enter"
+  },
+    React.createElement(PageHeader, {
+      title: "My Break Schedule",
+      icon:  "☕",
+      subtitle: `${config.max_break_minutes} min max × ${config.break_count_day} per day`
+    }),
+
+    /* Break Status Card */
+    React.createElement("div", {
+      className: "nx-card",
+      style: { textAlign: "center", padding: "32px 24px" }
+    },
+      activeBreak
+        ? React.createElement("div", null,
+            React.createElement("div", {
+              style: { fontSize: 48, marginBottom: 12 }
+            }, exceeded ? "⚠️" : "☕"),
+            React.createElement("h2", {
+              style: {
+                fontSize: 18,
+                fontWeight: 800,
+                color: exceeded
+                  ? "var(--danger)" : "var(--warning)",
+                marginBottom: 8
+              }
+            }, exceeded ? "Break Exceeded!" : "On Break"),
+            React.createElement("div", {
+              style: {
+                fontSize: 40,
+                fontWeight: 900,
+                fontVariantNumeric: "tabular-nums",
+                marginBottom: 8
+              }
+            },
+              React.createElement(TimerDisplay, {
+                seconds:  currentSecs,
+                exceeded: exceeded
+              })
+            ),
+            !exceeded &&
+            React.createElement("div", {
+              style: {
+                fontSize: 13,
+                color: "var(--text-muted)",
+                marginBottom: 16
+              }
+            },
+              `${Math.floor(remainingSecs/60)}:${
+                String(remainingSecs%60).padStart(2,"0")
+              } remaining`
+            ),
+            exceeded &&
+            React.createElement("div", {
+              style: {
+                fontSize: 13,
+                color: "var(--danger)",
+                fontWeight: 600,
+                marginBottom: 16,
+                animation:
+                  "criticalBlink 0.8s ease-in-out infinite"
+              }
+            },
+              `⚠️ ${Math.floor(
+                (currentSecs - maxSecs) / 60
+              )} min over limit!`
+            ),
+            React.createElement("div", {
+              className: "nx-progress-bar",
+              style: { maxWidth: 300, margin: "0 auto 16px" }
+            },
+              React.createElement("div", {
+                className: "nx-progress-fill",
+                style: {
+                  width: `${Math.min(
+                    100,
+                    (currentSecs / maxSecs) * 100
+                  )}%`,
+                  background: exceeded
+                    ? "var(--danger)"
+                    : currentSecs > maxSecs * 0.8
+                    ? "var(--warning)"
+                    : "var(--primary)",
+                  transition: "width 1s linear"
+                }
+              })
+            ),
+            React.createElement("p", {
+              style: {
+                fontSize: 12,
+                color: "var(--text-muted)",
+                marginBottom: 16
+              }
+            }, "Your break is being tracked. Please return on time.")
+          )
+        : React.createElement("div", null,
+            React.createElement("div", {
+              style: { fontSize: 48, marginBottom: 12 }
+            },
+              canTakeBreak ? "☕" : "🚫"
+            ),
+            React.createElement("h2", {
+              style: {
+                fontSize: 18,
+                fontWeight: 700,
+                color: "var(--text)",
+                marginBottom: 8
+              }
+            },
+              canTakeBreak
+                ? "Ready for Break"
+                : "No Breaks Remaining"
+            ),
+            React.createElement("p", {
+              style: {
+                fontSize: 13,
+                color: "var(--text-sub)",
+                marginBottom: 16
+              }
+            },
+              canTakeBreak
+                ? `You have ${remaining} break(s) remaining today`
+                : `You've used all ${config.break_count_day} breaks today`
+            )
+          ),
+
+      /* Break Indicators */
+      React.createElement("div", {
+        style: {
+          display: "flex",
+          justifyContent: "center",
+          gap: 8,
+          marginTop: 16
+        }
+      },
+        Array.from({ length: config.break_count_day },
+          (_, i) => {
+            const b = breaks[i];
+            return React.createElement("div", {
+              key: i,
+              style: {
+                width: 40, height: 40,
+                borderRadius: "50%",
+                background: b
+                  ? b.status === "exceeded"
+                    ? "rgba(248,81,73,0.20)"
+                    : "rgba(63,185,80,0.20)"
+                  : "var(--card2)",
+                border: `2px solid ${b
+                  ? b.status === "exceeded"
+                    ? "var(--danger)"
+                    : "var(--success)"
+                  : "var(--border)"}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 16
+              }
+            },
+              b ? (b.status === "exceeded" ? "⚠️" : "✅") : "☕"
+            );
+          }
+        )
+      )
+    ),
+
+    /* Today's Break History */
+    breaks.length > 0 &&
+    React.createElement("div", {
+      className: "nx-card",
+      style: { marginTop: 20 }
+    },
+      React.createElement(SectionHeader, {
+        title: "📋 Today's Breaks"
+      }),
+      React.createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          marginTop: 12
+        }
+      },
+        breaks.map((b, i) =>
+          React.createElement("div", {
+            key: b.id,
+            style: {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 14px",
+              background: "var(--card2)",
+              borderRadius: "var(--radius-sm)",
+              border: `1px solid ${
+                b.status === "exceeded"
+                  ? "rgba(248,81,73,0.25)"
+                  : "var(--border)"}`
+            }
+          },
+            React.createElement("div", {
+              style: {
+                display: "flex",
+                alignItems: "center",
+                gap: 8
+              }
+            },
+              React.createElement("span", {
+                style: {
+                  width: 24, height: 24,
+                  borderRadius: "50%",
+                  background: "var(--card3)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "var(--text-sub)"
+                }
+              }, i + 1),
+              React.createElement("div", null,
+                React.createElement("div", {
+                  style: {
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--text)"
+                  }
+                },
+                  `${fmtTime(b.start_time)} → ${
+                    b.end_time
+                      ? fmtTime(b.end_time) : "Active"}`
+                ),
+                b.granted_by &&
+                React.createElement("div", {
+                  style: {
+                    fontSize: 10,
+                    color: "var(--text-muted)"
+                  }
+                }, "Granted by manager")
+              )
+            ),
+            React.createElement("div", {
+              style: {
+                display: "flex",
+                alignItems: "center",
+                gap: 8
+              }
+            },
+              b.duration_minutes &&
+              React.createElement("span", {
+                style: {
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: b.status === "exceeded"
+                    ? "var(--danger)" : "var(--success)"
+                }
+              }, `${b.duration_minutes} min`),
+              React.createElement("span", {
+                className: `nx-badge ${
+                  b.status === "exceeded"
+                    ? "nx-badge-danger"
+                    : b.end_time
+                    ? "nx-badge-success"
+                    : "nx-badge-warning"}`
+              },
+                b.status === "exceeded" ? "Exceeded" :
+                b.end_time ? "Done" : "Active"
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   SEC 14 — MY REQUESTS
+   ══════════════════════════════════════════════════════════ */
+function MyRequestsPage({ user }) {
+  const [requests,   setRequests]   = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [filter,     setFilter]     = useState("all");
+  const [allReqs,    setAllReqs]    = useState([]);
+  const isMgr = RC.isMgr(user);
+
+  const REQUEST_TYPES = [
+    { id:"leave",      label:"Leave",       icon:"✈️"  },
+    { id:"wfh",        label:"WFH",         icon:"🏠" },
+    { id:"overtime",   label:"Overtime",    icon:"⏰" },
+    { id:"swap",       label:"Shift Swap",  icon:"🔄" },
+    { id:"permission", label:"Permission",  icon:"📝" },
+    { id:"other",      label:"Other",       icon:"📋" },
   ];
 
-  return(
-    <div className="page-enter">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">
-            📓 My Workspace
-          </h1>
-          <p className="page-subtitle">
-            Personal notes and tasks
-          </p>
-        </div>
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={()=>setShowAdd(true)}>
-          + New Note
-        </button>
-      </div>
+  useEffect(() => {
+    loadRequests();
+    ChannelMgr.sub(
+      "requests",
+      "requests",
+      isMgr ? null : `employee_id=eq.${user.id}`,
+      loadRequests
+    );
+    return () => ChannelMgr.unsub("requests");
+  }, []);
 
-      {loading?(
-        <div style={{
-          display:"grid",
-          gridTemplateColumns:
-            "repeat(auto-fill,minmax(240px,1fr))",
-          gap:12
-        }}>
-          {[1,2,3].map(i=>(
-            <div key={i} className="skeleton"
-              style={{height:160}}/>
-          ))}
-        </div>
-      ):notes.length===0?(
-        <EmptyState icon="📓"
-          title="No notes yet"
-          desc="Create your first note"
-          action={
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={()=>setShowAdd(true)}>
-              + New Note
-            </button>
-          }/>
-      ):(
-        <>
-          {pinned.length>0&&(
-            <div style={{marginBottom:20}}>
-              <div style={{
-                fontSize:11,fontWeight:800,
-                color:"var(--text-muted)",
-                marginBottom:10,
-                textTransform:"uppercase",
-                letterSpacing:1.5
-              }}>📌 Pinned</div>
-              <div style={{
-                display:"grid",
-                gridTemplateColumns:
-                  "repeat(auto-fill,"+
-                  "minmax(240px,1fr))",
-                gap:12
-              }}>
-                {pinned.map(n=>(
-                  <NoteCard key={n.id}
-                    note={n}
-                    onEdit={()=>setEditNote(n)}
-                    onDelete={()=>
-                      deleteNote(n.id)}
-                    onPin={load}
-                    emp={emp}/>
-                ))}
-              </div>
-            </div>
-          )}
-          {unpinned.length>0&&(
-            <div>
-              {pinned.length>0&&(
-                <div style={{
-                  fontSize:11,fontWeight:800,
-                  color:"var(--text-muted)",
-                  marginBottom:10,
-                  textTransform:"uppercase",
-                  letterSpacing:1.5
-                }}>📋 Notes</div>
-              )}
-              <div style={{
-                display:"grid",
-                gridTemplateColumns:
-                  "repeat(auto-fill,"+
-                  "minmax(240px,1fr))",
-                gap:12
-              }}>
-                {unpinned.map(n=>(
-                  <NoteCard key={n.id}
-                    note={n}
-                    onEdit={()=>setEditNote(n)}
-                    onDelete={()=>
-                      deleteNote(n.id)}
-                    onPin={load}
-                    emp={emp}/>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+  async function loadRequests() {
+    try {
+      let q = sb.from("requests")
+        .select(`
+          *,
+          employee:employees!requests_employee_id_fkey(
+            id, full_name, role, avatar_url
+          ),
+          reviewer:employees!requests_reviewed_by_fkey(
+            id, full_name
+          )
+        `)
+        .order("created_at", { ascending: false });
 
-      {(showAdd||editNote)&&(
-        <NoteModal emp={emp}
-          note={editNote}
-          colors={NOTE_COLORS}
-          onClose={()=>{
-            setShowAdd(false);
-            setEditNote(null);
-          }}
-          onDone={()=>{
-            setShowAdd(false);
-            setEditNote(null);
-            load();
-          }}/>
-      )}
-    </div>
-  );
-}
+      if (!isMgr) {
+        q = q.eq("employee_id", user.id);
+      }
 
-/* ── NoteCard ── */
-function NoteCard({
-  note:n,onEdit,onDelete,onPin,emp
-}){
-  const {showToast}=useApp();
-  const accent=n.color||"#3B82F6";
-
-  async function togglePin(){
-    try{
-      await withRetry(()=>
-        sb.from("workspace_notes")
-          .update({is_pinned:!n.is_pinned})
-          .eq("id",n.id)
-      );
-      onPin();
-    }catch(err){
-      showToast("Failed: "+err.message,"error");
+      const { data } = await withRetry(() => q);
+      setRequests(data || []);
+      setAllReqs(data || []);
+    } catch(e) {
+      showToast("Failed to load requests", "error");
+    } finally {
+      setLoading(false);
     }
   }
 
-  return(
-    <div className="card fade-in" style={{
-      borderTop:"3px solid "+accent,
-      display:"flex",flexDirection:"column",
-      minHeight:140
-    }}>
-      <div style={{
-        display:"flex",
-        alignItems:"flex-start",
-        justifyContent:"space-between",
-        marginBottom:8,gap:8
-      }}>
-        <div style={{
-          fontSize:13,fontWeight:800,
-          color:"var(--text)",
-          flex:1,lineHeight:1.3
-        }} dir="auto">
-          {n.title||"Untitled"}
-        </div>
-        <div style={{
-          display:"flex",gap:4,flexShrink:0
-        }}>
-          <button
-            className="btn-icon btn-icon-sm"
-            style={{
-              width:26,height:26,fontSize:13,
-              color:n.is_pinned
-                ?"#EAB308":"var(--text-muted)"
-            }}
-            onClick={togglePin}>
-            📌
-          </button>
-          <button
-            className="btn-icon btn-icon-sm"
-            style={{width:26,height:26,fontSize:13}}
-            onClick={onEdit}>
-            ✏️
-          </button>
-          <button
-            className="btn-icon btn-icon-sm"
-            style={{width:26,height:26,fontSize:13}}
-            onClick={onDelete}>
-            🗑️
-          </button>
-        </div>
-      </div>
-      {n.content&&(
-        <div style={{
-          fontSize:12,color:"var(--text-sub)",
-          lineHeight:1.6,flex:1,
-          overflow:"hidden",
-          display:"-webkit-box",
-          WebkitLineClamp:4,
-          WebkitBoxOrient:"vertical"
-        }} dir="auto">
-          {n.content}
-        </div>
-      )}
-      <div style={{
-        fontSize:10,color:"var(--text-muted)",
-        marginTop:10
-      }}>
-        {fmt.ago(n.updated_at)}
-      </div>
-    </div>
+  async function handleReview(reqId, status, note = "") {
+    try {
+      await withRetry(() =>
+        sb.from("requests")
+          .update({
+            status,
+            review_note:  note,
+            reviewed_by:  user.id,
+            reviewed_at:  new Date().toISOString()
+          })
+          .eq("id", reqId)
+      );
+
+      /* إشعار للموظف */
+      const req = requests.find(r => r.id === reqId);
+      if (req) {
+        await sendNotification(
+          req.employee_id,
+          "request_update",
+          `Request ${status}`,
+          `Your ${req.type} request has been ${status}`,
+          "My Requests"
+        );
+      }
+
+      await logAudit(
+        `REQUEST_${status.toUpperCase()}`,
+        `Request #${reqId}`,
+        user.id
+      );
+      showToast(`Request ${status}`, "success");
+    } catch(e) {
+      showToast("Failed", "error");
+    }
+  }
+
+  const filtered = useMemo(() => {
+    if (filter === "all") return requests;
+    return requests.filter(r => r.status === filter);
+  }, [requests, filter]);
+
+  const pendingCount = requests.filter(
+    r => r.status === "pending"
+  ).length;
+
+  if (loading) return React.createElement(LoadingPage,
+    { message: "Loading requests..." });
+
+  return React.createElement("div", {
+    className: "nx-page-enter"
+  },
+    React.createElement(PageHeader, {
+      title: "My Requests",
+      icon:  "📤",
+      subtitle: pendingCount > 0
+        ? `${pendingCount} pending` : undefined,
+      actions: React.createElement("button", {
+        className: "nx-btn nx-btn-primary",
+        onClick: () => setShowCreate(true)
+      }, "+ New Request")
+    }),
+
+    /* Filter Tabs */
+    React.createElement(Tabs, {
+      tabs: [
+        { id:"all",      label:"All" },
+        { id:"pending",  label:`Pending (${pendingCount})` },
+        { id:"approved", label:"Approved" },
+        { id:"rejected", label:"Rejected" },
+      ],
+      active: filter,
+      onChange: setFilter
+    }),
+
+    React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        marginTop: 16
+      }
+    },
+      filtered.length === 0
+        ? React.createElement(EmptyState, {
+            icon: "📤",
+            title: "No requests",
+            desc: "Submit a new request using the button above"
+          })
+        : filtered.map(req => {
+            const rType = REQUEST_TYPES.find(
+              t => t.id === req.type
+            ) || REQUEST_TYPES[5];
+
+            return React.createElement("div", {
+              key: req.id,
+              className: "nx-card nx-card-enter"
+            },
+              React.createElement("div", {
+                style: {
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 12
+                }
+              },
+                React.createElement("div", {
+                  style: {
+                    display: "flex",
+                    gap: 10,
+                    flex: 1
+                  }
+                },
+                  React.createElement("span", {
+                    style: { fontSize: 24, flexShrink: 0 }
+                  }, rType.icon),
+                  React.createElement("div", {
+                    style: { flex: 1 }
+                  },
+                    React.createElement("div", {
+                      style: {
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        flexWrap: "wrap",
+                        marginBottom: 4
+                      }
+                    },
+                      isMgr && req.employee &&
+                      React.createElement("span", {
+                        style: {
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "var(--text)"
+                        }
+                      }, req.employee.full_name),
+                      React.createElement("span", {
+                        className: "nx-badge nx-badge-neutral"
+                      }, rType.label),
+                      React.createElement("span", {
+                        className: `nx-badge ${
+                          req.status === "approved"
+                            ? "nx-badge-success"
+                            : req.status === "rejected"
+                            ? "nx-badge-danger"
+                            : "nx-badge-warning"}`
+                      }, req.status?.toUpperCase())
+                    ),
+                    React.createElement("p", {
+                      style: {
+                        fontSize: 13,
+                        color: "var(--text-sub)",
+                        lineHeight: 1.5
+                      }
+                    }, req.description),
+                    req.date_from &&
+                    React.createElement("div", {
+                      style: {
+                        fontSize: 11,
+                        color: "var(--text-muted)",
+                        marginTop: 4
+                      }
+                    },
+                      `📅 ${fmtDate(req.date_from)}${
+                        req.date_to &&
+                        req.date_to !== req.date_from
+                          ? ` → ${fmtDate(req.date_to)}`
+                          : ""}`
+                    ),
+                    req.review_note &&
+                    React.createElement("div", {
+                      style: {
+                        fontSize: 11,
+                        color: req.status === "approved"
+                          ? "var(--success)" : "var(--danger)",
+                        marginTop: 4,
+                        fontStyle: "italic"
+                      }
+                    }, `💬 ${req.review_note}`)
+                  )
+                ),
+                React.createElement("div", {
+                  style: {
+                    fontSize: 11,
+                    color: "var(--text-muted)",
+                    flexShrink: 0
+                  }
+                }, fmtRelative(req.created_at))
+              ),
+
+              /* Manager Actions */
+              isMgr && req.status === "pending" &&
+              React.createElement("div", {
+                style: {
+                  display: "flex",
+                  gap: 8,
+                  marginTop: 12,
+                  paddingTop: 12,
+                  borderTop: "1px solid var(--border)"
+                }
+              },
+                React.createElement("button", {
+                  className: "nx-btn nx-btn-success nx-btn-sm",
+                  onClick: () => handleReview(
+                    req.id, "approved"
+                  )
+                }, "✅ Approve"),
+                React.createElement("button", {
+                  className: "nx-btn nx-btn-danger nx-btn-sm",
+                  onClick: () => handleReview(
+                    req.id, "rejected"
+                  )
+                }, "❌ Reject")
+              )
+            );
+          })
+    ),
+
+    /* Create Request Modal */
+    showCreate && React.createElement(CreateRequestModal, {
+      user,
+      requestTypes: REQUEST_TYPES,
+      onClose: () => setShowCreate(false),
+      onCreated: () => {
+        setShowCreate(false);
+        loadRequests();
+        showToast("Request submitted!", "success");
+      }
+    })
   );
 }
 
-/* ── NoteModal ── */
-function NoteModal({
-  emp,note,colors,onClose,onDone
-}){
-  const {showToast}=useApp();
-  const [form,setForm]=useState({
-    title:note?.title||"",
-    content:note?.content||"",
-    color:note?.color||colors[0]
+/* Create Request Modal */
+function CreateRequestModal({
+  user, requestTypes, onClose, onCreated
+}) {
+  const [form, setForm] = useState({
+    type:        "leave",
+    description: "",
+    date_from:   new Date().toISOString().split("T")[0],
+    date_to:     new Date().toISOString().split("T")[0],
+    priority:    "medium"
   });
-  const [loading,setLoading]=useState(false);
-  function upd(k,v){setForm(f=>({...f,[k]:v}));}
+  const [saving, setSaving] = useState(false);
 
-  async function submit(e){
-    e.preventDefault();
-    setLoading(true);
-    try{
-      if(note){
-        await withRetry(()=>
-          sb.from("workspace_notes").update({
-            title:form.title||null,
-            content:form.content,
-            color:form.color,
-            updated_at:new Date().toISOString()
-          }).eq("id",note.id)
-        );
-      }else{
-        await withRetry(()=>
-          sb.from("workspace_notes").insert({
-            employee_id:emp.id,
-            title:form.title||null,
-            content:form.content,
-            color:form.color,
-            is_pinned:false
-          })
+  async function handleSave() {
+    if (!form.description.trim()) {
+      showToast("Description required", "warning");
+      return;
+    }
+    setSaving(true);
+    try {
+      await withRetry(() =>
+        sb.from("requests").insert({
+          employee_id:  user.id,
+          type:         form.type,
+          description:  form.description.trim(),
+          date_from:    form.date_from || null,
+          date_to:      form.date_to   || null,
+          priority:     form.priority,
+          status:       "pending",
+          created_at:   new Date().toISOString()
+        })
+      );
+
+      /* إشعار للمديرين */
+      const { data: mgrs } = await withRetry(() =>
+        sb.from("employees")
+          .select("id")
+          .in("role", ["Team Leader","Shift Leader","Owner"])
+          .eq("is_active", true)
+      );
+
+      for (const mgr of (mgrs || [])) {
+        await sendNotification(
+          mgr.id,
+          "new_request",
+          "New Request",
+          `${user.full_name} submitted a ${form.type} request`,
+          "My Requests"
         );
       }
-      showToast(
-        note
-          ?"Note updated ✅"
-          :"Note created ✅",
-        "success"
-      );
-      onDone();
-    }catch(err){
-      showToast("Failed: "+err.message,"error");
-    }finally{setLoading(false);}
+
+      await logAudit("SUBMIT_REQUEST",
+        form.type, user.id);
+      onCreated();
+    } catch(e) {
+      showToast("Failed: " + e.message, "error");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  return(
-    <Portal>
-      <div className="modal-overlay"
-        onClick={e=>
-          e.target===e.currentTarget&&
-          onClose()}>
-        <div className="modal">
-          <div className="modal-header">
-            <h3 className="modal-title">
-              {note?"✏️ Edit Note":"📝 New Note"}
-            </h3>
-            <button
-              className="btn-icon btn-icon-sm"
-              onClick={onClose}>×</button>
-          </div>
-          <form onSubmit={submit}>
-            <div className="input-group"
-              style={{marginBottom:14}}>
-              <label className="input-label">
-                Title
-              </label>
-              <input type="text"
-                className="input"
-                value={form.title}
-                onChange={e=>
-                  upd("title",e.target.value)}
-                placeholder="Note title..."
-                dir="auto"/>
-            </div>
-            <div className="input-group"
-              style={{marginBottom:14}}>
-              <label className="input-label">
-                Content
-              </label>
-              <textarea className="input"
-                value={form.content}
-                onChange={e=>
-                  upd("content",e.target.value)}
-                placeholder="Write your note..."
-                rows={6} dir="auto"/>
-            </div>
-            <div className="input-group"
-              style={{marginBottom:20}}>
-              <label className="input-label">
-                Color
-              </label>
-              <div style={{
-                display:"flex",gap:8,
-                flexWrap:"wrap",marginTop:4
-              }}>
-                {colors.map(c=>(
-                  <button key={c} type="button"
-                    onClick={()=>upd("color",c)}
-                    style={{
-                      width:28,height:28,
-                      borderRadius:8,
-                      background:c,
-                      border:form.color===c
-                        ?"3px solid var(--text)"
-                        :"2px solid transparent",
-                      cursor:"pointer",
-                      transition:
-                        "transform 0.15s",
-                      transform:form.color===c
-                        ?"scale(1.2)":"scale(1)"
-                    }}/>
-                ))}
-              </div>
-            </div>
-            <div className="modal-footer" style={{
-              paddingTop:0,borderTop:"none",
-              marginTop:0
-            }}>
-              <button type="button"
-                className="btn btn-ghost"
-                style={{flex:1}}
-                onClick={onClose}>
-                Cancel
-              </button>
-              <button type="submit"
-                className="btn btn-primary"
-                style={{flex:1}}
-                disabled={loading}>
-                {loading
-                  ?<><Spinner size="sm" white/>
-                     {" "}Saving...</>
-                  :note?"✅ Update":"📝 Create"
+  return React.createElement("div", {
+    className: "nx-modal-backdrop",
+    onClick: onClose
+  },
+    React.createElement("div", {
+      className: "nx-modal",
+      onClick: e => e.stopPropagation()
+    },
+      React.createElement("div", {
+        className: "nx-modal-header"
+      },
+        React.createElement("span", {
+          className: "nx-modal-title"
+        }, "📤 New Request"),
+        React.createElement("button", {
+          className: "nx-btn nx-btn-ghost nx-btn-icon",
+          onClick: onClose
+        }, "✕")
+      ),
+
+      React.createElement("div", {
+        className: "nx-modal-body"
+      },
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            flexDirection: "column",
+            gap: 14
+          }
+        },
+          /* Type */
+          React.createElement("div", {
+            className: "nx-form-group"
+          },
+            React.createElement("label", {
+              className: "nx-label"
+            }, "Request Type"),
+            React.createElement("div", {
+              style: {
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 6
+              }
+            },
+              requestTypes.map(t =>
+                React.createElement("button", {
+                  key: t.id,
+                  className: `nx-btn nx-btn-sm ${
+                    form.type === t.id
+                      ? "nx-btn-primary"
+                      : "nx-btn-secondary"}`,
+                  onClick: () => setForm(p => ({
+                    ...p, type: t.id
+                  }))
+                }, `${t.icon} ${t.label}`)
+              )
+            )
+          ),
+
+          /* Description */
+          React.createElement("div", {
+            className: "nx-form-group"
+          },
+            React.createElement("label", {
+              className: "nx-label nx-label-required"
+            }, "Description"),
+            React.createElement("textarea", {
+              className: "nx-textarea",
+              placeholder: "Describe your request...",
+              value: form.description,
+              rows: 4,
+              onChange: e => setForm(p => ({
+                ...p, description: e.target.value
+              }))
+            })
+          ),
+
+          /* Dates */
+          React.createElement("div", {
+            style: {
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10
+            }
+          },
+            React.createElement("div", {
+              className: "nx-form-group"
+            },
+              React.createElement("label", {
+                className: "nx-label"
+              }, "From Date"),
+              React.createElement("input", {
+                type: "date",
+                className: "nx-input",
+                value: form.date_from,
+                onChange: e => setForm(p => ({
+                  ...p, date_from: e.target.value
+                }))
+              })
+            ),
+            React.createElement("div", {
+              className: "nx-form-group"
+            },
+              React.createElement("label", {
+                className: "nx-label"
+              }, "To Date"),
+              React.createElement("input", {
+                type: "date",
+                className: "nx-input",
+                value: form.date_to,
+                onChange: e => setForm(p => ({
+                  ...p, date_to: e.target.value
+                }))
+              })
+            )
+          ),
+
+          /* Priority */
+          React.createElement("div", {
+            className: "nx-form-group"
+          },
+            React.createElement("label", {
+              className: "nx-label"
+            }, "Priority"),
+            React.createElement("div", {
+              style: { display: "flex", gap: 8 }
+            },
+              ["low","medium","high"].map(p =>
+                React.createElement("button", {
+                  key: p,
+                  className: `nx-btn nx-btn-sm ${
+                    form.priority === p
+                      ? "nx-btn-primary"
+                      : "nx-btn-secondary"}`,
+                  onClick: () => setForm(prev => ({
+                    ...prev, priority: p
+                  }))
+                },
+                  p === "low"    ? "🟢 Low" :
+                  p === "medium" ? "🟡 Medium" :
+                  "🔴 High"
+                )
+              )
+            )
+          )
+        )
+      ),
+
+      React.createElement("div", {
+        className: "nx-modal-footer"
+      },
+        React.createElement("button", {
+          className: "nx-btn nx-btn-secondary",
+          onClick: onClose
+        }, "Cancel"),
+        React.createElement("button", {
+          className: "nx-btn nx-btn-primary",
+          onClick: handleSave,
+          disabled: saving
+        }, saving
+          ? React.createElement(Spinner)
+          : "Submit Request")
+      )
+    )
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   SEC 15 — SHIFT HANDOVER
+   ══════════════════════════════════════════════════════════ */
+function ShiftHandoverPage({ user }) {
+  const [handovers,   setHandovers]   = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [showCreate,  setShowCreate]  = useState(false);
+  const [selected,    setSelected]    = useState(null);
+  const [filter,      setFilter]      = useState("all");
+
+  useEffect(() => {
+    loadHandovers();
+    ChannelMgr.sub(
+      "handovers",
+      "shift_handovers",
+      null,
+      loadHandovers
+    );
+    return () => ChannelMgr.unsub("handovers");
+  }, []);
+
+  async function loadHandovers() {
+    try {
+      const { data } = await withRetry(() =>
+        sb.from("shift_handovers")
+          .select(`
+            *,
+            from_emp:employees!shift_handovers_from_id_fkey(
+              id, full_name, role, avatar_url
+            ),
+            to_emp:employees!shift_handovers_to_id_fkey(
+              id, full_name, role, avatar_url
+            )
+          `)
+          .order("created_at", { ascending: false })
+          .limit(50)
+      );
+      setHandovers(data || []);
+    } catch(e) {
+      showToast("Failed to load handovers", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAcknowledge(id) {
+    try {
+      await withRetry(() =>
+        sb.from("shift_handovers")
+          .update({
+            acknowledged:    true,
+            acknowledged_by: user.id,
+            acknowledged_at: new Date().toISOString()
+          })
+          .eq("id", id)
+      );
+      await logAudit("ACK_HANDOVER",
+        `Handover #${id}`, user.id);
+      showToast("✅ Handover acknowledged", "success");
+    } catch(e) {
+      showToast("Failed", "error");
+    }
+  }
+
+  const filtered = useMemo(() => {
+    if (filter === "all") return handovers;
+    if (filter === "mine") {
+      return handovers.filter(h =>
+        h.from_id === user.id || h.to_id === user.id
+      );
+    }
+    if (filter === "pending") {
+      return handovers.filter(h => !h.acknowledged);
+    }
+    return handovers;
+  }, [handovers, filter, user.id]);
+
+  if (loading) return React.createElement(LoadingPage,
+    { message: "Loading handovers..." });
+
+  return React.createElement("div", {
+    className: "nx-page-enter"
+  },
+    React.createElement(PageHeader, {
+      title: "Shift Handover",
+      icon:  "🔄",
+      subtitle: `${handovers.filter(h => !h.acknowledged).length} pending acknowledgment`,
+      actions: React.createElement("button", {
+        className: "nx-btn nx-btn-primary",
+        onClick: () => setShowCreate(true)
+      }, "+ New Handover")
+    }),
+
+    /* Filter */
+    React.createElement(Tabs, {
+      tabs: [
+        { id:"all",     label:"All" },
+        { id:"mine",    label:"Mine" },
+        { id:"pending", label:"Pending" },
+      ],
+      active: filter,
+      onChange: setFilter
+    }),
+
+    React.createElement("div", {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        marginTop: 16
+      }
+    },
+      filtered.length === 0
+        ? React.createElement(EmptyState, {
+            icon: "🔄",
+            title: "No handovers",
+            desc: "Create a new shift handover above"
+          })
+        : filtered.map(h =>
+            React.createElement("div", {
+              key: h.id,
+              className: "nx-card nx-card-enter",
+              style: {
+                borderLeft: `3px solid ${
+                  h.acknowledged
+                    ? "var(--success)"
+                    : "var(--warning)"}`
+              }
+            },
+              /* Header */
+              React.createElement("div", {
+                style: {
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  marginBottom: 12
                 }
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Portal>
+              },
+                React.createElement("div", {
+                  style: {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap"
+                  }
+                },
+                  React.createElement(NxAvatar, {
+                    user: h.from_emp, size: "xs"
+                  }),
+                  React.createElement("span", {
+                    style: {
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "var(--text)"
+                    }
+                  }, h.from_emp?.full_name || "—"),
+                  React.createElement("span", {
+                    style: {
+                      fontSize: 16,
+                      color: "var(--text-muted)"
+                    }
+                  }, "→"),
+                  React.createElement(NxAvatar, {
+                    user: h.to_emp, size: "xs"
+                  }),
+                  React.createElement("span", {
+                    style: {
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: "var(--text)"
+                    }
+                  }, h.to_emp?.full_name || "—")
+                ),
+                React.createElement("div", {
+                  style: {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8
+                  }
+                },
+                  React.createElement("span", {
+                    className: `nx-badge ${
+                      h.acknowledged
+                        ? "nx-badge-success"
+                        : "nx-badge-warning"}`
+                  },
+                    h.acknowledged ? "✅ Acked" : "⏳ Pending"
+                  ),
+                  React.createElement("span", {
+                    style: {
+                      fontSize: 11,
+                      color: "var(--text-muted)"
+                    }
+                  }, fmtRelative(h.created_at))
+                )
+              ),
+
+              /* Content Preview */
+              React.createElement("p", {
+                style: {
+                  fontSize: 13,
+                  color: "var(--text-sub)",
+                  lineHeight: 1.6,
+                  marginBottom: 8,
+                  overflow: "hidden",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical"
+                }
+              }, h.notes || "No notes"),
+
+              /* Priority */
+              h.priority &&
+              React.createElement(PriorityBadge, {
+                priority: h.priority
+              }),
+
+              /* Actions */
+              React.createElement("div", {
+                style: {
+                  display: "flex",
+                  gap: 8,
+                  marginTop: 12,
+                  paddingTop: 12,
+                  borderTop: "1px solid var(--border)"
+                }
+              },
+                React.createElement("button", {
+                  className: "nx-btn nx-btn-secondary nx-btn-sm",
+                  onClick: () => setSelected(h)
+                }, "👁️ View Details"),
+                !h.acknowledged &&
+                h.to_id === user.id &&
+                React.createElement("button", {
+                  className: "nx-btn nx-btn-success nx-btn-sm",
+                  onClick: () => handleAcknowledge(h.id)
+                }, "✅ Acknowledge")
+              )
+            )
+          )
+    ),
+
+    /* Create Handover Modal */
+    showCreate && React.createElement(CreateHandoverModal, {
+      user,
+      onClose: () => setShowCreate(false),
+      onCreated: () => {
+        setShowCreate(false);
+        loadHandovers();
+        showToast("Handover created!", "success");
+      }
+    }),
+
+    /* View Handover Modal */
+    selected && React.createElement(ViewHandoverModal, {
+      handover: selected,
+      user,
+      onClose: () => setSelected(null),
+      onAck: () => {
+        handleAcknowledge(selected.id);
+        setSelected(null);
+      }
+    })
+  );
+}
+
+/* Create Handover Modal */
+function CreateHandoverModal({ user, onClose, onCreated }) {
+  const [employees, setEmployees] = useState([]);
+  const [form, setForm] = useState({
+    to_id:    "",
+    shift:    "morning",
+    priority: "medium",
+    notes:    "",
+    pending_cases: "",
+    important_info: ""
+  });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    withRetry(() =>
+      sb.from("employees")
+        .select("id, full_name, role")
+        .eq("is_active", true)
+        .neq("id", user.id)
+        .order("full_name")
+    ).then(({ data }) => setEmployees(data || []));
+  }, []);
+
+  async function handleSave() {
+    if (!form.to_id || !form.notes.trim()) {
+      showToast("Recipient and notes required", "warning");
+      return;
+    }
+    setSaving(true);
+    try {
+      await withRetry(() =>
+        sb.from("shift_handovers").insert({
+          from_id:        user.id,
+          to_id:          form.to_id,
+          shift:          form.shift,
+          priority:       form.priority,
+          notes:          form.notes.trim(),
+          pending_cases:  form.pending_cases.trim() || null,
+          important_info: form.important_info.trim() || null,
+          acknowledged:   false,
+          created_at:     new Date().toISOString()
+        })
+      );
+
+      await sendNotification(
+        form.to_id,
+        "handover",
+        "Shift Handover",
+        `${user.full_name} sent you a shift handover`,
+        "Shift Handover"
+      );
+
+      await logAudit("CREATE_HANDOVER",
+        `To: ${form.to_id}`, user.id);
+      onCreated();
+    } catch(e) {
+      showToast("Failed: " + e.message, "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return React.createElement("div", {
+    className: "nx-modal-backdrop",
+    onClick: onClose
+  },
+    React.createElement("div", {
+      className: "nx-modal nx-modal-lg",
+      onClick: e => e.stopPropagation()
+    },
+      React.createElement("div", {
+        className: "nx-modal-header"
+      },
+        React.createElement("span", {
+          className: "nx-modal-title"
+        }, "🔄 New Shift Handover"),
+        React.createElement("button", {
+          className: "nx-btn nx-btn-ghost nx-btn-icon",
+          onClick: onClose
+        }, "✕")
+      ),
+
+      React.createElement("div", {
+        className: "nx-modal-body"
+      },
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            flexDirection: "column",
+            gap: 14
+          }
+        },
+          /* To */
+          React.createElement("div", {
+            className: "nx-form-group"
+          },
+            React.createElement("label", {
+              className: "nx-label nx-label-required"
+            }, "Hand Over To"),
+            React.createElement("select", {
+              className: "nx-select",
+              value: form.to_id,
+              onChange: e => setForm(p => ({
+                ...p, to_id: e.target.value
+              }))
+            },
+              React.createElement("option", { value: "" },
+                "Select employee..."),
+              employees.map(e =>
+                React.createElement("option", {
+                  key: e.id, value: e.id
+                }, `${RC.icon[e.role]} ${e.full_name}`)
+              )
+            )
+          ),
+
+          /* Shift + Priority */
+          React.createElement("div", {
+            style: {
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10
+            }
+          },
+            React.createElement("div", {
+              className: "nx-form-group"
+            },
+              React.createElement("label", {
+                className: "nx-label"
+              }, "Shift"),
+              React.createElement("select", {
+                className: "nx-select",
+                value: form.shift,
+                onChange: e => setForm(p => ({
+                  ...p, shift: e.target.value
+                }))
+              },
+                ["morning","evening","night"].map(s =>
+                  React.createElement("option", {
+                    key: s, value: s
+                  },
+                    s.charAt(0).toUpperCase() + s.slice(1)
+                  )
+                )
+              )
+            ),
+            React.createElement("div", {
+              className: "nx-form-group"
+            },
+              React.createElement("label", {
+                className: "nx-label"
+              }, "Priority"),
+              React.createElement("select", {
+                className: "nx-select",
+                value: form.priority,
+                onChange: e => setForm(p => ({
+                  ...p, priority: e.target.value
+                }))
+              },
+                ["low","medium","high","critical"].map(p =>
+                  React.createElement("option", {
+                    key: p, value: p
+                  },
+                    p.charAt(0).toUpperCase() + p.slice(1)
+                  )
+                )
+              )
+            )
+          ),
+
+          /* Notes */
+          React.createElement("div", {
+            className: "nx-form-group"
+          },
+            React.createElement("label", {
+              className: "nx-label nx-label-required"
+            }, "Handover Notes"),
+            React.createElement("textarea", {
+              className: "nx-textarea",
+              placeholder: "General shift notes...",
+              value: form.notes,
+              rows: 4,
+              onChange: e => setForm(p => ({
+                ...p, notes: e.target.value
+              }))
+            })
+          ),
+
+          /* Pending Cases */
+          React.createElement("div", {
+            className: "nx-form-group"
+          },
+            React.createElement("label", {
+              className: "nx-label"
+            }, "Pending Cases"),
+            React.createElement("textarea", {
+              className: "nx-textarea",
+              placeholder: "List any pending cases...",
+              value: form.pending_cases,
+              rows: 3,
+              onChange: e => setForm(p => ({
+                ...p, pending_cases: e.target.value
+              }))
+            })
+          ),
+
+          /* Important Info */
+          React.createElement("div", {
+            className: "nx-form-group"
+          },
+            React.createElement("label", {
+              className: "nx-label"
+            }, "Important Information"),
+            React.createElement("textarea", {
+              className: "nx-textarea",
+              placeholder: "Anything important to note...",
+              value: form.important_info,
+              rows: 3,
+              onChange: e => setForm(p => ({
+                ...p, important_info: e.target.value
+              }))
+            })
+          )
+        )
+      ),
+
+      React.createElement("div", {
+        className: "nx-modal-footer"
+      },
+        React.createElement("button", {
+          className: "nx-btn nx-btn-secondary",
+          onClick: onClose
+        }, "Cancel"),
+        React.createElement("button", {
+          className: "nx-btn nx-btn-primary",
+          onClick: handleSave,
+          disabled: saving
+        }, saving
+          ? React.createElement(Spinner)
+          : "🔄 Submit Handover")
+      )
+    )
+  );
+}
+
+/* View Handover Modal */
+function ViewHandoverModal({ handover: h, user, onClose, onAck }) {
+  return React.createElement("div", {
+    className: "nx-modal-backdrop",
+    onClick: onClose
+  },
+    React.createElement("div", {
+      className: "nx-modal nx-modal-lg",
+      onClick: e => e.stopPropagation()
+    },
+      React.createElement("div", {
+        className: "nx-modal-header"
+      },
+        React.createElement("span", {
+          className: "nx-modal-title"
+        }, "🔄 Shift Handover Details"),
+        React.createElement("button", {
+          className: "nx-btn nx-btn-ghost nx-btn-icon",
+          onClick: onClose
+        }, "✕")
+      ),
+
+      React.createElement("div", {
+        className: "nx-modal-body"
+      },
+        /* From → To */
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+            marginBottom: 20,
+            padding: "16px",
+            background: "var(--card2)",
+            borderRadius: "var(--radius)"
+          }
+        },
+          React.createElement("div", {
+            style: { textAlign: "center" }
+          },
+            React.createElement(NxAvatar, {
+              user: h.from_emp, size: "md"
+            }),
+            React.createElement("div", {
+              style: {
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--text)",
+                marginTop: 6
+              }
+            }, h.from_emp?.full_name || "—"),
+            React.createElement("div", {
+              style: {
+                fontSize: 10,
+                color: "var(--text-muted)"
+              }
+            }, "FROM")
+          ),
+          React.createElement("div", {
+            style: { fontSize: 24 }
+          }, "→"),
+          React.createElement("div", {
+            style: { textAlign: "center" }
+          },
+            React.createElement(NxAvatar, {
+              user: h.to_emp, size: "md"
+            }),
+            React.createElement("div", {
+              style: {
+                fontSize: 12,
+                fontWeight: 600,
+                color: "var(--text)",
+                marginTop: 6
+              }
+            }, h.to_emp?.full_name || "—"),
+            React.createElement("div", {
+              style: {
+                fontSize: 10,
+                color: "var(--text-muted)"
+              }
+            }, "TO")
+          )
+        ),
+
+        /* Meta */
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            marginBottom: 16
+          }
+        },
+          React.createElement("span", {
+            className: "nx-badge nx-badge-neutral"
+          }, `🌅 ${h.shift}`),
+          React.createElement(PriorityBadge, {
+            priority: h.priority
+          }),
+          React.createElement("span", {
+            className: `nx-badge ${
+              h.acknowledged
+                ? "nx-badge-success"
+                : "nx-badge-warning"}`
+          },
+            h.acknowledged ? "✅ Acknowledged" : "⏳ Pending"
+          ),
+          React.createElement("span", {
+            style: {
+              fontSize: 11,
+              color: "var(--text-muted)"
+            }
+          }, fmtDateTime(h.created_at))
+        ),
+
+        /* Sections */
+        [
+          { label:"📋 Notes",              value: h.notes },
+          { label:"🗂️ Pending Cases",      value: h.pending_cases },
+          { label:"⚠️ Important Info",     value: h.important_info },
+        ].filter(s => s.value).map(s =>
+          React.createElement("div", {
+            key: s.label,
+            style: { marginBottom: 16 }
+          },
+            React.createElement("label", {
+              className: "nx-label",
+              style: { marginBottom: 6, display: "block" }
+            }, s.label),
+            React.createElement("div", {
+              style: {
+                padding: "12px 14px",
+                background: "var(--card2)",
+                borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--border)",
+                fontSize: 13,
+                color: "var(--text-sub)",
+                lineHeight: 1.6,
+                whiteSpace: "pre-wrap"
+              }
+            }, s.value)
+          )
+        )
+      ),
+
+      React.createElement("div", {
+        className: "nx-modal-footer"
+      },
+        !h.acknowledged && h.to_id === user.id &&
+        React.createElement("button", {
+          className: "nx-btn nx-btn-success",
+          onClick: onAck
+        }, "✅ Acknowledge"),
+        React.createElement("button", {
+          className: "nx-btn nx-btn-secondary",
+          onClick: onClose
+        }, "Close")
+      )
+    )
   );
 }
