@@ -1,0 +1,1391 @@
+/* ============================================================
+   NEXUS-CSOPS v4.2.0
+   style1.css — Part A
+   CSS Base + Themes 1-9 (Original)
+   Owner: Mohammed Nasser Althurwi
+   ============================================================ */
+
+/* ══════════════════════════════════════════════════════════
+   RESET & BASE
+   ══════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: 'Space Grotesk', -apple-system,
+               BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  transition: background-image 0.5s ease;
+}
+
+input, textarea, select, button {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+select option {
+  background: var(--card);
+  color: var(--text);
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ══════════════════════════════════════════════════════════
+   SCROLLBAR
+   ══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+  opacity: 0.6;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CSS LAYOUT VARIABLES
+   ══════════════════════════════════════════════════════════ */
+:root {
+  --sidebar-w: 252px;
+  --header-h: 60px;
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --transition: all 0.2s ease;
+  --transition-slow: all 0.4s ease;
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 1: DARK (Default)
+   ══════════════════════════════════════════════════════════ */
+:root, [data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg:            #0D1117;
+  --bg2:           #161B22;
+  --surface:       #1E232B;
+  --card:          #161B22;
+  --card2:         #21262D;
+  --card3:         #30363D;
+
+  --glass:         rgba(22, 27, 34, 0.88);
+  --glass2:        rgba(33, 38, 45, 0.70);
+  --glass-border:  rgba(240, 246, 252, 0.08);
+
+  --primary:       #58A6FF;
+  --primary-dark:  #3182CE;
+  --primary-rgb:   88, 166, 255;
+  --primary-glow:  rgba(88, 166, 255, 0.15);
+
+  --accent:        #BC8CF2;
+  --success:       #3FB950;
+  --warning:       #D29922;
+  --danger:        #F85149;
+  --info:          #58A6FF;
+
+  --text:          #F0F6FC;
+  --text-sub:      #8B949E;
+  --text-muted:    #6E7681;
+
+  --border:        rgba(240, 246, 252, 0.10);
+  --border-bright: rgba(240, 246, 252, 0.18);
+
+  --shadow:        0 8px 32px rgba(0, 0, 0, 0.25);
+  --shadow-lg:     0 16px 48px rgba(0, 0, 0, 0.40);
+  --shadow-glow:   0 0 24px rgba(88, 166, 255, 0.15);
+
+  --gradient-primary: linear-gradient(135deg, #58A6FF, #BC8CF2);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(33,38,45,0.95),
+                        rgba(22,27,34,0.80));
+
+  --bg-image: none;
+  --overlay:  none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 2: LIGHT
+   ══════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg:            #F4F1EA;
+  --bg2:           #EBE7DF;
+  --surface:       #FFFFFF;
+  --card:          #FFFFFF;
+  --card2:         #F9F8F6;
+  --card3:         #F0EBE1;
+
+  --glass:         rgba(255, 255, 255, 0.92);
+  --glass2:        rgba(249, 248, 246, 0.80);
+  --glass-border:  rgba(31, 35, 40, 0.08);
+
+  --primary:       #0969DA;
+  --primary-dark:  #0550AE;
+  --primary-rgb:   9, 105, 218;
+  --primary-glow:  rgba(9, 105, 218, 0.10);
+
+  --accent:        #8250DF;
+  --success:       #1A7F37;
+  --warning:       #9A6700;
+  --danger:        #CF222E;
+  --info:          #0969DA;
+
+  --text:          #1F2328;
+  --text-sub:      #57606A;
+  --text-muted:    #8C959F;
+
+  --border:        rgba(31, 35, 40, 0.08);
+  --border-bright: rgba(31, 35, 40, 0.16);
+
+  --shadow:        0 8px 24px rgba(31, 35, 40, 0.06);
+  --shadow-lg:     0 16px 40px rgba(31, 35, 40, 0.10);
+  --shadow-glow:   0 0 20px rgba(9, 105, 218, 0.12);
+
+  --gradient-primary: linear-gradient(135deg, #0969DA, #8250DF);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(255,255,255,1.0),
+                        rgba(249,248,246,0.90));
+
+  --bg-image: none;
+  --overlay:  none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 3: OCEAN
+   ══════════════════════════════════════════════════════════ */
+[data-theme="ocean"] {
+  color-scheme: dark;
+
+  --bg:            #0A142F;
+  --bg2:           #0E1D40;
+  --surface:       #11224D;
+  --card:          #11224D;
+  --card2:         #162B5C;
+  --card3:         #1C3672;
+
+  --glass:         rgba(17, 34, 77, 0.88);
+  --glass2:        rgba(22, 43, 92, 0.70);
+  --glass-border:  rgba(0, 229, 255, 0.10);
+
+  --primary:       #00E5FF;
+  --primary-dark:  #00B4D8;
+  --primary-rgb:   0, 229, 255;
+  --primary-glow:  rgba(0, 229, 255, 0.18);
+
+  --accent:        #3B82F6;
+  --success:       #10B981;
+  --warning:       #F59E0B;
+  --danger:        #EF4444;
+  --info:          #00E5FF;
+
+  --text:          #F8FAFC;
+  --text-sub:      #94A3B8;
+  --text-muted:    #64748B;
+
+  --border:        rgba(0, 229, 255, 0.12);
+  --border-bright: rgba(0, 229, 255, 0.25);
+
+  --shadow:        0 12px 40px rgba(0, 0, 0, 0.35);
+  --shadow-lg:     0 20px 60px rgba(0, 0, 0, 0.55);
+  --shadow-glow:   0 0 35px rgba(0, 229, 255, 0.18);
+
+  --gradient-primary: linear-gradient(135deg, #00E5FF, #3B82F6);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(22,43,92,0.95),
+                        rgba(17,34,77,0.80));
+
+  --bg-image: none;
+  --overlay:  none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 4: MIDNIGHT
+   ══════════════════════════════════════════════════════════ */
+[data-theme="midnight"] {
+  color-scheme: dark;
+
+  --bg:            #0F0C1B;
+  --bg2:           #151124;
+  --surface:       #1A152E;
+  --card:          #1A152E;
+  --card2:         #231C3D;
+  --card3:         #2D244D;
+
+  --glass:         rgba(26, 21, 46, 0.90);
+  --glass2:        rgba(35, 28, 61, 0.72);
+  --glass-border:  rgba(188, 140, 242, 0.10);
+
+  --primary:       #BC8CF2;
+  --primary-dark:  #9F67DF;
+  --primary-rgb:   188, 140, 242;
+  --primary-glow:  rgba(188, 140, 242, 0.18);
+
+  --accent:        #58A6FF;
+  --success:       #3FB950;
+  --warning:       #D29922;
+  --danger:        #F85149;
+  --info:          #58A6FF;
+
+  --text:          #F5F3FF;
+  --text-sub:      #C4B5FD;
+  --text-muted:    #8B5CF6;
+
+  --border:        rgba(188, 140, 242, 0.12);
+  --border-bright: rgba(188, 140, 242, 0.25);
+
+  --shadow:        0 12px 40px rgba(0, 0, 0, 0.45);
+  --shadow-lg:     0 20px 60px rgba(0, 0, 0, 0.65);
+  --shadow-glow:   0 0 35px rgba(188, 140, 242, 0.18);
+
+  --gradient-primary: linear-gradient(135deg, #BC8CF2, #58A6FF);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(35,28,61,0.95),
+                        rgba(26,21,46,0.80));
+
+  --bg-image: none;
+  --overlay:  none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 5: GRAND LINE ⚓
+   ══════════════════════════════════════════════════════════ */
+[data-theme="grandline"] {
+  color-scheme: dark;
+
+  --bg:            #16120E;
+  --bg2:           #1C1712;
+  --surface:       #241D17;
+  --card:          #241D17;
+  --card2:         #2E251E;
+  --card3:         #3B2F26;
+
+  --glass:         rgba(36, 29, 23, 0.90);
+  --glass2:        rgba(46, 37, 30, 0.72);
+  --glass-border:  rgba(217, 119, 6, 0.12);
+
+  --primary:       #D97706;
+  --primary-dark:  #B45309;
+  --primary-rgb:   217, 119, 6;
+  --primary-glow:  rgba(217, 119, 6, 0.18);
+
+  --accent:        #F59E0B;
+  --success:       #10B981;
+  --warning:       #D97706;
+  --danger:        #EF4444;
+  --info:          #F59E0B;
+
+  --text:          #FEF3C7;
+  --text-sub:      #FCD34D;
+  --text-muted:    #B48344;
+
+  --border:        rgba(217, 119, 6, 0.15);
+  --border-bright: rgba(217, 119, 6, 0.30);
+
+  --shadow:        0 12px 40px rgba(0, 0, 0, 0.40);
+  --shadow-lg:     0 20px 60px rgba(0, 0, 0, 0.60);
+  --shadow-glow:   0 0 35px rgba(217, 119, 6, 0.15);
+
+  --gradient-primary: linear-gradient(135deg, #D97706, #F59E0B);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(46,37,30,0.95),
+                        rgba(36,29,23,0.80));
+
+  --bg-image: none;
+  --overlay:  none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 6: PIRATE KING 🏴‍☠️ (Owner Exclusive)
+   ══════════════════════════════════════════════════════════ */
+[data-theme="pirateking"] {
+  color-scheme: dark;
+
+  --bg:            #121212;
+  --bg2:           #181818;
+  --surface:       #1E1E1E;
+  --card:          #1E1E1E;
+  --card2:         #272727;
+  --card3:         #333333;
+
+  --glass:         rgba(30, 30, 30, 0.92);
+  --glass2:        rgba(39, 39, 39, 0.75);
+  --glass-border:  rgba(255, 215, 0, 0.12);
+
+  --primary:       #FFD700;
+  --primary-dark:  #D4AF37;
+  --primary-rgb:   255, 215, 0;
+  --primary-glow:  rgba(255, 215, 0, 0.15);
+
+  --accent:        #FF6B00;
+  --success:       #3FB950;
+  --warning:       #FFD700;
+  --danger:        #F85149;
+  --info:          #58A6FF;
+
+  --text:          #FFF8E7;
+  --text-sub:      #D4AF37;
+  --text-muted:    #8C7A40;
+
+  --border:        rgba(255, 215, 0, 0.15);
+  --border-bright: rgba(255, 215, 0, 0.30);
+
+  --shadow:        0 12px 40px rgba(0, 0, 0, 0.50);
+  --shadow-lg:     0 24px 64px rgba(0, 0, 0, 0.70);
+  --shadow-glow:   0 0 40px rgba(255, 215, 0, 0.18);
+
+  --gradient-primary: linear-gradient(135deg, #FFD700, #FF6B00);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(39,39,39,0.95),
+                        rgba(30,30,30,0.85));
+
+  --bg-image: none;
+  --overlay:  none;
+}
+
+/* Pirate King — شريط متحرك حصري للمالك */
+[data-theme="pirateking"] .nx-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #DC2626, #2563EB, #EAB308,
+    #2563EB, #DC2626
+  );
+  background-size: 200% 100%;
+  animation: borderFlow 3s linear infinite;
+  z-index: 10;
+}
+
+@keyframes borderFlow {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Pirate King — توهج الاسم */
+[data-theme="pirateking"] .nx-app-name {
+  background: linear-gradient(135deg, #FFD700, #FF6B00, #FFD700);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: goldShimmer 3s linear infinite;
+}
+
+@keyframes goldShimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Pirate King — توهج Logo */
+[data-theme="pirateking"] .nx-logo {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(255,215,0,0.6)); }
+  50%       { filter: drop-shadow(0 0 20px rgba(255,215,0,1.0)); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 7: CYBER NEON
+   ══════════════════════════════════════════════════════════ */
+[data-theme="cyberneon"] {
+  color-scheme: dark;
+
+  --bg:            #050514;
+  --bg2:           #0A0A24;
+  --surface:       #111133;
+  --card:          #111133;
+  --card2:         #1A1A4A;
+  --card3:         #242460;
+
+  --glass:         rgba(17, 17, 51, 0.88);
+  --glass2:        rgba(26, 26, 74, 0.70);
+  --glass-border:  rgba(240, 18, 190, 0.12);
+
+  --primary:       #F012BE;
+  --primary-dark:  #B10DC9;
+  --primary-rgb:   240, 18, 190;
+  --primary-glow:  rgba(240, 18, 190, 0.25);
+
+  --accent:        #01FF70;
+  --success:       #01FF70;
+  --warning:       #FF851B;
+  --danger:        #FF4136;
+  --info:          #7FDBFF;
+
+  --text:          #F8F8FF;
+  --text-sub:      #B0B0D0;
+  --text-muted:    #7070A0;
+
+  --border:        rgba(240, 18, 190, 0.15);
+  --border-bright: rgba(240, 18, 190, 0.30);
+
+  --shadow:        0 10px 40px rgba(0, 0, 0, 0.80);
+  --shadow-lg:     0 20px 60px rgba(0, 0, 0, 0.90);
+  --shadow-glow:   0 0 45px rgba(240, 18, 190, 0.30);
+
+  --gradient-primary: linear-gradient(135deg, #F012BE, #01FF70);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(17,17,51,0.92),
+                        rgba(26,26,74,0.75));
+
+  --bg-image: none;
+  --overlay:  none;
+}
+
+/* Cyber Neon — تأثير الخطوط المتوهجة */
+[data-theme="cyberneon"] .nx-card,
+[data-theme="cyberneon"] .nx-surface {
+  border-color: rgba(240, 18, 190, 0.20);
+  box-shadow: 0 0 15px rgba(240, 18, 190, 0.08),
+              inset 0 0 30px rgba(240, 18, 190, 0.03);
+}
+
+[data-theme="cyberneon"] .nx-btn-primary {
+  box-shadow: 0 0 20px rgba(240, 18, 190, 0.40);
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 8: EMERALD
+   ══════════════════════════════════════════════════════════ */
+[data-theme="emerald"] {
+  color-scheme: dark;
+
+  --bg:            #021108;
+  --bg2:           #041C0E;
+  --surface:       #072B16;
+  --card:          #072B16;
+  --card2:         #0A3D20;
+  --card3:         #0E522B;
+
+  --glass:         rgba(7, 43, 22, 0.90);
+  --glass2:        rgba(10, 61, 32, 0.72);
+  --glass-border:  rgba(16, 185, 129, 0.10);
+
+  --primary:       #10B981;
+  --primary-dark:  #059669;
+  --primary-rgb:   16, 185, 129;
+  --primary-glow:  rgba(16, 185, 129, 0.18);
+
+  --accent:        #34D399;
+  --success:       #10B981;
+  --warning:       #F59E0B;
+  --danger:        #EF4444;
+  --info:          #34D399;
+
+  --text:          #ECFDF5;
+  --text-sub:      #A7F3D0;
+  --text-muted:    #059669;
+
+  --border:        rgba(16, 185, 129, 0.12);
+  --border-bright: rgba(16, 185, 129, 0.25);
+
+  --shadow:        0 10px 40px rgba(0, 0, 0, 0.70);
+  --shadow-lg:     0 20px 60px rgba(0, 0, 0, 0.85);
+  --shadow-glow:   0 0 35px rgba(16, 185, 129, 0.18);
+
+  --gradient-primary: linear-gradient(135deg, #10B981, #34D399);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(7,43,22,0.92),
+                        rgba(10,61,32,0.75));
+
+  --bg-image: none;
+  --overlay:  none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 9: BLOOD MOON
+   ══════════════════════════════════════════════════════════ */
+[data-theme="bloodmoon"] {
+  color-scheme: dark;
+
+  --bg:            #140505;
+  --bg2:           #1C0808;
+  --surface:       #2B0D0D;
+  --card:          #2B0D0D;
+  --card2:         #3D1212;
+  --card3:         #521818;
+
+  --glass:         rgba(43, 13, 13, 0.90);
+  --glass2:        rgba(61, 18, 18, 0.72);
+  --glass-border:  rgba(225, 29, 72, 0.10);
+
+  --primary:       #E11D48;
+  --primary-dark:  #BE123C;
+  --primary-rgb:   225, 29, 72;
+  --primary-glow:  rgba(225, 29, 72, 0.18);
+
+  --accent:        #F43F5E;
+  --success:       #10B981;
+  --warning:       #F59E0B;
+  --danger:        #E11D48;
+  --info:          #F43F5E;
+
+  --text:          #FFF1F2;
+  --text-sub:      #FECDD3;
+  --text-muted:    #BE123C;
+
+  --border:        rgba(225, 29, 72, 0.12);
+  --border-bright: rgba(225, 29, 72, 0.25);
+
+  --shadow:        0 10px 40px rgba(0, 0, 0, 0.70);
+  --shadow-lg:     0 20px 60px rgba(0, 0, 0, 0.85);
+  --shadow-glow:   0 0 40px rgba(225, 29, 72, 0.18);
+
+  --gradient-primary: linear-gradient(135deg, #E11D48, #F43F5E);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(43,13,13,0.92),
+                        rgba(61,18,18,0.75));
+
+  --bg-image: none;
+  --overlay:  none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GLASSMORPHISM BASE (مشترك لكل الثيمات)
+   ══════════════════════════════════════════════════════════ */
+.nx-glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+}
+
+.nx-glass-light {
+  background: var(--glass2);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid var(--border);
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATUS COLORS (11 حالة)
+   ══════════════════════════════════════════════════════════ */
+.status-online    { color: #22C55E; }
+.status-onbreak   { color: #EAB308; }
+.status-incall    { color: #3B82F6; }
+.status-inmeeting { color: #2563EB; }
+.status-prayer    { color: #10B981; }
+.status-training  { color: #F97316; }
+.status-coaching  { color: #8B5CF6; }
+.status-offline   { color: #EF4444; }
+.status-absent    { color: #6B7280; }
+.status-late      { color: #78716C; }
+.status-unknown   { color: #94A3B8; }
+
+/* Status dot */
+.status-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* In Call — وميض أزرق */
+.status-dot.incall {
+  background: #3B82F6;
+  animation: callPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes callPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.7); }
+  50%       { box-shadow: 0 0 0 6px rgba(59,130,246,0); }
+}
+
+/* Prayer — توهج أخضر */
+.status-dot.prayer {
+  background: #10B981;
+  animation: prayerGlow 2s ease-in-out infinite;
+}
+
+@keyframes prayerGlow {
+  0%, 100% { box-shadow: 0 0 4px rgba(16,185,129,0.5); }
+  50%       { box-shadow: 0 0 12px rgba(16,185,129,0.9); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   ROLE COLORS (5 أدوار)
+   ══════════════════════════════════════════════════════════ */
+.role-owner   { color: #EAB308; }
+.role-tl      { color: #3B82F6; }
+.role-sl      { color: #8B5CF6; }
+.role-sme     { color: #10B981; }
+.role-agent   { color: #94A3B8; }
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.role-badge.owner {
+  background: rgba(234,179,8,0.15);
+  color: #EAB308;
+  border: 1px solid rgba(234,179,8,0.25);
+}
+.role-badge.tl {
+  background: rgba(59,130,246,0.15);
+  color: #3B82F6;
+  border: 1px solid rgba(59,130,246,0.25);
+}
+.role-badge.sl {
+  background: rgba(139,92,246,0.15);
+  color: #8B5CF6;
+  border: 1px solid rgba(139,92,246,0.25);
+}
+.role-badge.sme {
+  background: rgba(16,185,129,0.15);
+  color: #10B981;
+  border: 1px solid rgba(16,185,129,0.25);
+}
+.role-badge.agent {
+  background: rgba(148,163,184,0.15);
+  color: #94A3B8;
+  border: 1px solid rgba(148,163,184,0.25);
+}
+
+/* ══════════════════════════════════════════════════════════
+   PRIORITY COLORS
+   ══════════════════════════════════════════════════════════ */
+.priority-low      { color: #10B981; }
+.priority-medium   { color: #F59E0B; }
+.priority-high     { color: #EF4444; }
+.priority-critical {
+  color: #FF0000;
+  animation: criticalBlink 0.8s ease-in-out infinite;
+}
+
+@keyframes criticalBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ══════════════════════════════════════════════════════════ */
+.nx-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nx-sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.nx-flex        { display: flex; }
+.nx-flex-col    { display: flex; flex-direction: column; }
+.nx-items-center{ align-items: center; }
+.nx-justify-between { justify-content: space-between; }
+.nx-gap-1       { gap: 4px; }
+.nx-gap-2       { gap: 8px; }
+.nx-gap-3       { gap: 12px; }
+.nx-gap-4       { gap: 16px; }
+
+/* RTL Support (My Workspace) */
+.nx-rtl { direction: rtl; text-align: right; }
+.nx-ltr { direction: ltr; text-align: left; }
+
+/* GPU Acceleration */
+.nx-gpu {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-w: 0px;
+    --header-h: 56px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+  }
+}
+
+/* iOS Safe Area */
+@supports (padding: max(0px)) {
+  .nx-bottom-nav {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .nx-header {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+}
+
+/* ============================================================
+   style1.css — Part B
+   Themes 10-13 (New) + Image System
+   ============================================================ */
+
+/* ══════════════════════════════════════════════════════════
+   THEME 10: NIKA — Luffy Gear 5 🌟
+   ══════════════════════════════════════════════════════════ */
+[data-theme="nika"] {
+  color-scheme: dark;
+
+  --bg:            #080808;
+  --bg2:           #0F0F0F;
+  --surface:       #161616;
+  --card:          #161616;
+  --card2:         #1E1E1E;
+  --card3:         #282828;
+
+  --glass:         rgba(255, 255, 255, 0.05);
+  --glass2:        rgba(255, 255, 255, 0.08);
+  --glass-border:  rgba(255, 255, 255, 0.12);
+
+  --primary:       #FFFFFF;
+  --primary-dark:  #E0E0E0;
+  --primary-rgb:   255, 255, 255;
+  --primary-glow:  rgba(255, 255, 255, 0.20);
+
+  --accent:        #FF4500;
+  --success:       #00FF88;
+  --warning:       #FFD700;
+  --danger:        #FF4500;
+  --info:          #87CEEB;
+
+  --text:          #FFFFFF;
+  --text-sub:      #CCCCCC;
+  --text-muted:    #888888;
+
+  --border:        rgba(255, 255, 255, 0.10);
+  --border-bright: rgba(255, 255, 255, 0.22);
+
+  --shadow:        0 12px 40px rgba(0, 0, 0, 0.70);
+  --shadow-lg:     0 24px 64px rgba(0, 0, 0, 0.85);
+  --shadow-glow:   0 0 40px rgba(255, 255, 255, 0.15);
+
+  --gradient-primary: linear-gradient(135deg, #FFFFFF, #FF4500);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(255,255,255,0.06),
+                        rgba(255,255,255,0.03));
+
+  --bg-image: url('https://wallpapercave.com/wp/wp11839441.jpg');
+  --overlay:  rgba(0, 0, 0, 0.55);
+}
+
+/* Nika — تأثيرات السحب البيضاء */
+[data-theme="nika"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="nika"] .nx-card,
+[data-theme="nika"] .nx-surface {
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  backdrop-filter: blur(24px) saturate(200%);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.40),
+              inset 0 1px 0 rgba(255,255,255,0.10);
+}
+
+/* Nika — نبض أبيض على العناصر النشطة */
+[data-theme="nika"] .nx-btn-primary {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #FFFFFF;
+  animation: nikaPulse 3s ease-in-out infinite;
+}
+
+@keyframes nikaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.3); }
+  50%       { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+}
+
+/* Nika — طفو العناصر */
+@keyframes nikaFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-4px); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 11: ZORO — Three Swords ⚔️
+   ══════════════════════════════════════════════════════════ */
+[data-theme="zoro"] {
+  color-scheme: dark;
+
+  --bg:            #0A1A0A;
+  --bg2:           #0D200D;
+  --surface:       #112811;
+  --card:          #112811;
+  --card2:         #163416;
+  --card3:         #1C421C;
+
+  --glass:         rgba(17, 40, 17, 0.88);
+  --glass2:        rgba(22, 52, 22, 0.70);
+  --glass-border:  rgba(46, 204, 64, 0.12);
+
+  --primary:       #2ECC40;
+  --primary-dark:  #1A9E28;
+  --primary-rgb:   46, 204, 64;
+  --primary-glow:  rgba(46, 204, 64, 0.20);
+
+  --accent:        #FF4136;
+  --success:       #2ECC40;
+  --warning:       #FFDC00;
+  --danger:        #FF4136;
+  --info:          #7FDBFF;
+
+  --text:          #E8F5E8;
+  --text-sub:      #A8D5A8;
+  --text-muted:    #5A8A5A;
+
+  --border:        rgba(46, 204, 64, 0.12);
+  --border-bright: rgba(46, 204, 64, 0.28);
+
+  --shadow:        0 12px 40px rgba(0, 0, 0, 0.60);
+  --shadow-lg:     0 24px 64px rgba(0, 0, 0, 0.75);
+  --shadow-glow:   0 0 40px rgba(46, 204, 64, 0.18);
+
+  --gradient-primary: linear-gradient(135deg, #2ECC40, #FF4136);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(22,52,22,0.90),
+                        rgba(17,40,17,0.80));
+
+  --bg-image: url('https://wallpapercave.com/wp/wp3362749.jpg');
+  --overlay:  rgba(0, 0, 0, 0.60);
+}
+
+/* Zoro — Overlay */
+[data-theme="zoro"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Zoro — خطوط السيوف في الخلفية */
+[data-theme="zoro"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(
+      135deg,
+      transparent 40%,
+      rgba(46,204,64,0.03) 41%,
+      rgba(46,204,64,0.03) 42%,
+      transparent 43%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 40%,
+      rgba(46,204,64,0.02) 41%,
+      rgba(46,204,64,0.02) 42%,
+      transparent 43%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Zoro — Glassmorphism */
+[data-theme="zoro"] .nx-card,
+[data-theme="zoro"] .nx-surface {
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(17, 40, 17, 0.75);
+  border: 1px solid rgba(46, 204, 64, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.50),
+              inset 0 1px 0 rgba(46,204,64,0.08);
+}
+
+/* Zoro — تأثير القطع عند الانتقال */
+@keyframes swordSlash {
+  0%   { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+}
+
+/* Zoro — وهج أخضر */
+[data-theme="zoro"] .nx-btn-primary {
+  box-shadow: 0 0 20px rgba(46, 204, 64, 0.35);
+  border-color: rgba(46, 204, 64, 0.40);
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 12: PORSCHE 911 GT3 RS 🏎️
+   ══════════════════════════════════════════════════════════ */
+[data-theme="porsche"] {
+  color-scheme: dark;
+
+  --bg:            #0A0500;
+  --bg2:           #120800;
+  --surface:       #1A0D00;
+  --card:          #1A0D00;
+  --card2:         #221200;
+  --card3:         #2E1800;
+
+  --glass:         rgba(0, 0, 0, 0.72);
+  --glass2:        rgba(0, 0, 0, 0.60);
+  --glass-border:  rgba(255, 107, 0, 0.18);
+
+  --primary:       #FF6B00;
+  --primary-dark:  #CC5500;
+  --primary-rgb:   255, 107, 0;
+  --primary-glow:  rgba(255, 107, 0, 0.22);
+
+  --accent:        #FFFFFF;
+  --success:       #00CC66;
+  --warning:       #FFD700;
+  --danger:        #FF2200;
+  --info:          #87CEEB;
+
+  --text:          #FFFFFF;
+  --text-sub:      #FFCCAA;
+  --text-muted:    #AA7755;
+
+  --border:        rgba(255, 107, 0, 0.20);
+  --border-bright: rgba(255, 107, 0, 0.38);
+
+  --shadow:        0 12px 40px rgba(0, 0, 0, 0.75);
+  --shadow-lg:     0 24px 64px rgba(0, 0, 0, 0.90);
+  --shadow-glow:   0 0 40px rgba(255, 107, 0, 0.22);
+
+  --gradient-primary: linear-gradient(135deg, #FF6B00, #FF2200);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(0,0,0,0.75),
+                        rgba(0,0,0,0.60));
+
+  /* الصورة الافتراضية — تُستبدل من Owner Analytics */
+  --bg-image: url('https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=1920&q=85&auto=format&fit=crop');
+  --overlay:  rgba(0, 0, 0, 0.50);
+}
+
+/* Porsche — Overlay */
+[data-theme="porsche"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Porsche — Heavy Glassmorphism */
+[data-theme="porsche"] .nx-card,
+[data-theme="porsche"] .nx-surface {
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: blur(28px) saturate(200%);
+  background: rgba(0, 0, 0, 0.68);
+  border: 1px solid rgba(255, 107, 0, 0.22);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.60),
+              inset 0 1px 0 rgba(255,107,0,0.10);
+}
+
+/* Porsche — Header */
+[data-theme="porsche"] .nx-header {
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+  background: rgba(0, 0, 0, 0.75);
+  border-bottom: 1px solid rgba(255, 107, 0, 0.20);
+}
+
+/* Porsche — Sidebar */
+[data-theme="porsche"] .nx-sidebar {
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+  background: rgba(0, 0, 0, 0.80);
+  border-right: 1px solid rgba(255, 107, 0, 0.15);
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME 13: FORD F-150 RAPTOR 🚙
+   ══════════════════════════════════════════════════════════ */
+[data-theme="raptor"] {
+  color-scheme: dark;
+
+  --bg:            #050A14;
+  --bg2:           #080F1C;
+  --surface:       #0D1624;
+  --card:          #0D1624;
+  --card2:         #121E2E;
+  --card3:         #18263A;
+
+  --glass:         rgba(0, 0, 0, 0.72);
+  --glass2:        rgba(0, 0, 0, 0.60);
+  --glass-border:  rgba(30, 144, 255, 0.18);
+
+  --primary:       #1E90FF;
+  --primary-dark:  #1060CC;
+  --primary-rgb:   30, 144, 255;
+  --primary-glow:  rgba(30, 144, 255, 0.22);
+
+  --accent:        #FF6600;
+  --success:       #00CC66;
+  --warning:       #FF6600;
+  --danger:        #FF2200;
+  --info:          #87CEEB;
+
+  --text:          #FFFFFF;
+  --text-sub:      #AACCFF;
+  --text-muted:    #5577AA;
+
+  --border:        rgba(30, 144, 255, 0.20);
+  --border-bright: rgba(30, 144, 255, 0.38);
+
+  --shadow:        0 12px 40px rgba(0, 0, 0, 0.75);
+  --shadow-lg:     0 24px 64px rgba(0, 0, 0, 0.90);
+  --shadow-glow:   0 0 40px rgba(30, 144, 255, 0.22);
+
+  --gradient-primary: linear-gradient(135deg, #1E90FF, #FF6600);
+  --gradient-card:    linear-gradient(145deg,
+                        rgba(0,0,0,0.75),
+                        rgba(0,0,0,0.60));
+
+  /* الصورة الافتراضية — تُستبدل من Owner Analytics */
+  --bg-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=85&auto=format&fit=crop');
+  --overlay:  rgba(0, 0, 0, 0.50);
+}
+
+/* Raptor — Overlay */
+[data-theme="raptor"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Raptor — Heavy Glassmorphism */
+[data-theme="raptor"] .nx-card,
+[data-theme="raptor"] .nx-surface {
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  backdrop-filter: blur(28px) saturate(200%);
+  background: rgba(0, 0, 0, 0.68);
+  border: 1px solid rgba(30, 144, 255, 0.22);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.60),
+              inset 0 1px 0 rgba(30,144,255,0.08);
+}
+
+/* Raptor — Header */
+[data-theme="raptor"] .nx-header {
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+  background: rgba(0, 0, 0, 0.75);
+  border-bottom: 1px solid rgba(30, 144, 255, 0.20);
+}
+
+/* Raptor — Sidebar */
+[data-theme="raptor"] .nx-sidebar {
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+  background: rgba(0, 0, 0, 0.80);
+  border-right: 1px solid rgba(30, 144, 255, 0.15);
+}
+
+/* ══════════════════════════════════════════════════════════
+   IMAGE BACKGROUND SYSTEM
+   نظام الخلفيات الصورية
+   ══════════════════════════════════════════════════════════ */
+
+/* تطبيق الخلفية على الـ body */
+[data-theme="nika"] body,
+[data-theme="zoro"] body,
+[data-theme="porsche"] body,
+[data-theme="raptor"] body {
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Fallback إذا فشل تحميل الصورة */
+[data-theme="nika"] body    { background-color: #080808; }
+[data-theme="zoro"] body    { background-color: #0A1A0A; }
+[data-theme="porsche"] body { background-color: #0A0500; }
+[data-theme="raptor"] body  { background-color: #050A14; }
+
+/* Mobile: تعطيل fixed لأداء أفضل */
+@media (max-width: 768px) {
+  [data-theme="nika"] body,
+  [data-theme="zoro"] body,
+  [data-theme="porsche"] body,
+  [data-theme="raptor"] body {
+    background-attachment: scroll;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   GLASSMORPHISM — ثيمات الصور (مشترك)
+   ══════════════════════════════════════════════════════════ */
+
+/* Header لكل ثيمات الصور */
+[data-theme="nika"] .nx-header,
+[data-theme="zoro"] .nx-header {
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(32px) saturate(200%);
+  background: rgba(0, 0, 0, 0.65);
+  border-bottom: 1px solid var(--border-bright);
+}
+
+/* Sidebar لكل ثيمات الصور */
+[data-theme="nika"] .nx-sidebar,
+[data-theme="zoro"] .nx-sidebar {
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(32px) saturate(200%);
+  background: rgba(0, 0, 0, 0.72);
+  border-right: 1px solid var(--border);
+}
+
+/* BottomNav لكل ثيمات الصور */
+[data-theme="nika"] .nx-bottom-nav,
+[data-theme="zoro"] .nx-bottom-nav,
+[data-theme="porsche"] .nx-bottom-nav,
+[data-theme="raptor"] .nx-bottom-nav {
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+  background: rgba(0, 0, 0, 0.80);
+  border-top: 1px solid var(--border);
+}
+
+/* Tables في ثيمات الصور */
+[data-theme="nika"] table,
+[data-theme="zoro"] table,
+[data-theme="porsche"] table,
+[data-theme="raptor"] table {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+[data-theme="nika"] th,
+[data-theme="zoro"] th,
+[data-theme="porsche"] th,
+[data-theme="raptor"] th {
+  background: rgba(0, 0, 0, 0.60);
+}
+
+[data-theme="nika"] td,
+[data-theme="zoro"] td,
+[data-theme="porsche"] td,
+[data-theme="raptor"] td {
+  background: rgba(0, 0, 0, 0.40);
+}
+
+/* Modals في ثيمات الصور */
+[data-theme="nika"] .nx-modal,
+[data-theme="zoro"] .nx-modal,
+[data-theme="porsche"] .nx-modal,
+[data-theme="raptor"] .nx-modal {
+  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(40px);
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid var(--border-bright);
+}
+
+/* ══════════════════════════════════════════════════════════
+   WCAG AA CONTRAST — ضمان قراءة النصوص
+   ══════════════════════════════════════════════════════════ */
+
+/* نص فوق الخلفيات الصورية */
+[data-theme="nika"] p,
+[data-theme="nika"] span,
+[data-theme="nika"] label,
+[data-theme="zoro"] p,
+[data-theme="zoro"] span,
+[data-theme="zoro"] label,
+[data-theme="porsche"] p,
+[data-theme="porsche"] span,
+[data-theme="porsche"] label,
+[data-theme="raptor"] p,
+[data-theme="raptor"] span,
+[data-theme="raptor"] label {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.60);
+}
+
+/* ══════════════════════════════════════════════════════════
+   THEME TRANSITION (انتقال سلس بين الثيمات)
+   ══════════════════════════════════════════════════════════ */
+body {
+  transition:
+    background-color 0.4s ease,
+    background-image 0.5s ease,
+    color 0.3s ease;
+}
+
+.nx-card,
+.nx-surface,
+.nx-header,
+.nx-sidebar {
+  transition:
+    background 0.4s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SYSTEM STATUS BANNER
+   شريط الحالة العامة (يُدار من الإدارة)
+   ══════════════════════════════════════════════════════════ */
+.nx-status-banner {
+  position: fixed;
+  top: var(--header-h);
+  left: 0; right: 0;
+  z-index: 999;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
+}
+
+.nx-status-banner.info {
+  background: rgba(88, 166, 255, 0.15);
+  border-bottom: 1px solid rgba(88, 166, 255, 0.30);
+  color: #58A6FF;
+}
+
+.nx-status-banner.warning {
+  background: rgba(210, 153, 34, 0.15);
+  border-bottom: 1px solid rgba(210, 153, 34, 0.30);
+  color: #D29922;
+}
+
+.nx-status-banner.danger {
+  background: rgba(248, 81, 73, 0.15);
+  border-bottom: 1px solid rgba(248, 81, 73, 0.30);
+  color: #F85149;
+  animation: bannerPulse 2s ease-in-out infinite;
+}
+
+@keyframes bannerPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.75; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   CRITICAL ALERT OVERLAY
+   تنبيهات حرجة لا تُغلق إلا من المسؤول
+   ══════════════════════════════════════════════════════════ */
+.nx-critical-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.nx-critical-card {
+  background: #1C0A0A;
+  border: 2px solid #F85149;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  animation: criticalShake 0.5s ease-in-out,
+             criticalGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes criticalShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+@keyframes criticalGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(248,81,73,0.4); }
+  50%       { box-shadow: 0 0 40px rgba(248,81,73,0.8); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   FREEZE MODE OVERLAY
+   ══════════════════════════════════════════════════════════ */
+.nx-freeze-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.92);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.nx-freeze-card {
+  background: var(--card);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+}
+
+.nx-freeze-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: freezePulse 2s ease-in-out infinite;
+}
+
+@keyframes freezePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.05); opacity: 0.8; }
+}
