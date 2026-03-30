@@ -1,0 +1,973 @@
+/* ============================================================
+   NEXUS-CSOPS v4.2.0
+   themes-live.css — محرك الروح
+   Live Animations + Dynamic Effects
+   Owner: Mohammed Nasser Althurwi
+   ============================================================ */
+
+/* ══════════════════════════════════════════════════════════
+   CORE PAGE ANIMATIONS
+   ══════════════════════════════════════════════════════════ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes slideInDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* تطبيق على الصفحات */
+.nx-page-enter {
+  animation: fadeInUp 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.nx-card-enter {
+  animation: scaleIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Stagger للبطاقات */
+.nx-card-enter:nth-child(1) { animation-delay: 0.00s; }
+.nx-card-enter:nth-child(2) { animation-delay: 0.05s; }
+.nx-card-enter:nth-child(3) { animation-delay: 0.10s; }
+.nx-card-enter:nth-child(4) { animation-delay: 0.15s; }
+.nx-card-enter:nth-child(5) { animation-delay: 0.20s; }
+.nx-card-enter:nth-child(6) { animation-delay: 0.25s; }
+
+/* ══════════════════════════════════════════════════════════
+   SAUDI TIME SYSTEM — getSaudiPeriod()
+   التوقيت السعودي التلقائي
+   ══════════════════════════════════════════════════════════ */
+
+/* فجر: 04:00 — 06:00 */
+[data-period="fajr"] {
+  --period-overlay: linear-gradient(
+    180deg,
+    rgba(20, 10, 40, 0.85) 0%,
+    rgba(60, 30, 80, 0.60) 50%,
+    rgba(255, 140, 0, 0.20) 100%
+  );
+  --period-accent: #FF8C00;
+}
+
+[data-period="fajr"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--period-overlay);
+  pointer-events: none;
+  z-index: -1;
+  animation: fajrGlow 8s ease-in-out infinite;
+}
+
+@keyframes fajrGlow {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 0.9; }
+}
+
+/* صباح: 06:00 — 12:00 */
+[data-period="morning"] {
+  --period-overlay: none;
+  --period-accent: var(--primary);
+}
+
+/* ظهر: 12:00 — 15:00 */
+[data-period="noon"] {
+  --period-overlay: none;
+  --period-accent: #F59E0B;
+}
+
+/* عصر: 15:00 — 18:00 */
+[data-period="asr"] {
+  --period-overlay: linear-gradient(
+    180deg,
+    transparent 60%,
+    rgba(255, 100, 0, 0.08) 100%
+  );
+  --period-accent: #FF6400;
+}
+
+/* مغرب: 18:00 — 20:00 */
+[data-period="maghrib"] {
+  --period-overlay: linear-gradient(
+    180deg,
+    rgba(60, 20, 80, 0.30) 0%,
+    rgba(255, 80, 0, 0.15) 50%,
+    transparent 100%
+  );
+  --period-accent: #FF5000;
+}
+
+[data-period="maghrib"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--period-overlay);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* عشاء: 20:00 — 04:00 */
+[data-period="isha"] {
+  --period-overlay: linear-gradient(
+    180deg,
+    rgba(5, 5, 30, 0.40) 0%,
+    transparent 60%
+  );
+  --period-accent: #8B5CF6;
+}
+
+[data-period="isha"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--period-overlay);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HEARTBEAT SYSTEM — نبضة التواجد
+   ══════════════════════════════════════════════════════════ */
+
+/* نبضة الموظف النشط */
+@keyframes heartbeat {
+  0%   { transform: scale(1);    opacity: 1; }
+  14%  { transform: scale(1.15); opacity: 0.9; }
+  28%  { transform: scale(1);    opacity: 1; }
+  42%  { transform: scale(1.10); opacity: 0.9; }
+  70%  { transform: scale(1);    opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+.nx-heartbeat {
+  animation: heartbeat 2s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* نبضة الاتصال الحي */
+@keyframes liveBeacon {
+  0%   { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.6); }
+  70%  { box-shadow: 0 0 0 10px rgba(var(--primary-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0); }
+}
+
+.nx-live-beacon {
+  animation: liveBeacon 2s ease-out infinite;
+  will-change: box-shadow;
+}
+
+/* نقطة LIVE الحمراء */
+@keyframes liveDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+.nx-live-dot {
+  width: 8px; height: 8px;
+  background: #EF4444;
+  border-radius: 50%;
+  animation: liveDot 1.5s ease-in-out infinite;
+  display: inline-block;
+}
+
+.nx-live-dot.green {
+  background: #22C55E;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TOAST SYSTEM ANIMATIONS
+   ══════════════════════════════════════════════════════════ */
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(110%) scale(0.9);
+  }
+}
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+.nx-toast {
+  animation: toastSlideIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+  will-change: transform, opacity;
+}
+
+.nx-toast.removing {
+  animation: toastSlideOut 0.3s ease-in both;
+}
+
+.nx-toast-progress {
+  animation: toastProgress 5s linear forwards;
+}
+
+/* ══════════════════════════════════════════════════════════
+   NOTIFICATION BELL ANIMATION
+   ══════════════════════════════════════════════════════════ */
+@keyframes bellRing {
+  0%   { transform: rotate(0deg); }
+  10%  { transform: rotate(14deg); }
+  20%  { transform: rotate(-10deg); }
+  30%  { transform: rotate(14deg); }
+  40%  { transform: rotate(-4deg); }
+  50%  { transform: rotate(10deg); }
+  60%  { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.nx-bell-ring {
+  animation: bellRing 0.8s ease-in-out;
+  transform-origin: top center;
+}
+
+@keyframes badgePop {
+  0%   { transform: scale(0); }
+  60%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.nx-badge-pop {
+  animation: badgePop 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL ANIMATIONS
+   ══════════════════════════════════════════════════════════ */
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.90) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+}
+
+.nx-modal-backdrop {
+  animation: modalBackdropIn 0.25s ease both;
+}
+
+.nx-modal {
+  animation: modalIn 0.35s cubic-bezier(0.16,1,0.3,1) both;
+  will-change: transform, opacity;
+}
+
+.nx-modal.closing {
+  animation: modalOut 0.25s ease-in both;
+}
+
+/* Bottom Sheet (Mobile) */
+@keyframes sheetIn {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes sheetOut {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+
+.nx-bottom-sheet {
+  animation: sheetIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.nx-bottom-sheet.closing {
+  animation: sheetOut 0.3s ease-in both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   BUTTON INTERACTIONS
+   ══════════════════════════════════════════════════════════ */
+@keyframes btnPress {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes btnSuccess {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.nx-btn-press {
+  animation: btnPress 0.15s ease both;
+}
+
+.nx-btn-success {
+  animation: btnSuccess 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LOADING STATES
+   ══════════════════════════════════════════════════════════ */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spinReverse {
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40%           { transform: scale(1); }
+}
+
+.nx-spinner {
+  width: 24px; height: 24px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  will-change: transform;
+}
+
+.nx-spinner-lg {
+  width: 40px; height: 40px;
+  border-width: 3px;
+}
+
+/* Skeleton Loading */
+.nx-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--card2) 25%,
+    var(--card3) 50%,
+    var(--card2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Dots Loader */
+.nx-dots-loader {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.nx-dots-loader span {
+  width: 8px; height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: bounce 1.4s ease-in-out infinite;
+}
+
+.nx-dots-loader span:nth-child(1) { animation-delay: 0.0s; }
+.nx-dots-loader span:nth-child(2) { animation-delay: 0.2s; }
+.nx-dots-loader span:nth-child(3) { animation-delay: 0.4s; }
+
+/* Progress Bar */
+@keyframes progressFill {
+  from { width: 0%; }
+  to   { width: var(--progress, 100%); }
+}
+
+.nx-progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.nx-progress-fill {
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: 999px;
+  animation: progressFill 0.6s cubic-bezier(0.16,1,0.3,1) both;
+  transition: width 0.4s ease;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LIVE FLOOR ANIMATIONS
+   ══════════════════════════════════════════════════════════ */
+
+/* بطاقة الموظف — دخول */
+@keyframes employeeCardIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.nx-employee-card {
+  animation: employeeCardIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
+  will-change: transform;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.nx-employee-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* بطاقة تجاوز البريك — وميض تحذيري */
+@keyframes breakExceeded {
+  0%, 100% {
+    border-color: rgba(248, 81, 73, 0.4);
+    box-shadow: 0 0 0 0 rgba(248,81,73,0.4);
+  }
+  50% {
+    border-color: rgba(248, 81, 73, 1.0);
+    box-shadow: 0 0 0 6px rgba(248,81,73,0);
+  }
+}
+
+.nx-card-break-exceeded {
+  animation: breakExceeded 1.2s ease-in-out infinite;
+}
+
+/* بطاقة الغياب */
+@keyframes absentPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+.nx-card-absent {
+  animation: absentPulse 2.5s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════
+   BREAK TIMER ANIMATIONS
+   عداد البريك الذكي
+   ══════════════════════════════════════════════════════════ */
+
+/* عداد طبيعي */
+@keyframes timerTick {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.nx-timer-normal {
+  animation: timerTick 1s ease-in-out infinite;
+  color: var(--success);
+}
+
+/* تحذير: 5 دقائق متبقية */
+@keyframes timerWarning {
+  0%, 100% { color: #F59E0B; transform: scale(1); }
+  50%       { color: #FF8C00; transform: scale(1.04); }
+}
+
+.nx-timer-warning {
+  animation: timerWarning 0.8s ease-in-out infinite;
+}
+
+/* خطر: دقيقتان متبقيتان */
+@keyframes timerDanger {
+  0%, 100% { color: #EF4444; transform: scale(1); }
+  50%       { color: #FF0000; transform: scale(1.06); }
+}
+
+.nx-timer-danger {
+  animation: timerDanger 0.5s ease-in-out infinite;
+}
+
+/* تجاوز: العداد التصاعدي */
+@keyframes timerExceeded {
+  0%   { color: #FF0000; transform: scale(1); }
+  25%  { color: #FF4444; transform: scale(1.08); }
+  50%  { color: #FF0000; transform: scale(1); }
+  75%  { color: #CC0000; transform: scale(1.08); }
+  100% { color: #FF0000; transform: scale(1); }
+}
+
+.nx-timer-exceeded {
+  animation: timerExceeded 0.6s ease-in-out infinite;
+  font-weight: 800;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GAMIFICATION ANIMATIONS
+   ══════════════════════════════════════════════════════════ */
+
+/* ظهور الوسام */
+@keyframes badgeReveal {
+  0%   { transform: scale(0) rotate(-180deg); opacity: 0; }
+  60%  { transform: scale(1.3) rotate(10deg);  opacity: 1; }
+  80%  { transform: scale(0.9) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.nx-badge-reveal {
+  animation: badgeReveal 0.8s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* ارتفاع المستوى */
+@keyframes levelUp {
+  0%   { transform: scale(1) translateY(0); }
+  30%  { transform: scale(1.2) translateY(-10px); }
+  60%  { transform: scale(0.95) translateY(0); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+.nx-level-up {
+  animation: levelUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* نقاط طائرة */
+@keyframes pointsFloat {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(0.8); }
+}
+
+.nx-points-float {
+  animation: pointsFloat 1.5s ease-out both;
+  pointer-events: none;
+  position: absolute;
+  font-weight: 700;
+  color: var(--warning);
+  font-size: 18px;
+}
+
+/* Leaderboard — تحريك الصفوف */
+@keyframes rankChange {
+  0%   { background: rgba(var(--primary-rgb), 0.20); }
+  100% { background: transparent; }
+}
+
+.nx-rank-changed {
+  animation: rankChange 2s ease both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ATTENDANCE ANIMATIONS
+   ══════════════════════════════════════════════════════════ */
+
+/* Clock In ناجح */
+@keyframes clockInSuccess {
+  0%   { transform: scale(1); }
+  20%  { transform: scale(1.15); }
+  40%  { transform: scale(0.95); }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.nx-clock-in-success {
+  animation: clockInSuccess 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* GPS Scanning */
+@keyframes gpsScan {
+  0%   { transform: scale(0.8); opacity: 0.8; }
+  50%  { transform: scale(1.5); opacity: 0.2; }
+  100% { transform: scale(0.8); opacity: 0.8; }
+}
+
+.nx-gps-scan {
+  animation: gpsScan 1.5s ease-in-out infinite;
+}
+
+/* GPS Success */
+@keyframes gpsSuccess {
+  0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+  70%  { box-shadow: 0 0 0 20px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+.nx-gps-success {
+  animation: gpsSuccess 1s ease-out both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHAT ANIMATIONS
+   ══════════════════════════════════════════════════════════ */
+
+/* رسالة واردة */
+@keyframes msgIn {
+  from {
+    opacity: 0;
+    transform: translateX(-15px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* رسالة صادرة */
+@keyframes msgOut {
+  from {
+    opacity: 0;
+    transform: translateX(15px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.nx-msg-in {
+  animation: msgIn 0.25s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.nx-msg-out {
+  animation: msgOut 0.25s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Typing Indicator */
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%           { transform: translateY(-6px); opacity: 1; }
+}
+
+.nx-typing span {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--text-sub);
+  border-radius: 50%;
+  animation: typingDot 1.2s ease-in-out infinite;
+}
+
+.nx-typing span:nth-child(1) { animation-delay: 0.0s; }
+.nx-typing span:nth-child(2) { animation-delay: 0.2s; }
+.nx-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+/* ══════════════════════════════════════════════════════════
+   WORKSPACE ANIMATIONS
+   My Workspace — Notes / Tasks / Calendar
+   ══════════════════════════════════════════════════════════ */
+
+/* Note Card */
+@keyframes noteAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.88) rotate(-2deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.nx-note-card {
+  animation: noteAppear 0.35s cubic-bezier(0.16,1,0.3,1) both;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.nx-note-card:hover {
+  transform: translateY(-3px) rotate(0.5deg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Task Done */
+@keyframes taskDone {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.1); }
+  60%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.nx-task-done {
+  animation: taskDone 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* Reminder Alert */
+@keyframes reminderAlert {
+  0%   { transform: scale(1) rotate(0deg); }
+  10%  { transform: scale(1.05) rotate(-3deg); }
+  20%  { transform: scale(1.05) rotate(3deg); }
+  30%  { transform: scale(1.05) rotate(-2deg); }
+  40%  { transform: scale(1.05) rotate(2deg); }
+  50%  { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.nx-reminder-alert {
+  animation: reminderAlert 0.8s ease-in-out;
+}
+
+/* Calendar Event */
+@keyframes calEventIn {
+  from { opacity: 0; transform: scaleY(0); transform-origin: top; }
+  to   { opacity: 1; transform: scaleY(1); }
+}
+
+.nx-cal-event {
+  animation: calEventIn 0.25s ease both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SIDEBAR NAVIGATION
+   ══════════════════════════════════════════════════════════ */
+
+/* Active Item Indicator */
+@keyframes navIndicator {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+.nx-nav-active-indicator {
+  animation: navIndicator 0.25s cubic-bezier(0.16,1,0.3,1) both;
+  transform-origin: center;
+}
+
+/* Sidebar Toggle */
+@keyframes sidebarIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes sidebarOut {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+.nx-sidebar-open {
+  animation: sidebarIn 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.nx-sidebar-close {
+  animation: sidebarOut 0.3s ease-in both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SUSPEND / KICK ANIMATION
+   ══════════════════════════════════════════════════════════ */
+@keyframes suspendFlash {
+  0%   { background: transparent; }
+  25%  { background: rgba(248, 81, 73, 0.20); }
+  50%  { background: transparent; }
+  75%  { background: rgba(248, 81, 73, 0.20); }
+  100% { background: transparent; }
+}
+
+.nx-suspend-flash {
+  animation: suspendFlash 0.8s ease both;
+}
+
+@keyframes kickOut {
+  0%   { opacity: 1; transform: scale(1); }
+  50%  { opacity: 0.5; transform: scale(0.95); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+.nx-kick-out {
+  animation: kickOut 0.5s ease-in both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PERFORMANCE CHARTS
+   ══════════════════════════════════════════════════════════ */
+@keyframes barGrow {
+  from { transform: scaleY(0); transform-origin: bottom; }
+  to   { transform: scaleY(1); transform-origin: bottom; }
+}
+
+@keyframes lineDrawn {
+  from { stroke-dashoffset: 1000; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.nx-chart-bar {
+  animation: barGrow 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.nx-chart-bar:nth-child(1) { animation-delay: 0.0s; }
+.nx-chart-bar:nth-child(2) { animation-delay: 0.1s; }
+.nx-chart-bar:nth-child(3) { animation-delay: 0.2s; }
+.nx-chart-bar:nth-child(4) { animation-delay: 0.3s; }
+.nx-chart-bar:nth-child(5) { animation-delay: 0.4s; }
+
+.nx-chart-line {
+  stroke-dasharray: 1000;
+  animation: lineDrawn 1.5s ease both;
+}
+
+/* KPI Counter */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nx-kpi-value {
+  animation: countUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   DRAG & DROP
+   ══════════════════════════════════════════════════════════ */
+.nx-dragging {
+  opacity: 0.6;
+  transform: scale(1.03) rotate(1deg);
+  box-shadow: var(--shadow-lg);
+  cursor: grabbing;
+  z-index: 1000;
+}
+
+.nx-drag-over {
+  border: 2px dashed var(--primary) !important;
+  background: var(--primary-glow) !important;
+  transition: all 0.15s ease;
+}
+
+/* ══════════════════════════════════════════════════════════
+   AVATAR UPLOAD
+   ══════════════════════════════════════════════════════════ */
+@keyframes avatarReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+.nx-avatar-reveal {
+  animation: avatarReveal 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes uploadProgress {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.nx-upload-progress {
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--accent) 50%,
+    var(--primary) 100%
+  );
+  background-size: 200% 100%;
+  animation: uploadProgress 1.5s linear infinite;
+}
+
+/* ══════════════════════════════════════════════════════════
+   QUEUE ANIMATIONS
+   ══════════════════════════════════════════════════════════ */
+@keyframes queueAlert {
+  0%, 100% {
+    background: rgba(248,81,73,0.10);
+    border-color: rgba(248,81,73,0.30);
+  }
+  50% {
+    background: rgba(248,81,73,0.20);
+    border-color: rgba(248,81,73,0.60);
+  }
+}
+
+.nx-queue-high {
+  animation: queueAlert 1.5s ease-in-out infinite;
+}
+
+@keyframes numberUpdate {
+  0%   { transform: translateY(-10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.nx-number-update {
+  animation: numberUpdate 0.3s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* ══════════════════════════════════════════════════════════
+   REDUCED MOTION — احترام إعدادات المستخدم
+   ══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
