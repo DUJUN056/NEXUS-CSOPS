@@ -1,6 +1,6 @@
 /* ============================================================
    S19: APP ROOT
-   CSOPS نظام الحصن v4.1.0
+   NEXUS-CSOPS v4.1.0
    ============================================================ */
 function App(){
   const [emp,        setEmp]        =useState(null);
@@ -26,12 +26,9 @@ function App(){
   const [mustChangePw,
          setMustChangePw]           =useState(false);
 
-  /* ── FIX 3: Heartbeat cleanup ref ── */
   const heartbeatCleanup=useRef(null);
 
-  /* ============================================================
-     SPLASH
-     ============================================================ */
+  /* ── SPLASH ── */
   useEffect(()=>{
     let p=0;
     const t=setInterval(()=>{
@@ -45,9 +42,7 @@ function App(){
     return()=>clearInterval(t);
   },[]);
 
-  /* ============================================================
-     AUTH
-     ============================================================ */
+  /* ── AUTH ── */
   useEffect(()=>{
     sb.auth.getSession().then(({data})=>{
       if(data.session) loadEmp(data.session);
@@ -78,7 +73,6 @@ function App(){
         );
         loadPages(data);
         loadGrantedThemes(data.id);
-        /* FIX 3: save cleanup */
         heartbeatCleanup.current=
           startHeartbeat(data.id);
         loadUnread(data.id);
@@ -88,10 +82,7 @@ function App(){
     }catch(_){}
   }
 
-  /* ============================================================
-     LOAD PAGES
-     FIX 1: accepts emp param for Realtime
-     ============================================================ */
+  /* ── LOAD PAGES ── */
   async function loadPages(e){
     if(!e) return;
     if(isOwn(e)){
@@ -122,7 +113,6 @@ function App(){
         return PA[pg]?.includes(e.role)??false;
       });
       setPages(result);
-      /* Auto-redirect if current page revoked */
       setPage(prev=>{
         if(!result.includes(prev)&&
            result.length>0){
@@ -170,9 +160,7 @@ function App(){
     setFreeze(data?.value||null);
   }
 
-  /* ============================================================
-     FIX 3: HEARTBEAT - Enhanced cleanup
-     ============================================================ */
+  /* ── HEARTBEAT ── */
   function startHeartbeat(id){
     let isActive=true;
     let timerId=null;
@@ -187,12 +175,10 @@ function App(){
       }catch(_){}
     }
 
-    /* Immediate beat */
     beat();
     timerId=setInterval(beat,60000);
     window._csops_heartbeat=timerId;
 
-    /* Visibility change handler */
     function handleVisibility(){
       if(document.visibilityState==="hidden"){
         if(timerId) clearInterval(timerId);
@@ -206,7 +192,6 @@ function App(){
       }
     }
 
-    /* Unload handler */
     async function handleUnload(){
       isActive=false;
       if(timerId) clearInterval(timerId);
@@ -245,7 +230,6 @@ function App(){
       'beforeunload',handleUnload
     );
 
-    /* Return cleanup function */
     return function cleanup(){
       isActive=false;
       if(timerId) clearInterval(timerId);
@@ -258,20 +242,16 @@ function App(){
     };
   }
 
-  /* ============================================================
-     FIX 1 + FIX 2: REALTIME SUBSCRIPTIONS
-     ============================================================ */
+  /* ── REALTIME ── */
   useEffect(()=>{
     if(!emp) return;
 
-    /* FIX 1: Page permissions realtime */
     ChannelMgr.sub(
       "pages-watch","page_permissions",
       ()=>loadPages(emp),
       {filter:"employee_id=eq."+emp.id}
     );
 
-    /* FIX 1: Blank slate realtime */
     ChannelMgr.sub(
       "bs-watch","system_settings",
       (payload)=>{
@@ -286,7 +266,6 @@ function App(){
       }
     );
 
-    /* FIX 2: Global sign-out on suspend */
     ChannelMgr.sub(
       "suspend-watch","employees",
       async(payload)=>{
@@ -294,7 +273,6 @@ function App(){
           payload.new?.is_suspended===true&&
           payload.new?.id===emp.id
         ){
-          /* Cleanup heartbeat first */
           if(heartbeatCleanup.current){
             heartbeatCleanup.current();
             heartbeatCleanup.current=null;
@@ -311,19 +289,16 @@ function App(){
       {filter:"id=eq."+emp.id}
     );
 
-    /* Freeze realtime */
     ChannelMgr.sub(
       "freeze-watch","system_settings",
       ()=>loadFreeze()
     );
 
-    /* Critical alerts realtime */
     ChannelMgr.sub(
       "alerts-watch","critical_alerts",
       ()=>loadCritAlerts()
     );
 
-    /* Notifications unread realtime */
     ChannelMgr.sub(
       "notif-watch","notifications",
       ()=>loadUnread(emp.id),
@@ -340,9 +315,7 @@ function App(){
     };
   },[emp]);
 
-  /* ============================================================
-     THEME
-     ============================================================ */
+  /* ── THEME ── */
   useEffect(()=>{
     document.documentElement.setAttribute(
       'data-theme',theme
@@ -355,7 +328,6 @@ function App(){
     setTheme(t);
   }
 
-  /* ── Auto Saudi theme update ── */
   useEffect(()=>{
     if(!theme.startsWith("saudi")) return;
     const t=setInterval(()=>{
@@ -365,9 +337,7 @@ function App(){
     return()=>clearInterval(t);
   },[theme]);
 
-  /* ============================================================
-     LOGIN
-     ============================================================ */
+  /* ── LOGIN ── */
   function handleLogin(e,s){
     setEmp(e);setSession(s);
     setMustChangePw(
@@ -382,25 +352,20 @@ function App(){
     loadFreeze();
   }
 
-  /* ============================================================
-     LOGOUT - FIX 3: proper cleanup
-     ============================================================ */
+  /* ── LOGOUT ── */
   async function handleLogout(){
     if(!confirm("Sign out?")) return;
     try{
-      /* Stop heartbeat first */
       if(heartbeatCleanup.current){
         heartbeatCleanup.current();
         heartbeatCleanup.current=null;
       }
-      /* Set offline */
       await sb.from("employees").update({
         status:"Offline",
         last_heartbeat:
           new Date().toISOString()
       }).eq("id",emp.id);
     }catch(_){}
-    /* Unsubscribe all channels */
     ChannelMgr.unsubAll();
     await sb.auth.signOut();
     setEmp(null);setSession(null);
@@ -408,9 +373,7 @@ function App(){
     setCritAlerts([]);setFreeze(null);
   }
 
-  /* ============================================================
-     NAVIGATION
-     ============================================================ */
+  /* ── NAVIGATION ── */
   function handleNav(pg){
     setPage(pg);setSidebar(false);
     if(pg==="Notifications"){
@@ -420,9 +383,7 @@ function App(){
     }
   }
 
-  /* ============================================================
-     DISMISS ALERT
-     ============================================================ */
+  /* ── DISMISS ALERT ── */
   async function dismissAlert(id){
     const alert=critAlerts.find(a=>a.id===id);
     if(!alert) return;
@@ -449,9 +410,7 @@ function App(){
     }catch(_){}
   }
 
-  /* ============================================================
-     PAGE RENDERER
-     ============================================================ */
+  /* ── PAGE RENDERER ── */
   function renderPage(){
     const props={emp,key:page};
     switch(page){
@@ -485,9 +444,7 @@ function App(){
     }
   }
 
-  /* ============================================================
-     RENDER GUARDS
-     ============================================================ */
+  /* ── RENDER GUARDS ── */
   if(splash) return(
     <SplashScreen progress={progress}/>
   );
@@ -509,21 +466,13 @@ function App(){
 
   const isFrozen=freeze?.active===true;
 
-  /* ============================================================
-     MAIN RENDER
-     ============================================================ */
+  /* ── MAIN RENDER ── */
   return(
     <div className="app-root">
-
-      {/* Live Background */}
       <LiveBackground theme={theme}/>
-
-      {/* Freeze Overlay (non-admin) */}
       {isFrozen&&!canFreeze(emp)&&(
         <FreezeOverlay freeze={freeze}/>
       )}
-
-      {/* Critical Alerts */}
       <CriticalAlertDisplay
         alerts={critAlerts}
         empId={emp.id}
@@ -531,11 +480,7 @@ function App(){
         isAdmin={
           isOwn(emp)||isMgr(emp.role)
         }/>
-
-      {/* Network Banner */}
       <NetworkBanner/>
-
-      {/* Header */}
       <Header
         emp={emp}
         onLogout={handleLogout}
@@ -550,8 +495,6 @@ function App(){
         onToggleFreeze={()=>
           setShowFreeze(true)}
         grantedThemes={grantedThemes}/>
-
-      {/* Sidebar */}
       <Sidebar
         emp={emp}
         page={page}
@@ -559,8 +502,6 @@ function App(){
         isOpen={sidebar}
         onClose={()=>setSidebar(false)}
         pages={pages}/>
-
-      {/* Main Content */}
       <main className="app-main">
         <div className="page-container">
           <ErrorBoundary key={page}>
@@ -568,16 +509,12 @@ function App(){
           </ErrorBoundary>
         </div>
       </main>
-
-      {/* Bottom Nav */}
       <BottomNav
         emp={emp}
         page={page}
         onNav={handleNav}
         pages={pages}
         unread={unread}/>
-
-      {/* Freeze Modal */}
       {showFreeze&&(
         <FreezeModal
           emp={emp}
@@ -592,9 +529,7 @@ function App(){
   );
 }
 
-/* ============================================================
-   MOUNT
-   ============================================================ */
+/* ── MOUNT ── */
 const root=ReactDOM.createRoot(
   document.getElementById('root')
 );
@@ -605,100 +540,3 @@ root.render(
     </ErrorBoundary>
   </AppProvider>
 );
-
-<!-- ============================================================
-   index.html - CSOPS نظام الحصن v4.1.0
-   ============================================================ -->
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport"
-    content="width=device-width,
-    initial-scale=1.0,
-    maximum-scale=1.0,
-    user-scalable=no"/>
-  <meta name="theme-color" content="#0A0A0F"/>
-  <meta name="apple-mobile-web-app-capable"
-    content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style"
-    content="black-translucent"/>
-  <title>🏰 نظام الحصن · CSOPS</title>
-
-  <!-- CSS Files -->
-  <link rel="stylesheet" href="style1.css"/>
-  <link rel="stylesheet" href="style2.css"/>
-
-  <!-- React -->
-  <script crossorigin src=
-    "https://unpkg.com/react@18/umd/react.production.min.js">
-  </script>
-  <script crossorigin src=
-    "https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">
-  </script>
-
-  <!-- Supabase -->
-  <script src=
-    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-  </script>
-
-  <!-- Babel (JSX) -->
-  <script src=
-    "https://unpkg.com/@babel/standalone/babel.min.js">
-  </script>
-
-  <style>
-    /* Critical inline styles */
-    *,*::before,*::after{
-      box-sizing:border-box;
-      margin:0;padding:0;
-    }
-    body{
-      background:#0A0A0F;
-      color:#F0F0FF;
-      font-family:'Inter',system-ui,sans-serif;
-      overflow-x:hidden;
-    }
-    #root,#portal-root{min-height:100vh;}
-    #portal-root{
-      position:fixed;
-      top:0;left:0;
-      pointer-events:none;
-      z-index:9999;
-    }
-    #portal-root>*{
-      pointer-events:all;
-    }
-    .spinner-white{
-      border-color:rgba(255,255,255,0.2)!important;
-      border-top-color:#fff!important;
-    }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  <div id="portal-root"></div>
-
-  <!-- ENV Config -->
-  <script>
-    window.ENV_SUPABASE_URL=
-      "YOUR_SUPABASE_URL";
-    window.ENV_SUPABASE_KEY=
-      "YOUR_SUPABASE_ANON_KEY";
-  </script>
-
-  <!-- JS Files (order matters) -->
-  <script type="text/babel" src="config.js">
-  </script>
-  <script type="text/babel" src="components.js">
-  </script>
-  <script type="text/babel" src="screens1.js">
-  </script>
-  <script type="text/babel" src="screens2.js">
-  </script>
-  <script type="text/babel" src="screens3.js">
-  </script>
-  <script type="text/babel" src="app.js">
-  </script>
-</body>
-</html>
