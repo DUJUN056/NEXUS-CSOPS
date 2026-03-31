@@ -38,34 +38,36 @@ function PageRouter(props){
   var setPage=props.setPage;
   if(!user)return React.createElement(LoadingPage,{message:"Loading..."});
   if(!RC.canAccess(user,page)){
-    return React.createElement(EmptyState,{icon:"?",title:"Access Denied",desc:"You do not have permission"});
+    return React.createElement(EmptyState,{icon:"?",title:"Access Denied"});
   }
   var p={user:user,setPage:setPage};
-  var map={
-    "Updates Feed":React.createElement(UpdatesFeedPage,p),
-    "Announcements":React.createElement(AnnouncementsPage,p),
-    "Schedule":React.createElement(SchedulePage,p),
-    "Attendance":React.createElement(AttendancePage,p),
-    "Live Floor":React.createElement(LiveFloorPage,p),
-    "My Break Schedule":React.createElement(MyBreakSchedulePage,p),
-    "My Requests":React.createElement(MyRequestsPage,p),
-    "Shift Handover":React.createElement(ShiftHandoverPage,p),
-    "Case Handover":React.createElement(CaseHandoverPage,p),
-    "TT Tracker":React.createElement(TTTrackerPage,p),
-    "Performance":React.createElement(PerformancePage,p),
-    "Queue":React.createElement(QueuePage,p),
-    "Gamification":React.createElement(GamificationPage,p),
-    "Surveys":React.createElement(SurveysPage,p),
-    "Chat":React.createElement(ChatPage,p),
-    "Notifications":React.createElement(NotificationsPage,p),
-    "My Profile":React.createElement(MyProfilePage,p),
-    "My Workspace":React.createElement(MyWorkspacePage,p),
-    "Audit Log":React.createElement(AuditLogPage,p),
-    "Reports & Notes":React.createElement(ReportsNotesPage,p),
-    "Break Management":React.createElement(BreakManagementPage,p),
-    "Owner Analytics":React.createElement(OwnerAnalytics,p)
+
+  /* فحص وجود الصفحة */
+  var pages={
+    "Updates Feed": typeof UpdatesFeedPage!=="undefined"?React.createElement(UpdatesFeedPage,p):null,
+    "Announcements": typeof AnnouncementsPage!=="undefined"?React.createElement(AnnouncementsPage,p):null,
+    "Schedule": typeof SchedulePage!=="undefined"?React.createElement(SchedulePage,p):null,
+    "Attendance": typeof AttendancePage!=="undefined"?React.createElement(AttendancePage,p):null,
+    "Live Floor": typeof LiveFloorPage!=="undefined"?React.createElement(LiveFloorPage,p):null,
+    "My Break Schedule": typeof MyBreakSchedulePage!=="undefined"?React.createElement(MyBreakSchedulePage,p):null,
+    "My Requests": typeof MyRequestsPage!=="undefined"?React.createElement(MyRequestsPage,p):null,
+    "Shift Handover": typeof ShiftHandoverPage!=="undefined"?React.createElement(ShiftHandoverPage,p):null,
+    "Case Handover": typeof CaseHandoverPage!=="undefined"?React.createElement(CaseHandoverPage,p):null,
+    "TT Tracker": typeof TTTrackerPage!=="undefined"?React.createElement(TTTrackerPage,p):null,
+    "Performance": typeof PerformancePage!=="undefined"?React.createElement(PerformancePage,p):null,
+    "Queue": typeof QueuePage!=="undefined"?React.createElement(QueuePage,p):null,
+    "Gamification": typeof GamificationPage!=="undefined"?React.createElement(GamificationPage,p):null,
+    "Surveys": typeof SurveysPage!=="undefined"?React.createElement(SurveysPage,p):null,
+    "Chat": typeof ChatPage!=="undefined"?React.createElement(ChatPage,p):null,
+    "Notifications": typeof NotificationsPage!=="undefined"?React.createElement(NotificationsPage,p):null,
+    "My Profile": typeof MyProfilePage!=="undefined"?React.createElement(MyProfilePage,p):null,
+    "My Workspace": typeof MyWorkspacePage!=="undefined"?React.createElement(MyWorkspacePage,p):null,
+    "Audit Log": typeof AuditLogPage!=="undefined"?React.createElement(AuditLogPage,p):null,
+    "Reports & Notes": typeof ReportsNotesPage!=="undefined"?React.createElement(ReportsNotesPage,p):null,
+    "Break Management": typeof BreakManagementPage!=="undefined"?React.createElement(BreakManagementPage,p):null,
+    "Owner Analytics": typeof OwnerAnalytics!=="undefined"?React.createElement(OwnerAnalytics,p):null
   };
-  return map[page]||React.createElement(EmptyState,{icon:"?",title:"Page Not Found",desc:page});
+  return pages[page]||React.createElement(EmptyState,{icon:"?",title:"Page Not Found",desc:page});
 }
 function Sidebar(props){
   var user=props.user;
