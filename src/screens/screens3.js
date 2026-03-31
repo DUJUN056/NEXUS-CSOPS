@@ -1,19 +1,23 @@
-/* NEXUS-CSOPS v4.2.0 — screens3.js */
 function ChatPage(p){
   var user=p.user;
-  var _1=React.useState([]),msgs=_1[0],setMsgs=_1[1];
-  var _2=React.useState(""),text=_2[0],setText=_2[1];
-  var _3=React.useState(true),loading=_3[0],setLoading=_3[1];
+  var _1=React.useState([]);var msgs=_1[0];var setMsgs=_1[1];
+  var _2=React.useState("");var text=_2[0];var setText=_2[1];
+  var _3=React.useState(true);var loading=_3[0];var setLoading=_3[1];
   var endRef=React.useRef(null);
   React.useEffect(function(){load()},[]);
-  React.useEffect(function(){if(endRef.current)endRef.current.scrollIntoView({behavior:"smooth"})},[msgs]);
+  React.useEffect(function(){
+    if(endRef.current)endRef.current.scrollIntoView({behavior:"smooth"});
+  },[msgs]);
   function load(){
     withRetry(function(){return sb.from("chat_messages").select("*,sender:employees(full_name,role,avatar_url)").eq("room","general").order("created_at",{ascending:true}).limit(100)})
     .then(function(r){setMsgs(r.data||[])})
     .catch(function(){})
     .finally(function(){setLoading(false)});
   }
-  React.useEffect(function(){ChannelMgr.sub("chat","chat_messages",null,load);return function(){ChannelMgr.unsub("chat")}},[]);
+  React.useEffect(function(){
+    ChannelMgr.sub("chat","chat_messages",null,load);
+    return function(){ChannelMgr.unsub("chat")};
+  },[]);
   function send(){
     if(!text.trim())return;
     var t=text.trim();
@@ -21,7 +25,9 @@ function ChatPage(p){
     withRetry(function(){return sb.from("chat_messages").insert({sender_id:user.id,room:"general",message:t})})
     .catch(function(){showToast("Failed to send","error")});
   }
-  function handleKey(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}}
+  function handleKey(e){
+    if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}
+  }
   if(loading)return React.createElement(LoadingPage,{message:"Loading Chat..."});
   return React.createElement("div",{className:"nx-page-enter",style:{display:"flex",flexDirection:"column",height:"calc(100vh - 120px)"}},
     React.createElement(PageHeader,{title:"Team Chat",icon:"💬",subtitle:"General channel"}),
@@ -32,7 +38,8 @@ function ChatPage(p){
           React.createElement(NxAvatar,{user:m.sender,size:"sm"}),
           React.createElement("div",{style:{maxWidth:"70%"}},
             React.createElement("div",{style:{fontSize:10,color:"var(--text-muted)",marginBottom:3,textAlign:isMe?"right":"left"}},
-              (m.sender&&m.sender.full_name)||"—"," · ",fmtTime(m.created_at)),
+              (m.sender&&m.sender.full_name)||"--"," ",fmtTime(m.created_at)
+            ),
             React.createElement("div",{style:{background:isMe?"var(--primary)":"var(--card2)",color:isMe?"#000":"var(--text)",padding:"10px 14px",borderRadius:isMe?"16px 16px 4px 16px":"16px 16px 16px 4px",fontSize:13,lineHeight:1.5,wordBreak:"break-word"}},m.message)
           )
         );
@@ -45,11 +52,10 @@ function ChatPage(p){
     )
   );
 }
-
 function NotificationsPage(p){
   var user=p.user;
-  var _1=React.useState([]),items=_1[0],setItems=_1[1];
-  var _2=React.useState(true),loading=_2[0],setLoading=_2[1];
+  var _1=React.useState([]);var items=_1[0];var setItems=_1[1];
+  var _2=React.useState(true);var loading=_2[0];var setLoading=_2[1];
   React.useEffect(function(){load()},[]);
   function load(){
     withRetry(function(){return sb.from("notifications").select("*").eq("user_id",user.id).order("created_at",{ascending:false}).limit(50)})
@@ -70,10 +76,10 @@ function NotificationsPage(p){
   return React.createElement("div",{className:"nx-page-enter"},
     React.createElement(PageHeader,{title:"Notifications",icon:"🔔",subtitle:unread+" unread",
       actions:unread>0?React.createElement("button",{className:"nx-btn nx-btn-secondary nx-btn-sm",onClick:markAll},"Mark All Read"):null}),
-    items.length===0?React.createElement(EmptyState,{icon:"🔔",title:"No notifications"}):
+    items.length===0?React.createElement(EmptyState,{icon:"?",title:"No notifications"}):
     React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
       items.map(function(item){
-        return React.createElement("div",{key:item.id,className:"nx-card",style:{padding:14,borderColor:!item.is_read?"var(--primary)44":"var(--border)",cursor:"pointer"},
+        return React.createElement("div",{key:item.id,className:"nx-card",style:{padding:14,cursor:"pointer"},
           onClick:function(){if(!item.is_read)markRead(item.id)}},
           React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}},
             React.createElement("div",{style:{flex:1}},
@@ -90,16 +96,16 @@ function NotificationsPage(p){
     )
   );
 }
-
 function MyProfilePage(p){
   var user=p.user;
-  var _1=React.useState({full_name:user.full_name||"",phone:user.phone||"",team:user.team||"",shift:user.shift||""}),form=_1[0],setForm=_1[1];
-  var _2=React.useState(false),saving=_2[0],setSaving=_2[1];
+  var _1=React.useState({full_name:user.full_name||"",phone:user.phone||"",team:user.team||"",shift:user.shift||""});
+  var form=_1[0];var setForm=_1[1];
+  var _2=React.useState(false);var saving=_2[0];var setSaving=_2[1];
   function save(){
     setSaving(true);
     withRetry(function(){return sb.from("employees").update({full_name:form.full_name,phone:form.phone,team:form.team,shift:form.shift,updated_at:new Date().toISOString()}).eq("id",user.id)})
-    .then(function(){showToast("Profile updated ✅","success")})
-    .catch(function(){showToast("Failed to update","error")})
+    .then(function(){showToast("Profile updated","success")})
+    .catch(function(){showToast("Failed","error")})
     .finally(function(){setSaving(false)});
   }
   return React.createElement("div",{className:"nx-page-enter"},
@@ -108,7 +114,7 @@ function MyProfilePage(p){
       React.createElement("div",{style:{display:"flex",alignItems:"center",gap:16,marginBottom:24}},
         React.createElement(NxAvatar,{user:user,size:"xl"}),
         React.createElement("div",null,
-          React.createElement("div",{style:{fontSize:18,fontWeight:900,color:"var(--text)"}},user.full_name||"—"),
+          React.createElement("div",{style:{fontSize:18,fontWeight:900,color:"var(--text)"}},user.full_name||"--"),
           React.createElement(RoleBadge,{role:user.role}),
           React.createElement("div",{style:{fontSize:12,color:"var(--text-muted)",marginTop:4}},user.email)
         )
@@ -137,22 +143,25 @@ function MyProfilePage(p){
     )
   );
 }
-
 function MyWorkspacePage(p){
   var user=p.user;
-  var _1=React.useState(ThemeMgr.get()),selected=_1[0],setSelected=_1[1];
+  var _1=React.useState(ThemeMgr.get());var selected=_1[0];var setSelected=_1[1];
   function applyTheme(id){
     setSelected(id);
     ThemeMgr.set(id);
-    showToast("Theme applied ✅","success");
+    showToast("Theme applied","success");
   }
   return React.createElement("div",{className:"nx-page-enter"},
     React.createElement(PageHeader,{title:"My Workspace",icon:"🖥️",subtitle:"Customize your experience"}),
     React.createElement("div",{className:"nx-card",style:{padding:24,maxWidth:500}},
-      React.createElement("h3",{className:"nx-section-title"},"🎨 Theme"),
+      React.createElement("h3",{className:"nx-section-title"},"Theme"),
       React.createElement("div",{style:{display:"flex",gap:10,flexWrap:"wrap",marginTop:12}},
         ThemeMgr.getAvailable().map(function(t){
-          return React.createElement("button",{key:t.id,onClick:function(){applyTheme(t.id)},style:{padding:"12px 20px",borderRadius:8,border:"2px solid "+(selected===t.id?"var(--primary)":"var(--border)"),background:selected===t.id?"var(--primary)18":"var(--card2)",color:selected===t.id?"var(--primary)":"var(--text)",fontWeight:700,fontSize:13,cursor:"pointer",transition:"all 0.15s",display:"flex",alignItems:"center",gap:8}},
+          return React.createElement("button",{
+            key:t.id,
+            onClick:function(){applyTheme(t.id)},
+            style:{padding:"12px 20px",borderRadius:8,border:"2px solid "+(selected===t.id?"var(--primary)":"var(--border)"),background:selected===t.id?"rgba(0,255,136,0.09)":"var(--card2)",color:selected===t.id?"var(--primary)":"var(--text)",fontWeight:700,fontSize:13,cursor:"pointer",transition:"all 0.15s",display:"flex",alignItems:"center",gap:8,fontFamily:"inherit"}
+          },
             React.createElement("div",{style:{width:12,height:12,borderRadius:"50%",background:t.bg,flexShrink:0}}),
             t.label
           );
