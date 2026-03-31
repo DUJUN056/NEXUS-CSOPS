@@ -1,11 +1,8 @@
 /* ============================================================
    NEXUS-CSOPS v4.2.0
-   config.js — Core Configuration & Utilities
+   config.js
    ============================================================ */
 
-/* ══════════════════════════════════════════════════════════
-   SUPABASE INIT
-   ══════════════════════════════════════════════════════════ */
 const SUPABASE_URL = "https://nrcnadkrnsjzbdzgrtgg.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY25hZGtybnNqemJkemdydGdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDkzMjksImV4cCI6MjA5MDEyNTMyOX0.SLYEKj01VAbwnyEUNq6l2VUnfvoRs-zivplF01-oDLQ";
 
@@ -21,7 +18,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 });
 
 /* ══════════════════════════════════════════════════════════
-   REACT HOOKS — تعريف مرة واحدة فقط هنا
+   REACT HOOKS
    ══════════════════════════════════════════════════════════ */
 const useState    = React.useState;
 const useEffect   = React.useEffect;
@@ -59,7 +56,7 @@ const RC = {
     return user?.role === "Owner";
   },
   isMgr(user) {
-    return ["Owner", "Shift Leader", "Team Leader"]
+    return ["Owner","Shift Leader","Team Leader"]
       .includes(user?.role);
   },
   isSME(user) {
@@ -67,14 +64,13 @@ const RC = {
   },
   canAccess(user, page) {
     if (!user) return false;
-    const role = user.role;
-    if (role === "Owner") return true;
+    if (user.role === "Owner") return true;
     const ownerOnly = ["Owner Analytics"];
     if (ownerOnly.includes(page)) return false;
-    const mgrOnly = ["Break Management", "Audit Log"];
+    const mgrOnly = ["Break Management","Audit Log"];
     if (mgrOnly.includes(page)) {
-      return ["Owner", "Shift Leader", "Team Leader"]
-        .includes(role);
+      return ["Owner","Shift Leader","Team Leader"]
+        .includes(user.role);
     }
     return true;
   }
@@ -105,9 +101,7 @@ const ThemeMgr = {
   get(user) {
     try {
       return localStorage.getItem("nx_theme") || "nika";
-    } catch(e) {
-      return "nika";
-    }
+    } catch(e) { return "nika"; }
   },
   set(themeId, user) {
     try {
@@ -134,31 +128,33 @@ const ThemeImageMgr = {
   set(theme, page, url) {
     try {
       localStorage.setItem(
-        `nx_img_${theme}_${page}`, url
+        "nx_img_" + theme + "_" + page, url
       );
     } catch(e) {}
   },
   getSync(theme, page) {
     try {
       return localStorage.getItem(
-        `nx_img_${theme}_${page}`
+        "nx_img_" + theme + "_" + page
       ) || null;
-    } catch(e) {
-      return null;
-    }
+    } catch(e) { return null; }
   },
   remove(theme, page) {
     try {
       localStorage.removeItem(
-        `nx_img_${theme}_${page}`
+        "nx_img_" + theme + "_" + page
       );
     } catch(e) {}
   },
   clear() {
     try {
       Object.keys(localStorage)
-        .filter(k => k.startsWith("nx_img_"))
-        .forEach(k => localStorage.removeItem(k));
+        .filter(function(k) {
+          return k.indexOf("nx_img_") === 0;
+        })
+        .forEach(function(k) {
+          localStorage.removeItem(k);
+        });
     } catch(e) {}
   }
 };
@@ -171,14 +167,10 @@ const ChannelMgr = {
   sub(name, table, filter, callback) {
     this.unsub(name);
     try {
-      let ch = sb.channel(`nx_${name}`);
-      const cfg = {
-        event:  "*",
-        schema: "public",
-        table
-      };
+      var ch  = sb.channel("nx_" + name);
+      var cfg = { event:"*", schema:"public", table:table };
       if (filter) cfg.filter = filter;
-      ch = ch.on("postgres_changes", cfg, () => {
+      ch = ch.on("postgres_changes", cfg, function() {
         try { callback(); } catch(e) {}
       });
       ch.subscribe();
@@ -195,8 +187,9 @@ const ChannelMgr = {
   },
   unsubAll() {
     try {
+      var self = this;
       Object.keys(this.channels)
-        .forEach(k => this.unsub(k));
+        .forEach(function(k) { self.unsub(k); });
     } catch(e) {}
   }
 };
@@ -227,7 +220,7 @@ async function withRetry(fn, retries, delay) {
 async function logAudit(action, details, actorId, targetId) {
   try {
     await sb.from("audit_log").insert({
-      action,
+      action:     action,
       details:    details   || null,
       actor_id:   actorId   || null,
       target_id:  targetId  || null,
@@ -269,8 +262,7 @@ function showToast(message, type, duration) {
     });
     window.dispatchEvent(event);
   } catch(e) {
-    console.log("[Toast] " + (type || "info") +
-      ": " + message);
+    console.log("[Toast] " + (type||"info") + ": " + message);
   }
 }
 
@@ -281,7 +273,7 @@ function fmtDate(dateStr) {
   if (!dateStr) return "—";
   try {
     return new Date(dateStr).toLocaleDateString("en-GB", {
-      day: "2-digit", month: "short", year: "numeric"
+      day:"2-digit", month:"short", year:"numeric"
     });
   } catch(e) { return "—"; }
 }
@@ -290,7 +282,7 @@ function fmtTime(dateStr) {
   if (!dateStr) return "—";
   try {
     return new Date(dateStr).toLocaleTimeString("en-GB", {
-      hour: "2-digit", minute: "2-digit"
+      hour:"2-digit", minute:"2-digit"
     });
   } catch(e) { return "—"; }
 }
@@ -299,8 +291,8 @@ function fmtDateTime(dateStr) {
   if (!dateStr) return "—";
   try {
     return new Date(dateStr).toLocaleString("en-GB", {
-      day: "2-digit", month: "short",
-      hour: "2-digit", minute: "2-digit"
+      day:"2-digit", month:"short",
+      hour:"2-digit", minute:"2-digit"
     });
   } catch(e) { return "—"; }
 }
@@ -308,7 +300,7 @@ function fmtDateTime(dateStr) {
 function fmtRelative(dateStr) {
   if (!dateStr) return "—";
   try {
-    var diff = Date.now() - new Date(dateStr).getTime();
+    var diff  = Date.now() - new Date(dateStr).getTime();
     if (isNaN(diff)) return "—";
     var mins  = Math.floor(diff / 60000);
     var hours = Math.floor(diff / 3600000);
@@ -330,10 +322,10 @@ function fmtDuration(seconds) {
     var sec = s % 60;
     if (h > 0) {
       return h + ":" +
-        String(m).padStart(2, "0") + ":" +
-        String(sec).padStart(2, "0");
+        String(m).padStart(2,"0") + ":" +
+        String(sec).padStart(2,"0");
     }
-    return m + ":" + String(sec).padStart(2, "0");
+    return m + ":" + String(sec).padStart(2,"0");
   } catch(e) { return "—"; }
 }
 
