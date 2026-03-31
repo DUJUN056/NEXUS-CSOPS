@@ -1,687 +1,170 @@
 /* NEXUS-CSOPS v4.2.0 — screens1.js */
 
-/* ══════════════════════════════════════════
-   UPDATES FEED PAGE
-   ══════════════════════════════════════════ */
-function UpdatesFeedPage(p) {
-  var user = p.user;
-  var _1 = React.useState([]);
-  var items = _1[0]; var setItems = _1[1];
-  var _2 = React.useState(true);
-  var loading = _2[0]; var setLoading = _2[1];
-
-  React.useEffect(function () { loadFeed(); }, []);
-
-  async function loadFeed() {
-    try {
-      var r = await withRetry(function () {
-        return sb.from("announcements")
-          .select("*, author:employees(full_name,role)")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(50);
-      });
-      setItems(r.data || []);
-    } catch (e) {
-      showToast("Failed to load feed", "error");
-    } finally {
-      setLoading(false);
-    }
+function UpdatesFeedPage(p){
+  var user=p.user;
+  var _1=React.useState([]),items=_1[0],setItems=_1[1];
+  var _2=React.useState(true),loading=_2[0],setLoading=_2[1];
+  React.useEffect(function(){load()},[]);
+  async function load(){
+    try{var r=await withRetry(function(){return sb.from("announcements").select("*,author:employees(full_name,role)").eq("is_active",true).order("created_at",{ascending:false}).limit(50)});setItems(r.data||[])}
+    catch(e){showToast("Failed to load feed","error")}finally{setLoading(false)}
   }
-
-  React.useEffect(function () {
-    ChannelMgr.sub("feed", "announcements", null, loadFeed);
-    return function () { ChannelMgr.unsub("feed"); };
-  }, []);
-
-  if (loading) return React.createElement(LoadingPage, {
-    message: "Loading Updates Feed..."
-  });
-
-  return React.createElement("div", { className: "nx-page-enter" },
-    React.createElement(PageHeader, {
-      title: "Updates Feed",
-      icon: "📢",
-      subtitle: getSaudiPeriod() + " — " + fmtDate(new Date().toISOString())
-    }),
-    items.length === 0
-      ? React.createElement(EmptyState, {
-          icon: "📭",
-          title: "No updates yet",
-          desc: "Announcements will appear here"
-        })
-      : React.createElement("div", {
-          style: { display: "flex", flexDirection: "column", gap: 16 }
-        },
-          items.map(function (item) {
-            return React.createElement("div", {
-              key: item.id,
-              className: "nx-card nx-card-enter",
-              style: { padding: 20 }
-            },
-              React.createElement("div", {
-                style: {
-                  display: "flex", justifyContent: "space-between",
-                  alignItems: "flex-start", marginBottom: 12, gap: 12
-                }
-              },
-                React.createElement("div", {
-                  style: { display: "flex", alignItems: "center", gap: 10 }
-                },
-                  React.createElement(PriorityBadge, {
-                    priority: item.priority || "medium"
-                  }),
-                  React.createElement("span", {
-                    style: {
-                      fontSize: 15, fontWeight: 700,
-                      color: "var(--text)"
-                    }
-                  }, item.title)
-                ),
-                React.createElement("span", {
-                  style: { fontSize: 11, color: "var(--text-muted)", whiteSpace: "nowrap" }
-                }, fmtRelative(item.created_at))
-              ),
-              item.body && React.createElement("p", {
-                style: {
-                  fontSize: 13, color: "var(--text-sub)",
-                  lineHeight: 1.7, marginBottom: 12
-                }
-              }, item.body),
-              item.author && React.createElement("div", {
-                style: { display: "flex", alignItems: "center", gap: 6 }
-              },
-                React.createElement("span", {
-                  style: { fontSize: 11, color: "var(--text-muted)" }
-                }, "By " + (item.author.full_name || "—")),
-                React.createElement(RoleBadge, {
-                  role: item.author.role
-                })
-              )
-            );
-          })
-        )
-  );
-}
-
-/* ══════════════════════════════════════════
-   ANNOUNCEMENTS PAGE
-   ══════════════════════════════════════════ */
-function AnnouncementsPage(p) {
-  var user = p.user;
-  var _1 = React.useState([]);
-  var items = _1[0]; var setItems = _1[1];
-  var _2 = React.useState(true);
-  var loading = _2[0]; var setLoading = _2[1];
-  var _3 = React.useState(false);
-  var showForm = _3[0]; var setShowForm = _3[1];
-  var _4 = React.useState({ title: "", body: "", priority: "medium" });
-  var form = _4[0]; var setForm = _4[1];
-
-  React.useEffect(function () { load(); }, []);
-
-  async function load() {
-    try {
-      var r = await withRetry(function () {
-        return sb.from("announcements")
-          .select("*, author:employees(full_name,role)")
-          .order("created_at", { ascending: false });
-      });
-      setItems(r.data || []);
-    } catch (e) {
-      showToast("Failed to load", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleSubmit() {
-    if (!form.title) {
-      showToast("Title is required", "warning");
-      return;
-    }
-    try {
-      await withRetry(function () {
-        return sb.from("announcements").insert({
-          title:     form.title,
-          body:      form.body || null,
-          priority:  form.priority,
-          author_id: user.id,
-          is_active: true
-        });
-      });
-      showToast("Announcement posted ✅", "success");
-      setShowForm(false);
-      setForm({ title: "", body: "", priority: "medium" });
-      load();
-    } catch (e) {
-      showToast("Failed to post", "error");
-    }
-  }
-
-  async function handleDelete(id) {
-    try {
-      await withRetry(function () {
-        return sb.from("announcements").delete().eq("id", id);
-      });
-      showToast("Deleted ✅", "success");
-      load();
-    } catch (e) {
-      showToast("Failed to delete", "error");
-    }
-  }
-
-  if (loading) return React.createElement(LoadingPage, {
-    message: "Loading Announcements..."
-  });
-
-  return React.createElement("div", { className: "nx-page-enter" },
-    React.createElement(PageHeader, {
-      title: "Announcements",
-      icon: "📣",
-      subtitle: items.length + " total",
-      actions: RC.isMgr(user)
-        ? React.createElement("button", {
-            className: "nx-btn nx-btn-primary nx-btn-sm",
-            onClick: function () { setShowForm(!showForm); }
-          }, showForm ? "✕ Cancel" : "+ New")
-        : null
-    }),
-
-    showForm && React.createElement("div", {
-      className: "nx-card",
-      style: { padding: 20, marginBottom: 20 }
-    },
-      React.createElement("div", {
-        style: { display: "flex", flexDirection: "column", gap: 12 }
-      },
-        React.createElement("input", {
-          className: "nx-input",
-          placeholder: "Announcement title...",
-          value: form.title,
-          onChange: function (e) {
-            setForm(function (f) {
-              return Object.assign({}, f, { title: e.target.value });
-            });
-          }
-        }),
-        React.createElement("textarea", {
-          className: "nx-input",
-          placeholder: "Details (optional)...",
-          rows: 3,
-          value: form.body,
-          onChange: function (e) {
-            setForm(function (f) {
-              return Object.assign({}, f, { body: e.target.value });
-            });
-          },
-          style: { resize: "vertical" }
-        }),
-        React.createElement("select", {
-          className: "nx-input",
-          value: form.priority,
-          onChange: function (e) {
-            setForm(function (f) {
-              return Object.assign({}, f, { priority: e.target.value });
-            });
-          }
-        },
-          React.createElement("option", { value: "low" }, "🟢 Low"),
-          React.createElement("option", { value: "medium" }, "🟡 Medium"),
-          React.createElement("option", { value: "high" }, "🔴 High"),
-          React.createElement("option", { value: "critical" }, "🚨 Critical")
+  React.useEffect(function(){ChannelMgr.sub("feed","announcements",null,load);return function(){ChannelMgr.unsub("feed")}},[]);
+  if(loading)return React.createElement(LoadingPage,{message:"Loading Updates Feed..."});
+  return React.createElement("div",{className:"nx-page-enter"},
+    React.createElement(PageHeader,{title:"Updates Feed",icon:"📢",subtitle:fmtDate(new Date().toISOString())}),
+    items.length===0?React.createElement(EmptyState,{icon:"📭",title:"No updates yet",desc:"Announcements will appear here"}):
+    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:16}},
+      items.map(function(item){return React.createElement("div",{key:item.id,className:"nx-card nx-card-enter",style:{padding:20}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12,gap:12}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
+            React.createElement(PriorityBadge,{priority:item.priority||"medium"}),
+            React.createElement("span",{style:{fontSize:15,fontWeight:700}},item.title)
+          ),
+          React.createElement("span",{style:{fontSize:11,color:"var(--text-muted)",whiteSpace:"nowrap"}},fmtRelative(item.created_at))
         ),
-        React.createElement("button", {
-          className: "nx-btn nx-btn-primary",
-          onClick: handleSubmit
-        }, "Post Announcement")
-      )
-    ),
-
-    items.length === 0
-      ? React.createElement(EmptyState, {
-          icon: "📣",
-          title: "No announcements",
-          desc: "Post the first announcement"
-        })
-      : React.createElement("div", {
-          style: { display: "flex", flexDirection: "column", gap: 12 }
-        },
-          items.map(function (item) {
-            return React.createElement("div", {
-              key: item.id,
-              className: "nx-card nx-card-enter",
-              style: { padding: 16 }
-            },
-              React.createElement("div", {
-                style: {
-                  display: "flex", justifyContent: "space-between",
-                  alignItems: "flex-start", gap: 12
-                }
-              },
-                React.createElement("div", { style: { flex: 1 } },
-                  React.createElement("div", {
-                    style: {
-                      display: "flex", alignItems: "center",
-                      gap: 8, marginBottom: 6
-                    }
-                  },
-                    React.createElement(PriorityBadge, {
-                      priority: item.priority
-                    }),
-                    React.createElement("span", {
-                      style: { fontSize: 14, fontWeight: 700 }
-                    }, item.title)
-                  ),
-                  item.body && React.createElement("p", {
-                    style: {
-                      fontSize: 13, color: "var(--text-sub)",
-                      lineHeight: 1.6
-                    }
-                  }, item.body),
-                  React.createElement("div", {
-                    style: {
-                      fontSize: 11, color: "var(--text-muted)",
-                      marginTop: 8
-                    }
-                  }, fmtRelative(item.created_at))
-                ),
-                RC.isMgr(user) && React.createElement("button", {
-                  className: "nx-btn nx-btn-danger nx-btn-sm",
-                  onClick: function () { handleDelete(item.id); }
-                }, "🗑️")
-              )
-            );
-          })
+        item.body&&React.createElement("p",{style:{fontSize:13,color:"var(--text-sub)",lineHeight:1.7,marginBottom:12}},item.body),
+        item.author&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},
+          React.createElement("span",{style:{fontSize:11,color:"var(--text-muted)"}},"By "+(item.author.full_name||"—")),
+          React.createElement(RoleBadge,{role:item.author.role})
         )
-  );
-}
-
-/* ══════════════════════════════════════════
-   SCHEDULE PAGE
-   ══════════════════════════════════════════ */
-function SchedulePage(p) {
-  var user = p.user;
-  var _1 = React.useState([]);
-  var items = _1[0]; var setItems = _1[1];
-  var _2 = React.useState(true);
-  var loading = _2[0]; var setLoading = _2[1];
-
-  React.useEffect(function () { load(); }, []);
-
-  async function load() {
-    try {
-      var r = await withRetry(function () {
-        return sb.from("schedules")
-          .select("*, employee:employees(full_name,role)")
-          .eq("employee_id", user.id)
-          .order("date", { ascending: true })
-          .limit(30);
-      });
-      setItems(r.data || []);
-    } catch (e) {
-      showToast("Failed to load schedule", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (loading) return React.createElement(LoadingPage, {
-    message: "Loading Schedule..."
-  });
-
-  return React.createElement("div", { className: "nx-page-enter" },
-    React.createElement(PageHeader, {
-      title: "My Schedule",
-      icon: "📅",
-      subtitle: "Your upcoming shifts"
-    }),
-    items.length === 0
-      ? React.createElement(EmptyState, {
-          icon: "📅",
-          title: "No schedule found",
-          desc: "Your schedule will appear here"
-        })
-      : React.createElement("div", {
-          style: { display: "flex", flexDirection: "column", gap: 10 }
-        },
-          items.map(function (item) {
-            return React.createElement("div", {
-              key: item.id,
-              className: "nx-card nx-card-enter",
-              style: {
-                padding: 16, display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }
-            },
-              React.createElement("div", null,
-                React.createElement("div", {
-                  style: { fontWeight: 700, fontSize: 14 }
-                }, fmtDate(item.date)),
-                item.day_off
-                  ? React.createElement("span", {
-                      style: { color: "#22C55E", fontSize: 12 }
-                    }, "🏖️ Day Off")
-                  : React.createElement("span", {
-                      style: { color: "var(--text-sub)", fontSize: 12 }
-                    },
-                      (item.shift_start || "—") + " → " +
-                      (item.shift_end || "—")
-                    )
-              ),
-              item.notes && React.createElement("span", {
-                style: {
-                  fontSize: 11, color: "var(--text-muted)",
-                  maxWidth: 200, textAlign: "right"
-                }
-              }, item.notes)
-            );
-          })
-        )
-  );
-}
-
-/* ══════════════════════════════════════════
-   ATTENDANCE PAGE
-   ══════════════════════════════════════════ */
-function AttendancePage(p) {
-  var user = p.user;
-  var _1 = React.useState([]);
-  var items = _1[0]; var setItems = _1[1];
-  var _2 = React.useState(true);
-  var loading = _2[0]; var setLoading = _2[1];
-  var _3 = React.useState(null);
-  var today = _3[0]; var setToday = _3[1];
-
-  var todayStr = new Date().toISOString().split("T")[0];
-
-  React.useEffect(function () { load(); }, []);
-
-  async function load() {
-    try {
-      var r = await withRetry(function () {
-        return sb.from("attendance")
-          .select("*")
-          .eq("employee_id", user.id)
-          .order("date", { ascending: false })
-          .limit(30);
-      });
-      var rows = r.data || [];
-      setItems(rows);
-      setToday(rows.find(function (x) {
-        return x.date === todayStr;
-      }) || null);
-    } catch (e) {
-      showToast("Failed to load attendance", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function checkIn() {
-    try {
-      await withRetry(function () {
-        return sb.from("attendance").insert({
-          employee_id: user.id,
-          date:        todayStr,
-          check_in:    new Date().toISOString(),
-          status:      "on_time"
-        });
-      });
-      showToast("Checked in ✅", "success");
-      load();
-    } catch (e) {
-      showToast("Failed to check in", "error");
-    }
-  }
-
-  async function checkOut() {
-    if (!today) return;
-    try {
-      await withRetry(function () {
-        return sb.from("attendance")
-          .update({ check_out: new Date().toISOString() })
-          .eq("id", today.id);
-      });
-      showToast("Checked out ✅", "success");
-      load();
-    } catch (e) {
-      showToast("Failed to check out", "error");
-    }
-  }
-
-  if (loading) return React.createElement(LoadingPage, {
-    message: "Loading Attendance..."
-  });
-
-  return React.createElement("div", { className: "nx-page-enter" },
-    React.createElement(PageHeader, {
-      title: "Attendance",
-      icon: "✅",
-      subtitle: "Track your attendance"
-    }),
-
-    React.createElement("div", {
-      className: "nx-card",
-      style: { padding: 20, marginBottom: 20 }
-    },
-      React.createElement("div", {
-        style: {
-          display: "flex", justifyContent: "space-between",
-          alignItems: "center", flexWrap: "wrap", gap: 12
-        }
-      },
-        React.createElement("div", null,
-          React.createElement("div", {
-            style: { fontSize: 13, color: "var(--text-muted)" }
-          }, "Today — " + fmtDate(todayStr)),
-          React.createElement("div", {
-            style: { fontSize: 15, fontWeight: 700, marginTop: 4 }
-          },
-            today
-              ? (today.check_in
-                  ? "In: " + fmtTime(today.check_in) +
-                    (today.check_out
-                      ? " | Out: " + fmtTime(today.check_out)
-                      : " | Still working")
-                  : "Not checked in")
-              : "Not checked in"
-          )
-        ),
-        React.createElement("div", {
-          style: { display: "flex", gap: 8 }
-        },
-          !today && React.createElement("button", {
-            className: "nx-btn nx-btn-primary nx-btn-sm",
-            onClick: checkIn
-          }, "✅ Check In"),
-          today && !today.check_out && React.createElement("button", {
-            className: "nx-btn nx-btn-secondary nx-btn-sm",
-            onClick: checkOut
-          }, "🚪 Check Out")
-        )
-      )
-    ),
-
-    React.createElement("div", {
-      style: { display: "flex", flexDirection: "column", gap: 8 }
-    },
-      items.map(function (item) {
-        return React.createElement("div", {
-          key: item.id,
-          className: "nx-card",
-          style: {
-            padding: 14, display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center"
-          }
-        },
-          React.createElement("span", {
-            style: { fontWeight: 600, fontSize: 13 }
-          }, fmtDate(item.date)),
-          React.createElement("div", {
-            style: { display: "flex", gap: 12, fontSize: 12 }
-          },
-            React.createElement("span", {
-              style: { color: "var(--text-sub)" }
-            }, item.check_in ? "In: " + fmtTime(item.check_in) : "—"),
-            React.createElement("span", {
-              style: { color: "var(--text-sub)" }
-            }, item.check_out ? "Out: " + fmtTime(item.check_out) : "—"),
-            React.createElement(StatusBadge, { status: item.status })
-          )
-        );
-      })
+      )})
     )
   );
 }
 
-/* ══════════════════════════════════════════
-   LIVE FLOOR PAGE
-   ══════════════════════════════════════════ */
-function LiveFloorPage(p) {
-  var user = p.user;
-  var _1 = React.useState([]);
-  var emps = _1[0]; var setEmps = _1[1];
-  var _2 = React.useState(true);
-  var loading = _2[0]; var setLoading = _2[1];
-  var _3 = React.useState("");
-  var search = _3[0]; var setSearch = _3[1];
-
-  React.useEffect(function () { load(); }, []);
-
-  async function load() {
-    try {
-      var r = await withRetry(function () {
-        return sb.from("employees")
-          .select("*")
-          .eq("is_active", true)
-          .order("full_name");
-      });
-      setEmps(r.data || []);
-    } catch (e) {
-      showToast("Failed to load floor", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  React.useEffect(function () {
-    ChannelMgr.sub("floor", "employees", null, load);
-    return function () { ChannelMgr.unsub("floor"); };
-  }, []);
-
-  var filtered = emps.filter(function (e) {
-    return !search ||
-      e.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      (e.role || "").toLowerCase().includes(search.toLowerCase());
-  });
-
-  var online  = emps.filter(function (e) { return e.is_online; }).length;
-  var offline = emps.length - online;
-
-  if (loading) return React.createElement(LoadingPage, {
-    message: "Loading Live Floor..."
-  });
-
-  return React.createElement("div", { className: "nx-page-enter" },
-    React.createElement(PageHeader, {
-      title: "Live Floor",
-      icon: "🖥️",
-      subtitle: online + " online · " + offline + " offline"
-    }),
-
-    React.createElement("div", {
-      className: "nx-grid-4",
-      style: { marginBottom: 20 }
-    },
-      [
-        { label: "Total",   value: emps.length, icon: "👥", color: "var(--primary)" },
-        { label: "Online",  value: online,       icon: "🟢", color: "#22C55E" },
-        { label: "Offline", value: offline,      icon: "⚫", color: "#6B7280" },
-        { label: "On Break",
-          value: emps.filter(function (e) {
-            return e.status === "onbreak";
-          }).length,
-          icon: "☕", color: "#EAB308"
-        }
-      ].map(function (s) {
-        return React.createElement("div", {
-          key: s.label,
-          className: "nx-stat-card"
-        },
-          React.createElement("div", {
-            style: { display: "flex", justifyContent: "space-between" }
-          },
-            React.createElement("span", {
-              className: "nx-stat-label"
-            }, s.label),
-            React.createElement("span", null, s.icon)
-          ),
-          React.createElement("div", {
-            className: "nx-stat-value",
-            style: { color: s.color }
-          }, s.value)
-        );
-      })
+function AnnouncementsPage(p){
+  var user=p.user;
+  var _1=React.useState([]),items=_1[0],setItems=_1[1];
+  var _2=React.useState(true),loading=_2[0],setLoading=_2[1];
+  var _3=React.useState(false),showForm=_3[0],setShowForm=_3[1];
+  var _4=React.useState({title:"",body:"",priority:"medium"}),form=_4[0],setForm=_4[1];
+  React.useEffect(function(){load()},[]);
+  async function load(){try{var r=await withRetry(function(){return sb.from("announcements").select("*,author:employees(full_name,role)").order("created_at",{ascending:false})});setItems(r.data||[])}catch(e){showToast("Failed","error")}finally{setLoading(false)}}
+  async function submit(){if(!form.title){showToast("Title required","warning");return}try{await withRetry(function(){return sb.from("announcements").insert({title:form.title,body:form.body||null,priority:form.priority,author_id:user.id,is_active:true})});showToast("Posted ✅","success");setShowForm(false);setForm({title:"",body:"",priority:"medium"});load()}catch(e){showToast("Failed","error")}}
+  async function del(id){try{await withRetry(function(){return sb.from("announcements").delete().eq("id",id)});showToast("Deleted","success");load()}catch(e){showToast("Failed","error")}}
+  if(loading)return React.createElement(LoadingPage,{message:"Loading..."});
+  return React.createElement("div",{className:"nx-page-enter"},
+    React.createElement(PageHeader,{title:"Announcements",icon:"📣",subtitle:items.length+" total",
+      actions:RC.isMgr(user)?React.createElement("button",{className:"nx-btn nx-btn-primary nx-btn-sm",onClick:function(){setShowForm(!showForm)}},showForm?"✕ Cancel":"+ New"):null}),
+    showForm&&React.createElement("div",{className:"nx-card",style:{padding:20,marginBottom:20}},
+      React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:12}},
+        React.createElement("input",{className:"nx-input",placeholder:"Title...",value:form.title,onChange:function(e){setForm(function(f){return Object.assign({},f,{title:e.target.value})})}}),
+        React.createElement("textarea",{className:"nx-input",placeholder:"Details...",rows:3,value:form.body,onChange:function(e){setForm(function(f){return Object.assign({},f,{body:e.target.value})})}}),
+        React.createElement("select",{className:"nx-input",value:form.priority,onChange:function(e){setForm(function(f){return Object.assign({},f,{priority:e.target.value})})}},
+          React.createElement("option",{value:"low"},"🟢 Low"),React.createElement("option",{value:"medium"},"🟡 Medium"),
+          React.createElement("option",{value:"high"},"🔴 High"),React.createElement("option",{value:"critical"},"🚨 Critical")),
+        React.createElement("button",{className:"nx-btn nx-btn-primary",onClick:submit},"Post")
+      )
     ),
-
-    React.createElement(SearchInput, {
-      value: search,
-      onChange: setSearch,
-      placeholder: "Search employees..."
-    }),
-
-    React.createElement("div", {
-      className: "nx-grid-3",
-      style: { marginTop: 16 }
-    },
-      filtered.map(function (emp) {
-        return React.createElement("div", {
-          key: emp.id,
-          className: "nx-card nx-card-enter",
-          style: { padding: 16 }
-        },
-          React.createElement("div", {
-            style: {
-              display: "flex", alignItems: "center",
-              gap: 12, marginBottom: 10
-            }
-          },
-            React.createElement(NxAvatar, {
-              user: emp, size: "md"
-            }),
-            React.createElement("div", { style: { flex: 1 } },
-              React.createElement("div", {
-                style: { fontWeight: 700, fontSize: 13 }
-              }, emp.full_name),
-              React.createElement(RoleBadge, { role: emp.role })
-            ),
-            React.createElement("div", {
-              style: {
-                width: 10, height: 10,
-                borderRadius: "50%",
-                background: emp.is_online ? "#22C55E" : "#6B7280",
-                flexShrink: 0
-              }
-            })
+    items.length===0?React.createElement(EmptyState,{icon:"📣",title:"No announcements"}):
+    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
+      items.map(function(item){return React.createElement("div",{key:item.id,className:"nx-card",style:{padding:16}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}},
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:6}},
+              React.createElement(PriorityBadge,{priority:item.priority}),
+              React.createElement("span",{style:{fontSize:14,fontWeight:700}},item.title)),
+            item.body&&React.createElement("p",{style:{fontSize:13,color:"var(--text-sub)",lineHeight:1.6}},item.body),
+            React.createElement("div",{style:{fontSize:11,color:"var(--text-muted)",marginTop:8}},fmtRelative(item.created_at))
           ),
-          React.createElement("div", {
-            style: {
-              display: "flex", justifyContent: "space-between",
-              alignItems: "center"
-            }
-          },
-            React.createElement(StatusBadge, {
-              status: emp.status || "offline"
-            }),
-            React.createElement("span", {
-              style: { fontSize: 10, color: "var(--text-muted)" }
-            }, fmtRelative(emp.last_seen))
-          )
-        );
-      })
+          RC.isMgr(user)&&React.createElement("button",{className:"nx-btn nx-btn-danger nx-btn-sm",onClick:function(){del(item.id)}},"🗑️")
+        )
+      )})
+    )
+  );
+}
+
+function SchedulePage(p){
+  var _1=React.useState([]),items=_1[0],setItems=_1[1];
+  var _2=React.useState(true),loading=_2[0],setLoading=_2[1];
+  React.useEffect(function(){withRetry(function(){return sb.from("schedules").select("*").eq("employee_id",p.user.id).order("date",{ascending:true}).limit(30)}).then(function(r){setItems(r.data||[])}).catch(function(){}).finally(function(){setLoading(false)})},[]);
+  if(loading)return React.createElement(LoadingPage,{message:"Loading Schedule..."});
+  return React.createElement("div",{className:"nx-page-enter"},
+    React.createElement(PageHeader,{title:"My Schedule",icon:"📅",subtitle:"Upcoming shifts"}),
+    items.length===0?React.createElement(EmptyState,{icon:"📅",title:"No schedule",desc:"Your schedule will appear here"}):
+    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
+      items.map(function(item){return React.createElement("div",{key:item.id,className:"nx-card",style:{padding:14,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        React.createElement("span",{style:{fontWeight:700,fontSize:13}},fmtDate(item.date)),
+        item.day_off?React.createElement("span",{style:{color:"#22C55E",fontSize:12}},"🏖️ Day Off"):
+        React.createElement("span",{style:{color:"var(--text-sub)",fontSize:12}},(item.shift_start||"—")+" → "+(item.shift_end||"—"))
+      )})
+    )
+  );
+}
+
+function AttendancePage(p){
+  var user=p.user,todayStr=new Date().toISOString().split("T")[0];
+  var _1=React.useState([]),items=_1[0],setItems=_1[1];
+  var _2=React.useState(true),loading=_2[0],setLoading=_2[1];
+  var _3=React.useState(null),today=_3[0],setToday=_3[1];
+  React.useEffect(function(){load()},[]);
+  async function load(){try{var r=await withRetry(function(){return sb.from("attendance").select("*").eq("employee_id",user.id).order("date",{ascending:false}).limit(30)});var rows=r.data||[];setItems(rows);setToday(rows.find(function(x){return x.date===todayStr})||null)}catch(e){}finally{setLoading(false)}}
+  async function checkIn(){try{await withRetry(function(){return sb.from("attendance").insert({employee_id:user.id,date:todayStr,check_in:new Date().toISOString(),status:"on_time"})});showToast("Checked in ✅","success");load()}catch(e){showToast("Failed","error")}}
+  async function checkOut(){if(!today)return;try{await withRetry(function(){return sb.from("attendance").update({check_out:new Date().toISOString()}).eq("id",today.id)});showToast("Checked out ✅","success");load()}catch(e){showToast("Failed","error")}}
+  if(loading)return React.createElement(LoadingPage,{message:"Loading Attendance..."});
+  return React.createElement("div",{className:"nx-page-enter"},
+    React.createElement(PageHeader,{title:"Attendance",icon:"✅",subtitle:"Track your attendance"}),
+    React.createElement("div",{className:"nx-card",style:{padding:20,marginBottom:20}},
+      React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}},
+        React.createElement("div",null,
+          React.createElement("div",{style:{fontSize:13,color:"var(--text-muted)"}},"Today — "+fmtDate(todayStr)),
+          React.createElement("div",{style:{fontSize:14,fontWeight:700,marginTop:4}},today?(today.check_in?"In: "+fmtTime(today.check_in)+(today.check_out?" | Out: "+fmtTime(today.check_out):" | Working"):"Not checked in"):"Not checked in")
+        ),
+        React.createElement("div",{style:{display:"flex",gap:8}},
+          !today&&React.createElement("button",{className:"nx-btn nx-btn-primary nx-btn-sm",onClick:checkIn},"✅ Check In"),
+          today&&!today.check_out&&React.createElement("button",{className:"nx-btn nx-btn-secondary nx-btn-sm",onClick:checkOut},"🚪 Check Out")
+        )
+      )
+    ),
+    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
+      items.map(function(item){return React.createElement("div",{key:item.id,className:"nx-card",style:{padding:12,display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        React.createElement("span",{style:{fontWeight:600,fontSize:13}},fmtDate(item.date)),
+        React.createElement("div",{style:{display:"flex",gap:10,fontSize:12,alignItems:"center"}},
+          React.createElement("span",{style:{color:"var(--text-sub)"}},item.check_in?"In: "+fmtTime(item.check_in):"—"),
+          React.createElement("span",{style:{color:"var(--text-sub)"}},item.check_out?"Out: "+fmtTime(item.check_out):"—"),
+          React.createElement(StatusBadge,{status:item.status||"unknown"})
+        )
+      )})
+    )
+  );
+}
+
+function LiveFloorPage(p){
+  var user=p.user;
+  var _1=React.useState([]),emps=_1[0],setEmps=_1[1];
+  var _2=React.useState(true),loading=_2[0],setLoading=_2[1];
+  var _3=React.useState(""),search=_3[0],setSearch=_3[1];
+  React.useEffect(function(){load()},[]);
+  async function load(){try{var r=await withRetry(function(){return sb.from("employees").select("*").eq("is_active",true).order("full_name")});setEmps(r.data||[])}catch(e){}finally{setLoading(false)}}
+  React.useEffect(function(){ChannelMgr.sub("floor","employees",null,load);return function(){ChannelMgr.unsub("floor")}},[]);
+  var filtered=emps.filter(function(e){return !search||e.full_name.toLowerCase().includes(search.toLowerCase())});
+  var online=emps.filter(function(e){return e.is_online}).length;
+  if(loading)return React.createElement(LoadingPage,{message:"Loading Live Floor..."});
+  return React.createElement("div",{className:"nx-page-enter"},
+    React.createElement(PageHeader,{title:"Live Floor",icon:"🖥️",subtitle:online+" online · "+(emps.length-online)+" offline"}),
+    React.createElement("div",{className:"nx-grid-4",style:{marginBottom:20}},
+      [{label:"Total",value:emps.length,icon:"👥",color:"var(--primary)"},{label:"Online",value:online,icon:"🟢",color:"#22C55E"},{label:"Offline",value:emps.length-online,icon:"⚫",color:"#6B7280"},{label:"On Break",value:emps.filter(function(e){return e.status==="onbreak"}).length,icon:"☕",color:"#EAB308"}]
+      .map(function(s){return React.createElement("div",{key:s.label,className:"nx-stat-card"},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between"}},React.createElement("span",{className:"nx-stat-label"},s.label),React.createElement("span",null,s.icon)),
+        React.createElement("div",{className:"nx-stat-value",style:{color:s.color,fontSize:22}},s.value))})
+    ),
+    React.createElement(SearchInput,{value:search,onChange:setSearch,placeholder:"Search employees..."}),
+    React.createElement("div",{className:"nx-grid-3",style:{marginTop:16}},
+      filtered.map(function(emp){return React.createElement("div",{key:emp.id,className:"nx-card nx-card-enter",style:{padding:16}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:10}},
+          React.createElement(NxAvatar,{user:emp,size:"md"}),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{style:{fontWeight:700,fontSize:13}},emp.full_name),
+            React.createElement(RoleBadge,{role:emp.role})
+          ),
+          React.createElement("div",{style:{width:8,height:8,borderRadius:"50%",background:emp.is_online?"#22C55E":"#6B7280"}})
+        ),
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center"}},
+          React.createElement(StatusBadge,{status:emp.status||"offline"}),
+          React.createElement("span",{style:{fontSize:10,color:"var(--text-muted)"}},fmtRelative(emp.last_seen))
+        )
+      )})
     )
   );
 }
