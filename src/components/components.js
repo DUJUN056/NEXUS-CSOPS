@@ -1,994 +1,392 @@
 /* ============================================================
    NEXUS-CSOPS v4.2.0
-   components.js — SEC 3 + SEC 4
-   6 Systems + Header + Sidebar + BottomNav + Shared UI
-   Owner: Mohammed Nasser Althurwi
+   config.js — Core Configuration & Utilities
    ============================================================ */
 
-const { useState, useEffect, useRef,
-        useCallback, useMemo } = React;
-
 /* ══════════════════════════════════════════════════════════
-   SYSTEM 1 — TOAST SYSTEM
+   SUPABASE INIT
    ══════════════════════════════════════════════════════════ */
-let _toastSetFn = null;
+const SUPABASE_URL = "https://nrcnadkrnsjzbdzgrtgg.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yY25hZGtybnNqemJkemdydGdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NDkzMjksImV4cCI6MjA5MDEyNTMyOX0.SLYEKj01VAbwnyEUNq6l2VUnfvoRs-zivplF01-oDLQ";
 
-function ToastContainer() {
-  const [toasts, setToasts] = useState([]);
-  _toastSetFn = setToasts;
-
-  const remove = useCallback((id) => {
-    setToasts(p => p.map(t =>
-      t.id === id ? { ...t, removing: true } : t
-    ));
-    setTimeout(() =>
-      setToasts(p => p.filter(t => t.id !== id)), 300
-    );
-  }, []);
-
-  return React.createElement("div",
-    { className: "nx-toast-container" },
-    toasts.map(t =>
-      React.createElement("div", {
-        key: t.id,
-        className: `nx-toast ${t.type} ${t.removing ? "removing" : ""}`,
-      },
-        React.createElement("span", { className: "nx-toast-icon" },
-          t.type === "success" ? "✅" :
-          t.type === "error"   ? "❌" :
-          t.type === "warning" ? "⚠️" : "ℹ️"
-        ),
-        React.createElement("div", { className: "nx-toast-body" },
-          t.title && React.createElement("div",
-            { className: "nx-toast-title" }, t.title),
-          React.createElement("div",
-            { className: "nx-toast-msg" }, t.message)
-        ),
-        React.createElement("button", {
-          className: "nx-toast-close",
-          onClick: () => remove(t.id)
-        }, "✕"),
-        React.createElement("div", {
-          className: "nx-toast-bar nx-toast-progress"
-        })
-      )
-    )
-  );
-}
-
-function showToast(message, type = "info", title = "", duration = 5000) {
-  if (!_toastSetFn) return;
-  const id = Date.now() + Math.random();
-  _toastSetFn(p => [...p.slice(-4), { id, message, type, title }]);
-  setTimeout(() => {
-    if (!_toastSetFn) return;
-    _toastSetFn(p => p.map(t =>
-      t.id === id ? { ...t, removing: true } : t
-    ));
-    setTimeout(() =>
-      _toastSetFn(p => p.filter(t => t.id !== id)), 300
-    );
-  }, duration);
-}
-
-/* ══════════════════════════════════════════════════════════
-   SYSTEM 2 — NOTIFICATION BELL
-   ══════════════════════════════════════════════════════════ */
-function NotificationBell({ user, onNavigate }) {
-  const [count, setCount]   = useState(0);
-  const [ringing, setRing]  = useState(false);
-  const prevCount           = useRef(0);
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    /* جلب العدد الأولي */
-    withRetry(() =>
-      sb.from("notifications")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("is_read", false)
-    ).then(({ count: c }) => {
-      setCount(c || 0);
-      prevCount.current = c || 0;
-    }).catch(() => {});
-
-    /* Realtime */
-    ChannelMgr.sub(
-      `notif_bell_${user.id}`,
-      "notifications",
-      `user_id=eq.${user.id}`,
-      () => {
-        withRetry(() =>
-          sb.from("notifications")
-            .select("id", { count: "exact", head: true })
-            .eq("user_id", user.id)
-            .eq("is_read", false)
-        ).then(({ count: c }) => {
-          const newCount = c || 0;
-          if (newCount > prevCount.current) {
-            setRing(true);
-            setTimeout(() => setRing(false), 1000);
-          }
-          prevCount.current = newCount;
-          setCount(newCount);
-        }).catch(() => {});
-      }
-    );
-
-    return () => ChannelMgr.unsub(`notif_bell_${user.id}`);
-  }, [user?.id]);
-
-  return React.createElement("button", {
-    className: "nx-header-btn",
-    onClick: () => onNavigate("Notifications"),
-    title: "Notifications",
-    style: { position: "relative" }
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    autoRefreshToken:   true,
+    persistSession:     true,
+    detectSessionInUrl: false
   },
-    React.createElement("span", {
-      className: ringing ? "nx-bell-ring" : ""
-    }, "🔔"),
-    count > 0 && React.createElement("span", {
-      className: "nx-notif-badge nx-badge-pop"
-    }, count > 99 ? "99+" : count)
-  );
-}
+  realtime: {
+    params: { eventsPerSecond: 10 }
+  }
+});
 
 /* ══════════════════════════════════════════════════════════
-   SYSTEM 3 — SUSPEND WATCH
-   طرد فوري عند تعليق الحساب
+   REACT HOOKS — تعريف مرة واحدة فقط هنا
    ══════════════════════════════════════════════════════════ */
-function SuspendWatch({ user, onSuspend }) {
-  useEffect(() => {
-    if (!user?.id) return;
-
-    ChannelMgr.sub(
-      `suspend_${user.id}`,
-      "employees",
-      `id=eq.${user.id}`,
-      async (payload) => {
-        const rec = payload.new;
-        if (rec?.is_suspended) {
-          /* تنظيف كامل */
-          ChannelMgr.unsubAll();
-          localStorage.removeItem("nx_user");
-          await sb.auth.signOut().catch(() => {});
-          onSuspend(rec.suspend_reason || "Your account has been suspended.");
-        }
-      }
-    );
-
-    return () => ChannelMgr.unsub(`suspend_${user.id}`);
-  }, [user?.id]);
-
-  return null;
-}
+const useState    = React.useState;
+const useEffect   = React.useEffect;
+const useRef      = React.useRef;
+const useMemo     = React.useMemo;
+const useCallback = React.useCallback;
+const useReducer  = React.useReducer;
 
 /* ══════════════════════════════════════════════════════════
-   SYSTEM 4 — FREEZE MODE
-   تجميد النظام من المالك
+   ROLE CONTROL
    ══════════════════════════════════════════════════════════ */
-function FreezeWatch({ user, onFreeze, onUnfreeze }) {
-  useEffect(() => {
-    /* جلب الحالة الأولية */
-    withRetry(() =>
-      sb.from("system_settings")
-        .select("value")
-        .eq("key", "system_frozen")
-        .single()
-    ).then(({ data }) => {
-      if (data?.value === "true" && !RC.isOwner(user)) {
-        onFreeze("System is temporarily frozen by admin.");
-      }
-    }).catch(() => {});
-
-    /* Realtime */
-    ChannelMgr.sub(
-      "freeze_watch",
-      "system_settings",
-      "key=eq.system_frozen",
-      (payload) => {
-        const frozen = payload.new?.value === "true";
-        if (frozen && !RC.isOwner(user)) {
-          onFreeze("System is temporarily frozen by admin.");
-        } else {
-          onUnfreeze();
-        }
-      }
-    );
-
-    return () => ChannelMgr.unsub("freeze_watch");
-  }, [user?.id]);
-
-  return null;
-}
-
-/* Freeze Overlay UI */
-function FreezeOverlay({ message }) {
-  return React.createElement("div", {
-    className: "nx-freeze-overlay"
+const RC = {
+  icon: {
+    "Owner":        "👑",
+    "Shift Leader": "🛡️",
+    "Team Leader":  "⭐",
+    "SME":          "🎯",
+    "Agent":        "👤"
   },
-    React.createElement("div", { className: "nx-freeze-card" },
-      React.createElement("div", {
-        className: "nx-freeze-icon"
-      }, "🔒"),
-      React.createElement("h2", {
-        style: {
-          color: "var(--text)",
-          fontSize: 20,
-          fontWeight: 800,
-          marginBottom: 8
-        }
-      }, "System Frozen"),
-      React.createElement("p", {
-        style: {
-          color: "var(--text-sub)",
-          fontSize: 14,
-          lineHeight: 1.6
-        }
-      }, message || "The system is temporarily unavailable."),
-      React.createElement("p", {
-        style: {
-          color: "var(--text-muted)",
-          fontSize: 12,
-          marginTop: 16
-        }
-      }, "Please wait for the administrator to resume.")
-    )
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   SYSTEM 5 — CRITICAL ALERTS
-   تنبيهات حرجة لا تُغلق إلا من المسؤول
-   ══════════════════════════════════════════════════════════ */
-function CriticalAlertWatch({ user, onAlert, onClear }) {
-  useEffect(() => {
-    if (!user?.id) return;
-
-    ChannelMgr.sub(
-      `critical_${user.id}`,
-      "critical_alerts",
-      `target_id=eq.${user.id}`,
-      (payload) => {
-        if (payload.eventType === "INSERT") {
-          onAlert(payload.new);
-        }
-        if (payload.eventType === "DELETE") {
-          onClear(payload.old?.id);
-        }
-      }
-    );
-
-    return () => ChannelMgr.unsub(`critical_${user.id}`);
-  }, [user?.id]);
-
-  return null;
-}
-
-/* Critical Alert Overlay UI */
-function CriticalAlertOverlay({ alert, user, onAcknowledge }) {
-  if (!alert) return null;
-
-  const canClose = RC.isMgr(user) || alert.created_by === user?.id;
-
-  return React.createElement("div", {
-    className: "nx-critical-overlay"
+  color: {
+    "Owner":        "#FFD700",
+    "Shift Leader": "#3B82F6",
+    "Team Leader":  "#22C55E",
+    "SME":          "#8B5CF6",
+    "Agent":        "#94A3B8"
   },
-    React.createElement("div", { className: "nx-critical-card" },
-      React.createElement("div", {
-        style: { fontSize: 48, marginBottom: 12 }
-      }, "🚨"),
-      React.createElement("h2", {
-        style: {
-          color: "#F85149",
-          fontSize: 20,
-          fontWeight: 800,
-          marginBottom: 8,
-          animation: "criticalBlink 0.8s ease-in-out infinite"
-        }
-      }, "CRITICAL ALERT"),
-      React.createElement("p", {
-        style: {
-          color: "#FFF",
-          fontSize: 15,
-          fontWeight: 600,
-          marginBottom: 8
-        }
-      }, alert.title),
-      React.createElement("p", {
-        style: {
-          color: "#FFAAAA",
-          fontSize: 13,
-          lineHeight: 1.6,
-          marginBottom: 20
-        }
-      }, alert.message),
-      canClose && React.createElement("button", {
-        className: "nx-btn nx-btn-danger nx-btn-full",
-        onClick: () => onAcknowledge(alert.id)
-      }, "✓ Acknowledge & Close")
-    )
-  );
-}
+  rank: {
+    "Owner":        5,
+    "Shift Leader": 4,
+    "Team Leader":  3,
+    "SME":          2,
+    "Agent":        1
+  },
+  isOwner(user) {
+    return user?.role === "Owner";
+  },
+  isMgr(user) {
+    return ["Owner", "Shift Leader", "Team Leader"]
+      .includes(user?.role);
+  },
+  isSME(user) {
+    return user?.role === "SME";
+  },
+  canAccess(user, page) {
+    if (!user) return false;
+    const role = user.role;
+    if (role === "Owner") return true;
+    const ownerOnly = ["Owner Analytics"];
+    if (ownerOnly.includes(page)) return false;
+    const mgrOnly = ["Break Management", "Audit Log"];
+    if (mgrOnly.includes(page)) {
+      return ["Owner", "Shift Leader", "Team Leader"]
+        .includes(role);
+    }
+    return true;
+  }
+};
 
 /* ══════════════════════════════════════════════════════════
-   SYSTEM 6 — BEACON PULSE
-   نبضة التواجد + إغلاق المتصفح
+   STATUS MAP
    ══════════════════════════════════════════════════════════ */
-function BeaconPulse({ user }) {
-  const intervalRef = useRef(null);
-  const isVisible   = useRef(true);
+const STATUS_MAP = {
+  online:   { label:"Online",   icon:"🟢", color:"#22C55E" },
+  offline:  { label:"Offline",  icon:"⚫", color:"#6B7280" },
+  onbreak:  { label:"On Break", icon:"☕", color:"#EAB308" },
+  incall:   { label:"In Call",  icon:"📞", color:"#3B82F6" },
+  busy:     { label:"Busy",     icon:"🔴", color:"#EF4444" },
+  away:     { label:"Away",     icon:"🟡", color:"#F97316" },
+  training: { label:"Training", icon:"📚", color:"#8B5CF6" },
+  meeting:  { label:"Meeting",  icon:"👥", color:"#06B6D4" },
+  lunch:    { label:"Lunch",    icon:"🍽️", color:"#84CC16" },
+  coaching: { label:"Coaching", icon:"🎯", color:"#F59E0B" },
+  wfh:      { label:"WFH",      icon:"🏠", color:"#10B981" },
+  unknown:  { label:"Unknown",  icon:"❓", color:"#6B7280" }
+};
 
-  const sendHeartbeat = useCallback(async () => {
-    if (!user?.id) return;
+/* ══════════════════════════════════════════════════════════
+   THEME MANAGER
+   ══════════════════════════════════════════════════════════ */
+const ThemeMgr = {
+  get(user) {
     try {
-      await withRetry(() =>
-        sb.from("employees")
-          .update({
-            last_seen: new Date().toISOString(),
-            is_online: true
-          })
-          .eq("id", user.id)
+      return localStorage.getItem("nx_theme") || "nika";
+    } catch(e) {
+      return "nika";
+    }
+  },
+  set(themeId, user) {
+    try {
+      localStorage.setItem("nx_theme", themeId);
+      document.documentElement
+        .setAttribute("data-theme", themeId);
+    } catch(e) {}
+  },
+  getAvailable(user) {
+    return [
+      { id:"nika",    label:"Nika",    bg:"#00ff88" },
+      { id:"zoro",    label:"Zoro",    bg:"#22c55e" },
+      { id:"porsche", label:"Porsche", bg:"#f97316" },
+      { id:"raptor",  label:"Raptor",  bg:"#3b82f6" },
+      { id:"dark",    label:"Dark",    bg:"#1a1a1a" }
+    ];
+  }
+};
+
+/* ══════════════════════════════════════════════════════════
+   THEME IMAGE MANAGER
+   ══════════════════════════════════════════════════════════ */
+const ThemeImageMgr = {
+  set(theme, page, url) {
+    try {
+      localStorage.setItem(
+        `nx_img_${theme}_${page}`, url
       );
     } catch(e) {}
-  }, [user?.id]);
-
-  const goOffline = useCallback(async () => {
-    if (!user?.id) return;
+  },
+  getSync(theme, page) {
     try {
-      /* Beacon API للإرسال عند إغلاق المتصفح */
-      const url = `${SURL}/rest/v1/employees?id=eq.${user.id}`;
-      const body = JSON.stringify({
-        is_online: false,
-        status: "offline",
-        last_seen: new Date().toISOString()
+      return localStorage.getItem(
+        `nx_img_${theme}_${page}`
+      ) || null;
+    } catch(e) {
+      return null;
+    }
+  },
+  remove(theme, page) {
+    try {
+      localStorage.removeItem(
+        `nx_img_${theme}_${page}`
+      );
+    } catch(e) {}
+  },
+  clear() {
+    try {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith("nx_img_"))
+        .forEach(k => localStorage.removeItem(k));
+    } catch(e) {}
+  }
+};
+
+/* ══════════════════════════════════════════════════════════
+   CHANNEL MANAGER
+   ══════════════════════════════════════════════════════════ */
+const ChannelMgr = {
+  channels: {},
+  sub(name, table, filter, callback) {
+    this.unsub(name);
+    try {
+      let ch = sb.channel(`nx_${name}`);
+      const cfg = {
+        event:  "*",
+        schema: "public",
+        table
+      };
+      if (filter) cfg.filter = filter;
+      ch = ch.on("postgres_changes", cfg, () => {
+        try { callback(); } catch(e) {}
       });
-      if (navigator.sendBeacon) {
-        const blob = new Blob([body], { type: "application/json" });
-        navigator.sendBeacon(url, blob);
-      } else {
-        await sb.from("employees")
-          .update({ is_online: false, status: "offline" })
-          .eq("id", user.id);
+      ch.subscribe();
+      this.channels[name] = ch;
+    } catch(e) {}
+  },
+  unsub(name) {
+    try {
+      if (this.channels[name]) {
+        sb.removeChannel(this.channels[name]);
+        delete this.channels[name];
       }
     } catch(e) {}
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    /* نبضة كل 60 ثانية */
-    sendHeartbeat();
-    intervalRef.current = setInterval(sendHeartbeat, 60000);
-
-    /* تقليل التردد عند الخلفية */
-    const handleVisibility = () => {
-      isVisible.current = document.visibilityState === "visible";
-      if (isVisible.current) {
-        sendHeartbeat();
-        clearInterval(intervalRef.current);
-        intervalRef.current = setInterval(sendHeartbeat, 60000);
-      } else {
-        clearInterval(intervalRef.current);
-        intervalRef.current = setInterval(sendHeartbeat, 180000);
-      }
-    };
-
-    /* إغلاق المتصفح */
-    const handleUnload = () => goOffline();
-
-    document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("beforeunload", handleUnload);
-    window.addEventListener("pagehide", handleUnload);
-
-    return () => {
-      clearInterval(intervalRef.current);
-      document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("beforeunload", handleUnload);
-      window.removeEventListener("pagehide", handleUnload);
-      goOffline();
-    };
-  }, [user?.id]);
-
-  return null;
-}
-
-/* ══════════════════════════════════════════════════════════
-   SUSPEND OVERLAY UI
-   ══════════════════════════════════════════════════════════ */
-function SuspendOverlay({ reason }) {
-  return React.createElement("div", {
-    className: "nx-freeze-overlay",
-    style: { background: "rgba(20,5,5,0.95)" }
   },
-    React.createElement("div", {
-      className: "nx-freeze-card",
-      style: { borderColor: "var(--danger)" }
-    },
-      React.createElement("div", {
-        className: "nx-freeze-icon"
-      }, "🚫"),
-      React.createElement("h2", {
-        style: {
-          color: "var(--danger)",
-          fontSize: 20,
-          fontWeight: 800,
-          marginBottom: 8
-        }
-      }, "Account Suspended"),
-      React.createElement("p", {
-        style: {
-          color: "var(--text-sub)",
-          fontSize: 14,
-          lineHeight: 1.6
-        }
-      }, reason || "Your account has been suspended."),
-      React.createElement("p", {
-        style: {
-          color: "var(--text-muted)",
-          fontSize: 12,
-          marginTop: 16
-        }
-      }, "Please contact your administrator.")
-    )
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   HEADER COMPONENT
-   ══════════════════════════════════════════════════════════ */
-function Header({ user, page, onNavigate, onMenuToggle }) {
-  const theme = ThemeMgr.get();
-
-  return React.createElement("header", {
-    className: "nx-header"
-  },
-    /* Left */
-    React.createElement("div", { className: "nx-header-left" },
-      /* Menu Toggle (Mobile) */
-      React.createElement("button", {
-        className: "nx-header-btn nx-hide-desktop",
-        onClick: onMenuToggle,
-        title: "Menu"
-      }, "☰"),
-
-      /* Logo + Name */
-      React.createElement("span", {
-        className: "nx-logo"
-      }, theme === "pirateking" ? "🏴‍☠️" : "⚡"),
-
-      React.createElement("span", {
-        className: "nx-app-name"
-      }, APP),
-
-      React.createElement("span", {
-        className: "nx-app-version nx-hide-mobile"
-      }, `v${VER}`)
-    ),
-
-    /* Right */
-    React.createElement("div", { className: "nx-header-right" },
-
-      /* Pirate King Badge */
-      theme === "pirateking" && RC.isOwner(user) &&
-      React.createElement("span", {
-        className: "nx-badge nx-badge-warning nx-hide-mobile",
-        style: { fontSize: 11 }
-      }, "⚓ JUSTICE"),
-
-      /* Live Indicator */
-      React.createElement("div", {
-        className: "nx-flex nx-items-center nx-gap-1",
-        style: { fontSize: 11, color: "var(--success)" }
-      },
-        React.createElement("span", { className: "nx-live-dot green" }),
-        React.createElement("span", {
-          className: "nx-hide-mobile",
-          style: { fontWeight: 600 }
-        }, "LIVE")
-      ),
-
-      /* Notification Bell */
-      React.createElement(NotificationBell, {
-        user, onNavigate
-      }),
-
-      /* Theme Toggle */
-      React.createElement("button", {
-        className: "nx-header-btn nx-hide-mobile",
-        onClick: () => onNavigate("My Profile"),
-        title: "Theme Settings"
-      }, "🎨"),
-
-      /* Avatar */
-      React.createElement("div", {
-        style: { position: "relative", cursor: "pointer" },
-        onClick: () => onNavigate("My Profile"),
-        title: user?.full_name || "Profile"
-      },
-        user?.avatar_url
-          ? React.createElement("img", {
-              src: user.avatar_url,
-              alt: user.full_name,
-              className: "nx-header-avatar"
-            })
-          : React.createElement("div", {
-              className: "nx-header-avatar nx-avatar nx-avatar-sm",
-              style: {
-                background: AvatarMgr.colorFromName(user?.full_name),
-                fontSize: 12,
-                fontWeight: 700,
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }
-            }, AvatarMgr.initials(user?.full_name)),
-
-        /* Online dot */
-        React.createElement("span", {
-          style: {
-            position: "absolute",
-            bottom: 0, right: 0,
-            width: 9, height: 9,
-            background: "#22C55E",
-            borderRadius: "50%",
-            border: "2px solid var(--bg)"
-          }
-        })
-      )
-    )
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   SIDEBAR COMPONENT
-   ══════════════════════════════════════════════════════════ */
-function Sidebar({ user, page, onNavigate, isOpen, onClose }) {
-  const availablePages = useMemo(() => {
-    if (!user) return [];
-    return Object.entries(PA)
-      .filter(([, roles]) => roles.includes(user.role))
-      .map(([p]) => p);
-  }, [user?.role]);
-
-  const sidebarStyle = {
-    position: window.innerWidth <= 768 ? "fixed" : "relative",
-    top: window.innerWidth <= 768 ? 0 : "auto",
-    left: window.innerWidth <= 768 ? 0 : "auto",
-    bottom: window.innerWidth <= 768 ? 0 : "auto",
-    zIndex: window.innerWidth <= 768 ? 200 : "auto",
-    transform: window.innerWidth <= 768
-      ? (isOpen ? "translateX(0)" : "translateX(-100%)")
-      : "none",
-    transition: "transform 0.3s cubic-bezier(0.16,1,0.3,1)",
-    display: "flex"
-  };
-
-  return React.createElement(React.Fragment, null,
-    /* Backdrop (Mobile) */
-    isOpen && window.innerWidth <= 768 &&
-    React.createElement("div", {
-      style: {
-        position: "fixed", inset: 0,
-        background: "rgba(0,0,0,0.6)",
-        zIndex: 199,
-        backdropFilter: "blur(2px)"
-      },
-      onClick: onClose
-    }),
-
-    /* Sidebar */
-    React.createElement("nav", {
-      className: "nx-sidebar",
-      style: sidebarStyle
-    },
-      /* Nav Groups */
-      NAVG.map(group => {
-        const pages = group.pages.filter(p =>
-          availablePages.includes(p)
-        );
-        if (pages.length === 0) return null;
-
-        return React.createElement("div", {
-          key: group.label,
-          className: "nx-sidebar-section"
-        },
-          React.createElement("div", {
-            className: "nx-sidebar-section-label"
-          }, group.label),
-
-          pages.map(p =>
-            React.createElement("div", {
-              key: p,
-              className: `nx-nav-item ${page === p ? "active" : ""}`,
-              onClick: () => {
-                onNavigate(p);
-                if (window.innerWidth <= 768) onClose();
-              }
-            },
-              React.createElement("span", {
-                className: "nx-nav-icon"
-              }, PI[p] || "📄"),
-              React.createElement("span", {
-                className: "nx-nav-label"
-              }, p)
-            )
-          )
-        );
-      }),
-
-      /* User Info Bottom */
-      React.createElement("div", {
-        className: "nx-sidebar-user",
-        onClick: () => {
-          onNavigate("My Profile");
-          if (window.innerWidth <= 768) onClose();
-        }
-      },
-        user?.avatar_url
-          ? React.createElement("img", {
-              src: user.avatar_url,
-              alt: user.full_name,
-              className: "nx-sidebar-avatar"
-            })
-          : React.createElement("div", {
-              className: "nx-sidebar-avatar nx-avatar nx-avatar-sm",
-              style: {
-                background: AvatarMgr.colorFromName(user?.full_name),
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-                fontWeight: 700,
-                color: "#fff"
-              }
-            }, AvatarMgr.initials(user?.full_name)),
-
-        React.createElement("div", {
-          className: "nx-sidebar-user-info"
-        },
-          React.createElement("div", {
-            className: "nx-sidebar-user-name"
-          }, user?.full_name || "User"),
-          React.createElement("div", {
-            className: "nx-sidebar-user-role",
-            style: { color: RC.color[user?.role] || "var(--text-muted)" }
-          },
-            `${RC.icon[user?.role] || ""} ${user?.role || ""}`)
-        )
-      )
-    )
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   BOTTOM NAV (Mobile)
-   ══════════════════════════════════════════════════════════ */
-function BottomNav({ user, page, onNavigate }) {
-  /* أهم 5 صفحات للموبايل */
-  const mobilePages = useMemo(() => {
-    const all = [
-      "Updates Feed",
-      "Live Floor",
-      "My Break Schedule",
-      "Chat",
-      "My Profile"
-    ];
-    return all.filter(p =>
-      PA[p]?.includes(user?.role)
-    );
-  }, [user?.role]);
-
-  return React.createElement("div", {
-    className: "nx-bottom-nav"
-  },
-    React.createElement("div", {
-      className: "nx-bottom-nav-items"
-    },
-      mobilePages.map(p =>
-        React.createElement("button", {
-          key: p,
-          className: `nx-bottom-nav-item ${page === p ? "active" : ""}`,
-          onClick: () => onNavigate(p)
-        },
-          React.createElement("span", {
-            className: "nx-nav-icon"
-          }, PI[p] || "📄"),
-          React.createElement("span", {}, p.split(" ")[0])
-        )
-      ),
-
-      /* More Button */
-      React.createElement("button", {
-        className: "nx-bottom-nav-item",
-        onClick: () => onNavigate("__menu__")
-      },
-        React.createElement("span", {
-          className: "nx-nav-icon"
-        }, "☰"),
-        React.createElement("span", {}, "More")
-      )
-    )
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   SHARED UI COMPONENTS
-   ══════════════════════════════════════════════════════════ */
-
-/* Avatar Component */
-function NxAvatar({ user, size = "md", onClick }) {
-  const sizeClass = `nx-avatar-${size}`;
-  const style = {
-    background: AvatarMgr.colorFromName(user?.full_name),
-    color: "#fff",
-    fontWeight: 700,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: onClick ? "pointer" : "default"
-  };
-
-  if (user?.avatar_url) {
-    return React.createElement("img", {
-      src: user.avatar_url,
-      alt: user?.full_name || "User",
-      className: `nx-avatar ${sizeClass}`,
-      onClick,
-      style: { cursor: onClick ? "pointer" : "default" }
-    });
+  unsubAll() {
+    try {
+      Object.keys(this.channels)
+        .forEach(k => this.unsub(k));
+    } catch(e) {}
   }
+};
 
-  return React.createElement("div", {
-    className: `nx-avatar ${sizeClass}`,
-    style,
-    onClick
-  }, AvatarMgr.initials(user?.full_name));
-}
-
-/* Status Dot */
-function StatusDot({ status, size = 10 }) {
-  const s = STATUS_MAP[status] || STATUS_MAP.unknown;
-  return React.createElement("span", {
-    className: `status-dot ${s.css}`,
-    style: {
-      background: s.color,
-      width: size,
-      height: size,
-      flexShrink: 0
-    },
-    title: s.label
-  });
-}
-
-/* Status Badge */
-function StatusBadge({ status }) {
-  const s = STATUS_MAP[status] || STATUS_MAP.unknown;
-  return React.createElement("span", {
-    className: "nx-badge",
-    style: {
-      background: `${s.color}22`,
-      color: s.color,
-      border: `1px solid ${s.color}44`,
-      fontSize: 11
+/* ══════════════════════════════════════════════════════════
+   WITH RETRY
+   ══════════════════════════════════════════════════════════ */
+async function withRetry(fn, retries, delay) {
+  retries = retries || 3;
+  delay   = delay   || 800;
+  for (var i = 0; i < retries; i++) {
+    try {
+      var result = await fn();
+      if (result && result.error) throw result.error;
+      return result;
+    } catch(e) {
+      if (i === retries - 1) throw e;
+      await new Promise(function(r) {
+        setTimeout(r, delay * (i + 1));
+      });
     }
-  },
-    React.createElement(StatusDot, { status, size: 7 }),
-    s.label
-  );
+  }
 }
 
-/* Role Badge */
-function RoleBadge({ role }) {
-  const cls = RC.cssClass[role] || "agent";
-  return React.createElement("span", {
-    className: `role-badge ${cls}`
-  },
-    RC.icon[role] || "👤",
-    " ",
-    role
-  );
+/* ══════════════════════════════════════════════════════════
+   LOG AUDIT
+   ══════════════════════════════════════════════════════════ */
+async function logAudit(action, details, actorId, targetId) {
+  try {
+    await sb.from("audit_log").insert({
+      action,
+      details:    details   || null,
+      actor_id:   actorId   || null,
+      target_id:  targetId  || null,
+      created_at: new Date().toISOString()
+    });
+  } catch(e) {}
 }
 
-/* Spinner */
-function Spinner({ size = "md" }) {
-  return React.createElement("div", {
-    className: `nx-spinner ${size === "lg" ? "nx-spinner-lg" : ""}`,
-    style: { margin: "0 auto" }
-  });
+/* ══════════════════════════════════════════════════════════
+   SEND NOTIFICATION
+   ══════════════════════════════════════════════════════════ */
+async function sendNotification(
+  userId, type, title, body, link
+) {
+  try {
+    await sb.from("notifications").insert({
+      user_id:    userId,
+      type:       type  || "system",
+      title:      title || "Notification",
+      body:       body  || null,
+      link:       link  || null,
+      is_read:    false,
+      created_at: new Date().toISOString()
+    });
+  } catch(e) {}
 }
 
-/* Loading Page */
-function LoadingPage({ message = "Loading..." }) {
-  return React.createElement("div", {
-    className: "nx-empty"
-  },
-    React.createElement(Spinner, { size: "lg" }),
-    React.createElement("p", {
-      style: { color: "var(--text-sub)", fontSize: 14 }
-    }, message)
-  );
-}
-
-/* Empty State */
-function EmptyState({ icon = "📭", title, desc, action }) {
-  return React.createElement("div", { className: "nx-empty" },
-    React.createElement("div", {
-      className: "nx-empty-icon"
-    }, icon),
-    React.createElement("div", {
-      className: "nx-empty-title"
-    }, title),
-    desc && React.createElement("div", {
-      className: "nx-empty-desc"
-    }, desc),
-    action && React.createElement("div", {
-      style: { marginTop: 16 }
-    }, action)
-  );
-}
-
-/* Confirm Modal */
-function ConfirmModal({ open, title, message, onConfirm,
-                        onCancel, danger = false }) {
-  if (!open) return null;
-  return React.createElement("div", {
-    className: "nx-modal-backdrop",
-    onClick: onCancel
-  },
-    React.createElement("div", {
-      className: "nx-modal nx-modal-sm",
-      onClick: e => e.stopPropagation()
-    },
-      React.createElement("div", { className: "nx-modal-header" },
-        React.createElement("span", {
-          className: "nx-modal-title"
-        }, title || "Confirm"),
-        React.createElement("button", {
-          className: "nx-btn nx-btn-ghost nx-btn-icon",
-          onClick: onCancel
-        }, "✕")
-      ),
-      React.createElement("div", { className: "nx-modal-body" },
-        React.createElement("p", {
-          style: {
-            color: "var(--text-sub)",
-            fontSize: 14,
-            lineHeight: 1.6
-          }
-        }, message)
-      ),
-      React.createElement("div", { className: "nx-modal-footer" },
-        React.createElement("button", {
-          className: "nx-btn nx-btn-secondary",
-          onClick: onCancel
-        }, "Cancel"),
-        React.createElement("button", {
-          className: `nx-btn ${danger
-            ? "nx-btn-danger" : "nx-btn-primary"}`,
-          onClick: onConfirm
-        }, "Confirm")
-      )
-    )
-  );
-}
-
-/* Page Header */
-function PageHeader({ title, subtitle, icon, actions }) {
-  return React.createElement("div", { className: "nx-page-header" },
-    React.createElement("div", null,
-      React.createElement("h1", { className: "nx-page-title" },
-        icon && React.createElement("span", {
-          style: { marginRight: 8 }
-        }, icon),
-        title
-      ),
-      subtitle && React.createElement("p", {
-        className: "nx-page-subtitle"
-      }, subtitle)
-    ),
-    actions && React.createElement("div", {
-      className: "nx-page-actions"
-    }, actions)
-  );
-}
-
-/* Section Header */
-function SectionHeader({ title, action }) {
-  return React.createElement("div", { className: "nx-section-header" },
-    React.createElement("h3", { className: "nx-section-title" }, title),
-    action
-  );
-}
-
-/* Tabs Component */
-function Tabs({ tabs, active, onChange }) {
-  return React.createElement("div", { className: "nx-tabs" },
-    tabs.map(tab =>
-      React.createElement("button", {
-        key: tab.id || tab,
-        className: `nx-tab ${active === (tab.id || tab) ? "active" : ""}`,
-        onClick: () => onChange(tab.id || tab)
-      },
-        tab.icon && `${tab.icon} `,
-        tab.label || tab
-      )
-    )
-  );
-}
-
-/* Search Input */
-function SearchInput({ value, onChange, placeholder = "Search..." }) {
-  return React.createElement("div", { className: "nx-search-wrap" },
-    React.createElement("span", { className: "nx-search-icon" }, "🔍"),
-    React.createElement("input", {
-      type: "text",
-      className: "nx-input nx-search-input",
-      placeholder,
-      value,
-      onChange: e => onChange(e.target.value)
-    })
-  );
-}
-
-/* Priority Badge */
-function PriorityBadge({ priority }) {
-  const map = {
-    low:      { label: "Low",      color: "#10B981" },
-    medium:   { label: "Medium",   color: "#F59E0B" },
-    high:     { label: "High",     color: "#EF4444" },
-    critical: { label: "Critical", color: "#FF0000",
-                anim: "criticalBlink 0.8s ease-in-out infinite" }
-  };
-  const p = map[priority] || map.low;
-  return React.createElement("span", {
-    className: "nx-badge",
-    style: {
-      background: `${p.color}22`,
-      color: p.color,
-      border: `1px solid ${p.color}44`,
-      animation: p.anim || "none"
-    }
-  }, p.label);
-}
-
-/* Timer Display */
-function TimerDisplay({ seconds, exceeded = false }) {
-  const cls = exceeded
-    ? "nx-timer-exceeded"
-    : seconds < 120
-    ? "nx-timer-danger"
-    : seconds < 300
-    ? "nx-timer-warning"
-    : "nx-timer-normal";
-
-  return React.createElement("span", { className: cls },
-    fmtDuration(Math.abs(seconds))
-  );
-}
-
-/* File Upload Button */
-function FileUploadBtn({ onFile, accept = "image/*",
-                         label = "Upload", capture }) {
-  const ref = useRef();
-  return React.createElement(React.Fragment, null,
-    React.createElement("input", {
-      ref,
-      type: "file",
-      accept,
-      capture,
-      style: { display: "none" },
-      onChange: e => {
-        const f = e.target.files?.[0];
-        if (f) onFile(f);
-        e.target.value = "";
+/* ══════════════════════════════════════════════════════════
+   SHOW TOAST
+   ══════════════════════════════════════════════════════════ */
+function showToast(message, type, duration) {
+  try {
+    var event = new CustomEvent("nx-toast", {
+      detail: {
+        message:  message  || "",
+        type:     type     || "info",
+        duration: duration || 3500
       }
-    }),
-    React.createElement("button", {
-      className: "nx-btn nx-btn-secondary nx-btn-sm",
-      onClick: () => ref.current?.click()
-    }, `📁 ${label}`)
-  );
+    });
+    window.dispatchEvent(event);
+  } catch(e) {
+    console.log("[Toast] " + (type || "info") +
+      ": " + message);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   FORMAT HELPERS
+   ══════════════════════════════════════════════════════════ */
+function fmtDate(dateStr) {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "2-digit", month: "short", year: "numeric"
+    });
+  } catch(e) { return "—"; }
+}
+
+function fmtTime(dateStr) {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleTimeString("en-GB", {
+      hour: "2-digit", minute: "2-digit"
+    });
+  } catch(e) { return "—"; }
+}
+
+function fmtDateTime(dateStr) {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleString("en-GB", {
+      day: "2-digit", month: "short",
+      hour: "2-digit", minute: "2-digit"
+    });
+  } catch(e) { return "—"; }
+}
+
+function fmtRelative(dateStr) {
+  if (!dateStr) return "—";
+  try {
+    var diff = Date.now() - new Date(dateStr).getTime();
+    if (isNaN(diff)) return "—";
+    var mins  = Math.floor(diff / 60000);
+    var hours = Math.floor(diff / 3600000);
+    var days  = Math.floor(diff / 86400000);
+    if (mins  <  1) return "Just now";
+    if (mins  < 60) return mins  + "m ago";
+    if (hours < 24) return hours + "h ago";
+    if (days  <  7) return days  + "d ago";
+    return fmtDate(dateStr);
+  } catch(e) { return "—"; }
+}
+
+function fmtDuration(seconds) {
+  if (seconds === null || seconds === undefined) return "—";
+  try {
+    var s   = Math.abs(Math.floor(seconds));
+    var h   = Math.floor(s / 3600);
+    var m   = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
+    if (h > 0) {
+      return h + ":" +
+        String(m).padStart(2, "0") + ":" +
+        String(sec).padStart(2, "0");
+    }
+    return m + ":" + String(sec).padStart(2, "0");
+  } catch(e) { return "—"; }
+}
+
+function fmtNumber(n) {
+  if (n === null || n === undefined) return "0";
+  try {
+    return Number(n).toLocaleString("en-US");
+  } catch(e) { return String(n); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   HAVERSINE
+   ══════════════════════════════════════════════════════════ */
+function haversine(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+  try {
+    var R    = 6371000;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a    =
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    var c = 2 * Math.atan2(
+      Math.sqrt(a), Math.sqrt(1 - a)
+    );
+    return Math.round(R * c);
+  } catch(e) { return null; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   ADAPT COLOR
+   ══════════════════════════════════════════════════════════ */
+function adaptColor(color, theme) {
+  if (!color) return "var(--primary)";
+  return color;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SAUDI TIME PERIOD
+   ══════════════════════════════════════════════════════════ */
+function getSaudiPeriod() {
+  try {
+    var hour = new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Riyadh",
+      hour: "numeric",
+      hour12: false
+    });
+    var h = parseInt(hour);
+    if (h >= 5  && h < 12) return "Morning";
+    if (h >= 12 && h < 17) return "Afternoon";
+    if (h >= 17 && h < 21) return "Evening";
+    return "Night";
+  } catch(e) { return ""; }
 }
