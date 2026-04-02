@@ -115,10 +115,6 @@ export function LoadingPage({ message = 'Loading...' }) {
   );
 }
 
-// Modal Overlay Styles assumed handled via CSS class 'modal-overlay' and 'modal'
-
-/* Reusable Badge Components */
-
 export function PriorityBadge({ priority }) {
   const map = {
     low: { label: "Low", color: "#22C55E" },
@@ -365,12 +361,6 @@ export function UploadScheduleModal({ emp, weekStart, employees, shiftTypes, onC
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef(null);
   const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-  // ... جميع الدوال المساعدة داخل المودال (handleFile، parseExcel، parseCSV، processMatrix، save)
-
-  // JSX الخاص بالرفع مع خطوات رفع، معاينة، تأكيد، رسائل خطأ وتحذير.
-
-  // بامكاني إرسال المحتوى التفصيلي للمودال كاملاً عند الطلب.
 }
 
 export function ManageShiftsModal({ shiftTypes, onClose, onDone }) {
