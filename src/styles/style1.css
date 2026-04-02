@@ -1,8 +1,10 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#0d0d0d;--card:#161616;--card2:#1e1e1e;--border:#2a2a2a;
+  --border-bright:#3a3a3a;
   --text:#f0f0f0;--text-sub:#a0a0a0;--text-muted:#606060;
   --primary:#00ff88;--primary-d:#00cc6a;
+  --primary-rgb:0,255,136;
   --danger:#ef4444;--warning:#eab308;--info:#3b82f6;
   --radius:12px;--sidebar-w:240px;--header-h:56px
 }
@@ -36,7 +38,9 @@ body{
 .nx-sidebar-nav{
   flex:1;overflow-y:auto;overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;padding:8px 0
+  overscroll-behavior:contain;padding:8px 0;
+  scrollbar-width:thin;
+  scrollbar-color:var(--border) transparent
 }
 .nx-sidebar-nav::-webkit-scrollbar{width:0}
 .nx-nav-group{margin-bottom:4px}
@@ -75,7 +79,9 @@ body{
 }
 .nx-content{
   flex:1;padding:24px;overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;overscroll-behavior-y:contain
+  -webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+  scrollbar-width:thin;
+  scrollbar-color:var(--border) transparent
 }
 .nx-mobile-header{
   display:none;align-items:center;justify-content:space-between;
@@ -139,4 +145,21 @@ body{
 @keyframes glowPulse{
   0%,100%{box-shadow:var(--shadow-glow)}
   50%{box-shadow:0 0 60px rgba(var(--primary-rgb),0.35)}
+}
+[data-theme="pirateking"] .nx-sidebar-logo{
+  background:linear-gradient(270deg,#0A0A0A,#1A1400,#0A0A0A);
+  background-size:400% 400%;
+  animation:borderFlow 8s ease infinite;
+  border-bottom:1px solid rgba(234,179,8,0.3)
+}
+[data-theme="pirateking"] .gold-text{
+  background:linear-gradient(135deg,#FFD700 0%,#FFA500 30%,#FFD700 60%,#FFED4E 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:goldShimmer 3s linear infinite
+}
+[data-theme="pirateking"] .nx-card:hover{
+  animation:glowPulse 2s ease-in-out infinite
 }
