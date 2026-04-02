@@ -1,7 +1,9 @@
 .nx-card{
   background:var(--card);border:1px solid var(--border);
   border-radius:var(--radius);transition:border-color 0.2s;
-  font-family:'Space Grotesk',sans-serif
+  font-family:'Space Grotesk',sans-serif;
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px)
 }
 .nx-card:hover{border-color:#3a3a3a}
 .nx-btn{
@@ -37,7 +39,7 @@ textarea.nx-input{resize:vertical;min-height:80px}
 }
 .nx-tab{
   flex:1;padding:8px 14px;border:none;background:none;
-  color:var(--text-muted);font-size:12;font-weight:600;
+  color:var(--text-muted);font-size:12px;font-weight:600;
   border-radius:7px;cursor:pointer;transition:all 0.15s;
   white-space:nowrap;touch-action:manipulation;
   font-family:'Space Grotesk',sans-serif
@@ -73,8 +75,8 @@ textarea.nx-input{resize:vertical;min-height:80px}
 }
 .nx-table{width:100%;border-collapse:collapse;font-size:13px}
 .nx-table th{
-  padding:10px 12px;text-align:left;font-size:11px;font-weight:800;
-  color:var(--text-sub);text-transform:uppercase;
+  padding:10px 14px;text-align:left;font-size:11px;font-weight:800;
+  color:var(--text-muted);text-transform:uppercase;
   border-bottom:1px solid var(--border);
   font-family:'Space Grotesk',sans-serif
 }
