@@ -1,453 +1,272 @@
-import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
-import ReactDOM from 'react-dom';
-import { sb, showToast, useApp } from '../lib/config'; // قم بتحديث مسار الاستيراد حسب مشروعك
-
-export function ToastContainer() {
-  const [toasts, setToasts] = useState([]);
-
-  useEffect(() => {
-    function onToastEvent(e) {
-      const id = Date.now() + Math.random();
-      const { message, type, duration } = e.detail;
-      setToasts(currentToasts => [...currentToasts, { id, message, type }]);
-      setTimeout(() => {
-        setToasts(currentToasts => currentToasts.filter(t => t.id !== id));
-      }, duration || 3500);
+function ToastContainer(){
+  var _st=React.useState([]);var st=_st[0];var setSt=_st[1];
+  React.useEffect(function(){
+    function h(e){
+      var id=Date.now()+Math.random();
+      var d=e.detail;
+      setSt(function(p){return p.concat([{id:id,message:d.message,type:d.type}])});
+      setTimeout(function(){
+        setSt(function(p){return p.filter(function(x){return x.id!==id})});
+      },d.duration||3500);
     }
-    window.addEventListener('nx-toast', onToastEvent);
-    return () => window.removeEventListener('nx-toast', onToastEvent);
-  }, []);
+    window.addEventListener("nx-toast",h);
+    return function(){window.removeEventListener("nx-toast",h)};
+  },[]);
+  if(!st.length)return null;
+  return React.createElement("div",{style:{
+    position:"fixed",bottom:24,right:24,zIndex:99999,
+    display:"flex",flexDirection:"column",gap:8,
+    maxWidth:340,pointerEvents:"none"
+  }},
+    st.map(function(x){
+      var bg=x.type==="success"?"#22C55E":
+              x.type==="error"?"#EF4444":
+              x.type==="warning"?"#EAB308":"#3B82F6";
+      return React.createElement("div",{key:x.id,style:{
+        padding:"12px 16px",borderRadius:10,fontSize:13,
+        fontWeight:600,color:"#fff",background:bg,
+        boxShadow:"0 4px 20px rgba(0,0,0,0.3)",
+        display:"flex",alignItems:"center",gap:8,
+        pointerEvents:"auto",
+        fontFamily:"'Space Grotesk',sans-serif"
+      }},x.message);
+    })
+  );
+}
 
-  if (toasts.length === 0) return null;
+function Spinner(p){
+  var s=(p&&p.size==="lg")?32:(p&&p.size==="md")?20:16;
+  return React.createElement("div",{style:{
+    width:s,height:s,
+    border:"2px solid rgba(255,255,255,0.2)",
+    borderTop:"2px solid currentColor",
+    borderRadius:"50%",
+    animation:"spin 0.7s linear infinite",
+    flexShrink:0
+  }});
+}
 
-  const colorMap = {
-    success: "#22C55E",
-    error: "#EF4444",
-    warning: "#EAB308",
-    info: "#3B82F6",
+function LoadingPage(p){
+  return React.createElement("div",{style:{
+    display:"flex",flexDirection:"column",alignItems:"center",
+    justifyContent:"center",minHeight:300,gap:16
+  }},
+    React.createElement(Spinner,{size:"lg"}),
+    React.createElement("p",{style:{
+      fontSize:13,color:"var(--text-muted)",
+      fontFamily:"'Space Grotesk',sans-serif"
+    }},(p&&p.message)||"Loading...")
+  );
+}
+
+function EmptyState(p){
+  return React.createElement("div",{style:{
+    display:"flex",flexDirection:"column",alignItems:"center",
+    justifyContent:"center",padding:"48px 24px",gap:12,textAlign:"center"
+  }},
+    React.createElement("div",{style:{fontSize:48}},(p&&p.icon)||"📭"),
+    React.createElement("h3",{style:{
+      fontSize:16,fontWeight:700,color:"var(--text)",
+      fontFamily:"'Space Grotesk',sans-serif"
+    }},(p&&p.title)||"Nothing here"),
+    (p&&p.desc)?React.createElement("p",{style:{
+      fontSize:13,color:"var(--text-muted)",
+      maxWidth:300,lineHeight:1.6,
+      fontFamily:"'Space Grotesk',sans-serif"
+    }},p.desc):null
+  );
+}
+
+function PageHeader(p){
+  return React.createElement("div",{style:{
+    display:"flex",justifyContent:"space-between",
+    alignItems:"flex-start",marginBottom:24,gap:12,flexWrap:"wrap"
+  }},
+    React.createElement("div",null,
+      React.createElement("h1",{style:{
+        fontSize:22,fontWeight:900,color:"var(--text)",
+        display:"flex",alignItems:"center",gap:8,
+        fontFamily:"'Space Grotesk',sans-serif"
+      }},
+        p.icon?React.createElement("span",null,p.icon):null,
+        p.title
+      ),
+      p.subtitle?React.createElement("p",{style:{
+        fontSize:13,color:"var(--text-muted)",marginTop:4,
+        fontFamily:"'Space Grotesk',sans-serif"
+      }},p.subtitle):null
+    ),
+    p.actions?React.createElement("div",{style:{
+      display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"
+    }},p.actions):null
+  );
+}
+
+function Tabs(p){
+  return React.createElement("div",{className:"nx-tabs"},
+    (p.tabs||[]).filter(Boolean).map(function(tab){
+      return React.createElement("button",{
+        key:tab.id,
+        className:"nx-tab"+(p.active===tab.id?" active":""),
+        onClick:function(){p.onChange(tab.id)}
+      },tab.label);
+    })
+  );
+}
+
+function NxAvatar(p){
+  var user=p.user;
+  var size=p.size||"sm";
+  var px={xs:24,sm:32,md:40,lg:56,xl:72}[size]||32;
+  var fs=Math.floor(px*0.4);
+  var name=(user&&user.full_name)?user.full_name:"?";
+  var initials=name.split(" ").map(function(w){return w[0]||""}).join("").toUpperCase().slice(0,2);
+  var colors=["#3B82F6","#22C55E","#EAB308","#EF4444","#8B5CF6","#F97316","#06B6D4","#84CC16"];
+  var bg=colors[name.charCodeAt(0)%colors.length]||colors[0];
+  var _imgErr=React.useState(false);
+  var imgErr=_imgErr[0];var setImgErr=_imgErr[1];
+  if(user&&user.avatar_url&&!imgErr){
+    return React.createElement("img",{
+      src:user.avatar_url,alt:name,
+      style:{width:px,height:px,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:"2px solid var(--border)"},
+      onError:function(){setImgErr(true)}
+    });
+  }
+  return React.createElement("div",{style:{
+    width:px,height:px,borderRadius:"50%",
+    background:bg+"33",border:"2px solid "+bg+"55",
+    display:"flex",alignItems:"center",justifyContent:"center",
+    fontSize:fs,fontWeight:800,color:bg,flexShrink:0,
+    userSelect:"none",fontFamily:"'Space Grotesk',sans-serif"
+  }},initials);
+}
+
+function RoleBadge(p){
+  if(!p.role)return null;
+  var color=RC.color[p.role]||"#94A3B8";
+  var icon=RC.icon[p.role]||"🎧";
+  return React.createElement("span",{style:{
+    display:"inline-flex",alignItems:"center",gap:4,
+    fontSize:11,fontWeight:700,color:color,
+    background:color+"22",border:"1px solid "+color+"44",
+    padding:"2px 8px",borderRadius:20,
+    fontFamily:"'Space Grotesk',sans-serif"
+  }},icon+" "+p.role);
+}
+
+function StatusBadge(p){
+  var s=STATUS_MAP[p.status]||{label:p.status||"Unknown",color:"#6B7280"};
+  return React.createElement("span",{style:{
+    display:"inline-flex",alignItems:"center",gap:4,
+    fontSize:11,fontWeight:700,color:s.color,
+    background:s.color+"22",border:"1px solid "+s.color+"44",
+    padding:"2px 8px",borderRadius:20,
+    fontFamily:"'Space Grotesk',sans-serif"
+  }},
+    React.createElement("span",{style:{
+      width:6,height:6,borderRadius:"50%",
+      background:s.color,flexShrink:0
+    }}),
+    s.label
+  );
+}
+
+function PriorityBadge(p){
+  var map={
+    low:{label:"Low",color:"#22C55E"},
+    medium:{label:"Medium",color:"#EAB308"},
+    high:{label:"High",color:"#EF4444"},
+    critical:{label:"Critical",color:"#7C3AED"}
   };
+  var x=map[p.priority]||map.medium;
+  return React.createElement("span",{style:{
+    display:"inline-flex",alignItems:"center",gap:4,
+    fontSize:10,fontWeight:700,color:x.color,
+    background:x.color+"22",border:"1px solid "+x.color+"44",
+    padding:"2px 6px",borderRadius:20,
+    fontFamily:"'Space Grotesk',sans-serif"
+  }},x.label);
+}
 
-  return (
-    <div style={{
-      position: 'fixed',
-      bottom: 24,
-      right: 24,
-      zIndex: 99999,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 8,
-      maxWidth: 340,
-      pointerEvents: 'none',
-    }}>
-      {toasts.map(t => (
-        <div key={t.id} className="scale-in" style={{
-          background: colorMap[t.type] || colorMap.info,
-          borderRadius: 14,
-          padding: '13px 16px',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 10,
-          boxShadow: 'var(--shadow-lg)',
-          backdropFilter: 'blur(20px)',
-          color: '#fff',
-          fontFamily: "'Space Grotesk', sans-serif",
-          fontWeight: 600,
-          fontSize: 13,
-          pointerEvents: 'auto',
-        }}>
-          <span style={{ fontSize: 16, flexShrink: 0 }}>
-            {t.type === "success"
-              ? "✅"
-              : t.type === "error"
-              ? "❌"
-              : t.type === "warning"
-              ? "⚠️"
-              : "ℹ️"}
-          </span>
-          <span style={{ flex: 1 }}>{t.message}</span>
-          <button onClick={() => setToasts(toasts => toasts.filter(x => x.id !== t.id))} style={{
-            background: "none",
-            border: "none",
-            color: "rgba(255,255,255,0.5)",
-            cursor: "pointer",
-            fontSize: 18,
-            flexShrink: 0,
-            padding: 0,
-          }}>×</button>
-        </div>
-      ))}
-    </div>
+function SearchInput(p){
+  return React.createElement("div",{style:{position:"relative",flex:1,minWidth:200}},
+    React.createElement("input",{
+      type:"text",className:"nx-input",
+      placeholder:p.placeholder||"Search...",
+      value:p.value||"",
+      onChange:function(e){p.onChange(e.target.value)}
+    })
   );
 }
 
-export function Spinner({ size = 'sm' }) {
-  const dimensions = size === 'lg' ? 32 : size === 'md' ? 20 : 16;
-  return (
-    <div style={{
-      width: dimensions,
-      height: dimensions,
-      border: '2px solid rgba(255,255,255,0.2)',
-      borderTop: '2px solid currentColor',
-      borderRadius: '50%',
-      animation: 'spin 0.7s linear infinite',
-      flexShrink: 0
-    }} />
-  );
-}
-
-export function LoadingPage({ message = 'Loading...' }) {
-  return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: 300,
-      gap: 16
-    }}>
-      <Spinner size="lg" />
-      <p style={{
-        fontSize: 13,
-        color: 'var(--text-muted)',
-        fontFamily: "'Space Grotesk', sans-serif"
-      }}>{message}</p>
-    </div>
-  );
-}
-
-export function PriorityBadge({ priority }) {
-  const map = {
-    low: { label: "Low", color: "#22C55E" },
-    medium: { label: "Medium", color: "#EAB308" },
-    high: { label: "High", color: "#EF4444" },
-    urgent: { label: "Urgent", color: "#BE123C" }
-  };
-  const { label, color } = map[priority] || map.medium;
-  return (
-    <span style={{
-      backgroundColor: color + "22",
-      border: `1px solid ${color}44`,
-      color: color,
-      borderRadius: 20,
-      padding: "2px 6px",
-      fontWeight: 700,
-      fontSize: 10,
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 4,
-      fontFamily: "'Space Grotesk', sans-serif"
-    }}>
-      {label}
-    </span>
-  );
-}
-
-export function EditCellModal({ cellEmp, date, day, shiftTypes, weekStart, onClose, onDone }) {
-  const { showToast } = useApp();
-  const [type, setType] = useState(day?.shift_type || "shift");
-  const [shiftLabel, setShiftLabel] = useState(day?.shift_label || "");
-  const [customStart, setCustomStart] = useState(day?.shift_start?.slice(0, 5) || "");
-  const [customEnd, setCustomEnd] = useState(day?.shift_end?.slice(0, 5) || "");
-  const [saving, setSaving] = useState(false);
-  const dateStr = date.toLocaleDateString("en-GB", { weekday: "long", day: "2-digit", month: "short", year: "numeric" });
-  const dateKey = date.toISOString().split("T")[0];
-  const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
-  const ws = weekStart.toISOString().split("T")[0];
-  const ct = document.documentElement.getAttribute("data-theme") || "dark";
-
-  async function save() {
-    setSaving(true);
-    try {
-      let schedId;
-      const { data: ex } = await sb.from("schedules")
-        .select("id")
-        .eq("employee_id", cellEmp.id)
-        .eq("week_start", ws)
-        .single();
-      if (ex) {
-        schedId = ex.id;
-      } else {
-        const { data: ns } = await sb.from("schedules").insert({
-          employee_id: cellEmp.id,
-          week_start: ws,
-          department: cellEmp.department
-        }).select().single();
-        schedId = ns.id;
-      }
-
-      let dayData = { schedule_id: schedId, day_date: dateKey, day_name: dayName };
-      if (type === "shift") {
-        if (shiftLabel) {
-          const st = shiftTypes.find(s => s.label === shiftLabel);
-          dayData = {
-            ...dayData,
-            shift_type: "shift",
-            shift_label: shiftLabel,
-            shift_start: st?.start_time || customStart + ":00",
-            shift_end: st?.end_time || customEnd + ":00"
-          };
-        } else if (customStart && customEnd) {
-          dayData = {
-            ...dayData,
-            shift_type: "shift",
-            shift_label: customStart + "-" + customEnd,
-            shift_start: customStart + ":00",
-            shift_end: customEnd + ":00"
-          };
-        } else {
-          showToast("Please select a shift or enter custom times", "warning");
-          setSaving(false);
-          return;
-        }
-      } else {
-        dayData = { ...dayData, shift_type: type };
-      }
-
-      await sb.from("schedule_days").delete().eq("schedule_id", schedId).eq("day_date", dateKey);
-      await sb.from("schedule_days").insert(dayData);
-      onDone();
-    } catch (err) {
-      showToast(err.message || err, "error");
-      setSaving(false);
-    }
+function OwnerAnalytics(p){
+  var _1=React.useState(null);var stats=_1[0];var setStats=_1[1];
+  var _2=React.useState(true);var loading=_2[0];var setLoading=_2[1];
+  React.useEffect(function(){load()},[]);
+  function load(){
+    var today=new Date().toISOString().split("T")[0];
+    var week=new Date(Date.now()-7*86400000).toISOString().split("T")[0];
+    var result={totalEmps:0,online:0,todayAtt:0,onTime:0,late:0,breaksToday:0,totalTickets:0,avgCsat:"--"};
+    withRetry(function(){
+      return sb.from(DB.EMPLOYEES).select("id,is_online").eq("is_active",true);
+    })
+    .then(function(r){
+      var e=r.data||[];
+      result.totalEmps=e.length;
+      result.online=e.filter(function(x){return x.is_online}).length;
+    }).catch(function(){})
+    .then(function(){
+      return withRetry(function(){
+        return sb.from(DB.ATTENDANCE).select("id,status").eq("date",today);
+      });
+    })
+    .then(function(r){
+      var a=r.data||[];
+      result.todayAtt=a.length;
+      result.onTime=a.filter(function(x){return x.status==="on_time"}).length;
+      result.late=a.filter(function(x){return x.status==="late"}).length;
+    }).catch(function(){})
+    .then(function(){
+      return withRetry(function(){
+        return sb.from(DB.BREAK_SCHEDULES).select("id").eq("date",today);
+      });
+    })
+    .then(function(r){result.breaksToday=(r.data||[]).length}).catch(function(){})
+    .then(function(){
+      return withRetry(function(){
+        return sb.from(DB.PERFORMANCE).select("tickets_handled,csat").gte("date",week);
+      });
+    })
+    .then(function(r){
+      var perf=r.data||[];
+      result.totalTickets=perf.reduce(function(s,k){return s+(k.tickets_handled||0)},0);
+      result.avgCsat=perf.length>0
+        ?(perf.reduce(function(s,k){return s+(k.csat||0)},0)/perf.length).toFixed(1)
+        :"--";
+    }).catch(function(){})
+    .finally(function(){setStats(result);setLoading(false)});
   }
-
-  async function clearDay() {
-    setSaving(true);
-    try {
-      const { data: ex } = await sb.from("schedules")
-        .select("id")
-        .eq("employee_id", cellEmp.id)
-        .eq("week_start", ws)
-        .single();
-      if (ex) await sb.from("schedule_days").delete().eq("schedule_id", ex.id).eq("day_date", dateKey);
-      onDone();
-    } catch (err) {
-      showToast(err.message || err, "error");
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal" style={{ maxWidth: 440 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div>
-            <h3 style={{ fontSize: 17, fontWeight: 800, color: "var(--text)" }}>✏️ Edit Schedule</h3>
-            <p style={{ fontSize: 12, color: "var(--text-sub)", marginTop: 3 }}>
-              <b>{cellEmp.full_name}</b> · {dateStr}
-            </p>
-          </div>
-          <button onClick={onClose} className="btn-icon" style={{ fontSize: 18 }}>×</button>
-        </div>
-
-        <div style={{ marginBottom: 18 }}>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-sub)", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
-            Day Type
-          </label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-            {[
-              { v: "shift", l: "⏰ Shift", c: "#3B82F6" },
-              { v: "WO", l: "🌴 Week Off", c: "#10B981" },
-              { v: "Leave", l: "📋 Leave", c: "#F59E0B" },
-              { v: "Holiday", l: "🎉 Holiday", c: "#EC4899" },
-              { v: "Training", l: "📚 Training", c: "#8B5CF6" },
-              { v: "Off", l: "⭕ Clear", c: "#64748B" }
-            ].map(item => (
-              <button
-                key={item.v}
-                onClick={() => setType(item.v)}
-                style={{
-                  background: type === item.v ? item.c + "20" : "var(--glass2)",
-                  border: "1px solid " + (type === item.v ? item.c : "var(--border)"),
-                  color: type === item.v ? item.c : "var(--text-sub)",
-                  borderRadius: 10,
-                  padding: "9px 6px",
-                  fontSize: 12,
-                  fontWeight: type === item.v ? 700 : 500,
-                  cursor: "pointer",
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  transition: "all 0.2s"
-                }}
-              >
-                {item.l}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {type === "shift" && (
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text-sub)", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
-              Select Shift
-            </label>
-            {shiftTypes.length > 0 && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-                {shiftTypes.map(s => {
-                  const sc = adaptColor(s.color, ct);
-                  const sel = shiftLabel === s.label;
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => { setShiftLabel(s.label); setCustomStart(s.start_time?.slice(0, 5)); setCustomEnd(s.end_time?.slice(0, 5)); }}
-                      style={{
-                        background: sel ? `color-mix(in srgb,${sc} 20%,transparent)` : "var(--glass2)",
-                        border: "1px solid " + (sel ? sc : "var(--border)"),
-                        color: sel ? sc : "var(--text-sub)",
-                        borderRadius: 8,
-                        padding: "7px 12px",
-                        fontSize: 12,
-                        fontWeight: sel ? 700 : 500,
-                        cursor: "pointer",
-                        fontFamily: "'Space Grotesk', sans-serif"
-                      }}
-                    >
-                      {s.label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-            <div style={{ background: "var(--glass2)", border: "1px solid var(--border)", borderRadius: 10, padding: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 10 }}>Or custom times:</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: 10, color: "var(--text-muted)", marginBottom: 4 }}>Start</label>
-                  <input type="time" className="input" value={customStart} onChange={e => { setCustomStart(e.target.value); setShiftLabel(""); }} style={{ padding: "8px 10px", fontSize: 13 }} />
-                </div>
-                <span style={{ color: "var(--text-muted)", fontSize: 18, marginTop: 16 }}>→</span>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: 10, color: "var(--text-muted)", marginBottom: 4 }}>End</label>
-                  <input type="time" className="input" value={customEnd} onChange={e => { setCustomEnd(e.target.value); setShiftLabel(""); }} style={{ padding: "8px 10px", fontSize: 13 }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-          {day && (
-            <button onClick={clearDay} disabled={saving} className="btn btn-danger" style={{ padding: "10px 16px", fontSize: 12 }}>
-              🗑️ Clear
-            </button>
-          )}
-          <button onClick={onClose} disabled={saving} className="btn btn-ghost" style={{ flex: 1 }}>
-            Cancel
-          </button>
-          <button onClick={save} disabled={saving} className="btn btn-primary" style={{ flex: 2 }}>
-            {saving ? (
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 14, height: 14, border: "2px solid #ffffff40", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-                Saving...
-              </span>
-            ) : (
-              "💾 Save Changes"
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function UploadScheduleModal({ emp, weekStart, employees, shiftTypes, onClose, onDone }) {
-  const { showToast } = useApp();
-  const [step, setStep] = useState(1);
-  const [file, setFile] = useState(null);
-  const [parsed, setParsed] = useState([]);
-  const [errors, setErrors] = useState([]);
-  const [warnings, setWarnings] = useState([]);
-  const [saving, setSaving] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileRef = useRef(null);
-  const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-}
-
-export function ManageShiftsModal({ shiftTypes, onClose, onDone }) {
-  const { showToast } = useApp();
-  const [shifts, setShifts] = useState(shiftTypes);
-  const [saving, setSaving] = useState(false);
-
-  const add = () => setShifts(p => [...p, {
-    id: "new_" + Date.now(),
-    label: "08:00-17:00",
-    start_time: "08:00:00",
-    end_time: "17:00:00",
-    color: "#3B82F6",
-    is_active: true,
-    is_new: true
-  }]);
-
-  const update = (id, key, value) => setShifts(p => p.map(s => s.id === id ? { ...s, [key]: value } : s));
-
-  const remove = id => setShifts(p => p.filter(s => s.id !== id));
-
-  async function save() {
-    setSaving(true);
-    try {
-      const toInsert = shifts.filter(s => s.is_new).map(s => ({
-        label: s.label,
-        start_time: s.start_time,
-        end_time: s.end_time,
-        color: s.color,
-        is_active: true
-      }));
-      const toUpdate = shifts.filter(s => !s.is_new);
-      const toDelete = shiftTypes.filter(st => !shifts.find(s => s.id === st.id)).map(st => st.id);
-      if (toInsert.length > 0) await sb.from("shift_types").insert(toInsert);
-      for (const u of toUpdate)
-        await sb.from("shift_types").update({
-          label: u.label,
-          start_time: u.start_time,
-          end_time: u.end_time,
-          color: u.color,
-          is_active: u.is_active
-        }).eq("id", u.id);
-      if (toDelete.length > 0) await sb.from("shift_types").delete().in("id", toDelete);
-      onDone();
-    } catch (err) {
-      showToast(err.message || err, "error");
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal" style={{ maxWidth: 600 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text)" }}>⚙️ Manage Shifts</h3>
-          <button onClick={onClose} className="btn-icon" style={{ fontSize: 18 }}>×</button>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: "50vh", overflowY: "auto", paddingRight: 4 }}>
-          {shifts.map(s => (
-            <div key={s.id} style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              background: "var(--glass2)",
-              border: "1px solid var(--border)",
-              borderRadius: 12,
-              padding: 10
-            }}>
-              <input type="color" value={s.color} onChange={e => update(s.id, "color", e.target.value)} style={{ width: 32, height: 32, padding: 0, border: "none", borderRadius: 6, cursor: "pointer", background: "transparent" }} />
-              <input className="input" value={s.label} onChange={e => update(s.id, "label", e.target.value)} style={{ flex: 1, padding: "6px 10px", fontSize: 12 }} />
-              <input type="time" className="input" value={s.start_time?.slice(0, 5)} onChange={e => update(s.id, "start_time", e.target.value + ":00")} style={{ width: 100, padding: "6px 10px", fontSize: 12 }} />
-              <span style={{ color: "var(--text-muted)" }}>-</span>
-              <input type="time" className="input" value={s.end_time?.slice(0, 5)} onChange={e => update(s.id, "end_time", e.target.value + ":00")} style={{ width: 100, padding: "6px 10px", fontSize: 12 }} />
-              <button onClick={() => remove(s.id)} className="btn-icon" style={{ width: 32, height: 32, color: "var(--danger)" }}>🗑️</button>
-            </div>
-          ))}
-          <button onClick={add} className="btn btn-ghost" style={{ borderStyle: "dashed", padding: "12px" }}>
-            + Add Shift Type
-          </button>
-        </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-          <button className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>Cancel</button>
-          <button className="btn btn-primary" onClick={save} disabled={saving} style={{ flex: 2 }}>
-            {saving ? "Saving..." : "💾 Save Changes"}
-          </button>
-        </div>
-      </div>
-    </div>
+  if(loading)return React.createElement(LoadingPage,{message:"Loading Analytics..."});
+  if(!stats)return React.createElement(EmptyState,{icon:"👑",title:"No data"});
+  var cards=[
+    {label:"Total Staff",value:stats.totalEmps,color:"var(--primary)"},
+    {label:"Online Now",value:stats.online,color:"#22C55E"},
+    {label:"Today Present",value:stats.todayAtt,color:"#3B82F6"},
+    {label:"On Time",value:stats.onTime,color:"#22C55E"},
+    {label:"Late Today",value:stats.late,color:"#EAB308"},
+    {label:"Breaks Today",value:stats.breaksToday,color:"#F97316"},
+    {label:"Tickets 7d",value:stats.totalTickets,color:"#8B5CF6"},
+    {label:"Avg CSAT",value:stats.avgCsat,color:"#EAB308"}
+  ];
+  return React.createElement("div",{className:"nx-page-enter"},
+    React.createElement(PageHeader,{title:"Owner Analytics",icon:"👑",subtitle:"Real-time overview"}),
+    React.createElement("div",{className:"nx-grid-4",style:{marginBottom:20}},
+      cards.map(function(s){
+        return React.createElement("div",{key:s.label,className:"nx-stat-card nx-card-enter"},
+          React.createElement("span",{className:"nx-stat-label"},s.label),
+          React.createElement("div",{className:"nx-stat-value",style:{color:s.color,fontSize:22}},s.value)
+        );
+      })
+    )
   );
 }
