@@ -1,9 +1,13 @@
 var _hbInterval=null;
+var _beforeUnloadHandler=null;
 
 function startHeartbeat(userId){
   if(_hbInterval)clearInterval(_hbInterval);
+  if(_beforeUnloadHandler){
+    window.removeEventListener("beforeunload",_beforeUnloadHandler);
+  }
   _hbInterval=setInterval(function(){
-    sb.from("employees")
+    sb.from(DB.EMPLOYEES)
       .update({
         is_online:true,
         last_seen:new Date().toISOString()
@@ -11,9 +15,9 @@ function startHeartbeat(userId){
       .eq("id",userId)
       .then(function(){}).catch(function(){});
   },60000);
-  window.addEventListener("beforeunload",function(){
+  _beforeUnloadHandler=function(){
     clearInterval(_hbInterval);
-    sb.from("employees")
+    sb.from(DB.EMPLOYEES)
       .update({
         is_online:false,
         status:"offline",
@@ -21,16 +25,21 @@ function startHeartbeat(userId){
       })
       .eq("id",userId)
       .then(function(){}).catch(function(){});
-  });
+  };
+  window.addEventListener("beforeunload",_beforeUnloadHandler);
 }
 
 function stopHeartbeat(){
   if(_hbInterval){clearInterval(_hbInterval);_hbInterval=null}
+  if(_beforeUnloadHandler){
+    window.removeEventListener("beforeunload",_beforeUnloadHandler);
+    _beforeUnloadHandler=null;
+  }
 }
 
 function loadUserProfile(authId){
   return withRetry(function(){
-    return sb.from("employees")
+    return sb.from(DB.EMPLOYEES)
       .select("*")
       .eq("auth_id",authId)
       .single();
@@ -45,7 +54,7 @@ function loadUserProfile(authId){
       showToast("Account suspended","error");
       return null;
     }
-    sb.from("employees").update({
+    sb.from(DB.EMPLOYEES).update({
       is_online:true,
       status:emp.status==="offline"?"online":emp.status,
       last_seen:new Date().toISOString()
@@ -57,6 +66,41 @@ function loadUserProfile(authId){
     return null;
   });
 }
+
+var NexusErrorBoundary=function(props){
+  var _s=React.useState(null);
+  var err=_s[0];var setErr=_s[1];
+  React.useEffect(function(){
+    function handler(e){
+      setErr(e.message||"Unknown error");
+    }
+    window.addEventListener("error",handler);
+    return function(){window.removeEventListener("error",handler)};
+  },[]);
+  if(err){
+    return React.createElement("div",{style:{
+      minHeight:"100vh",display:"flex",alignItems:"center",
+      justifyContent:"center",flexDirection:"column",
+      gap:16,background:"var(--bg)",padding:24
+    }},
+      React.createElement("div",{style:{fontSize:48}},"⚠️"),
+      React.createElement("h2",{style:{
+        color:"var(--danger)",fontSize:18,fontWeight:800,
+        fontFamily:"'Space Grotesk',sans-serif"
+      }},"Something went wrong"),
+      React.createElement("p",{style:{
+        color:"var(--text-muted)",fontSize:13,
+        fontFamily:"'Space Grotesk',sans-serif",
+        maxWidth:400,textAlign:"center"
+      }},err),
+      React.createElement("button",{
+        className:"nx-btn nx-btn-primary",
+        onClick:function(){setErr(null)}
+      },"Try Again")
+    );
+  }
+  return props.children;
+};
 
 function PageRouter(props){
   var page=props.page;
@@ -340,7 +384,7 @@ function App(){
     }).catch(function(e){
       console.error("[NEXUS]",e);
     }).finally(function(){setLoading(false)});
-    sb.auth.onAuthStateChange(function(event){
+    var authListener=sb.auth.onAuthStateChange(function(event){
       if(event==="SIGNED_OUT"){
         stopHeartbeat();
         ChannelMgr.unsubAll();
@@ -349,6 +393,13 @@ function App(){
         setSidebarOpen(false);
       }
     });
+    return function(){
+      try{
+        if(authListener&&authListener.data&&authListener.data.subscription){
+          authListener.data.subscription.unsubscribe();
+        }
+      }catch(e){}
+    };
   },[]);
   React.useEffect(function(){
     if(sidebarOpen){document.body.style.overflow="hidden"}
@@ -364,7 +415,7 @@ function App(){
   function handleLogout(){
     stopHeartbeat();
     if(user){
-      sb.from("employees")
+      sb.from(DB.EMPLOYEES)
         .update({
           is_online:false,
           status:"offline",
@@ -401,36 +452,38 @@ function App(){
   }
   return React.createElement(React.Fragment,null,
     React.createElement(ToastContainer,null),
-    React.createElement("div",{className:"nx-layout"},
-      React.createElement("div",{
-        className:"nx-overlay"+(sidebarOpen?" active":""),
-        onClick:function(){setSidebarOpen(false)}
-      }),
-      React.createElement(Sidebar,{
-        user:user,
-        page:page,
-        setPage:handleSetPage,
-        onLogout:handleLogout,
-        isOpen:sidebarOpen
-      }),
-      React.createElement("div",{className:"nx-main"},
-        React.createElement("div",{className:"nx-mobile-header"},
-          React.createElement("button",{
-            className:"nx-hamburger",
-            onClick:function(){setSidebarOpen(true)}
-          },"☰"),
-          React.createElement("span",{style:{
-            fontWeight:900,color:"var(--primary)",fontSize:16,
-            fontFamily:"'Space Grotesk',sans-serif"
-          }},"⚡ NEXUS"),
-          React.createElement(NxAvatar,{user:user,size:"xs"})
-        ),
-        React.createElement("div",{className:"nx-content"},
-          React.createElement(PageRouter,{
-            page:page,
-            user:user,
-            setPage:handleSetPage
-          })
+    React.createElement(NexusErrorBoundary,null,
+      React.createElement("div",{className:"nx-layout"},
+        React.createElement("div",{
+          className:"nx-overlay"+(sidebarOpen?" active":""),
+          onClick:function(){setSidebarOpen(false)}
+        }),
+        React.createElement(Sidebar,{
+          user:user,
+          page:page,
+          setPage:handleSetPage,
+          onLogout:handleLogout,
+          isOpen:sidebarOpen
+        }),
+        React.createElement("div",{className:"nx-main"},
+          React.createElement("div",{className:"nx-mobile-header"},
+            React.createElement("button",{
+              className:"nx-hamburger",
+              onClick:function(){setSidebarOpen(true)}
+            },"☰"),
+            React.createElement("span",{style:{
+              fontWeight:900,color:"var(--primary)",fontSize:16,
+              fontFamily:"'Space Grotesk',sans-serif"
+            }},"⚡ NEXUS"),
+            React.createElement(NxAvatar,{user:user,size:"xs"})
+          ),
+          React.createElement("div",{className:"nx-content"},
+            React.createElement(PageRouter,{
+              page:page,
+              user:user,
+              setPage:handleSetPage
+            })
+          )
         )
       )
     )
