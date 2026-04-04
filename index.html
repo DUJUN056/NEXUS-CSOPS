@@ -1,27 +1,2009 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>⚡ NEXUS-CSOPS</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="src/styles/style1.css"/>
-<link rel="stylesheet" href="src/styles/themes-live.css"/>
-<link rel="stylesheet" href="src/styles/style2.css"/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NEXUS — Operations Platform</title>
+<style>
+
+/* ============================================================
+   NEXUS v2.0 — GLOBAL RESET & THEME FOUNDATION
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-6: 48px;
+  --space-7: 56px;
+  --space-8: 64px;
+  --space-28: 220px;
+  --space-45: 360px;
+
+  --topbar-height: 48px;
+  --statusbar-height: 32px;
+  --sidebar-collapsed: 64px;
+  --sidebar-expanded: 220px;
+  --panel-width: 360px;
+  --page-header-height: 56px;
+
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  --size-display: 24px;
+  --size-heading: 18px;
+  --size-subheading: 14px;
+  --size-body: 14px;
+  --size-small: 13px;
+  --size-label: 12px;
+  --size-mono: 13px;
+
+  --weight-bold: 700;
+  --weight-semibold: 600;
+  --weight-medium: 500;
+  --weight-regular: 400;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  --transition-fast: 100ms ease;
+  --transition-panel: 200ms ease-out;
+  --transition-overlay: 150ms ease;
+
+  /* ── Functional colors — fixed, theme-independent ── */
+  --status-available:     #22c55e;
+  --status-busy:          #3b82f6;
+  --status-break:         #eab308;
+  --status-offline:       #6b7280;
+  --status-escalated:     #a855f7;
+  --status-closed:        #6b7280;
+  --status-onhold:        #f97316;
+
+  --priority-critical:    #ef4444;
+  --priority-high:        #f97316;
+  --priority-medium:      #eab308;
+  --priority-low:         #86efac;
+
+  --alert-error:          #ef4444;
+  --alert-warning:        #f97316;
+  --alert-info:           #3b82f6;
+  --alert-success:        #22c55e;
+
+  --pulse-available: rgba(34, 197, 94, 0.4);
+  --pulse-critical:  rgba(239, 68, 68, 0.4);
+}
+
+/* ============================================================
+   LIGHT THEME
+   ============================================================ */
+
+[data-theme="light"] {
+  --bg-page:        #f5f5f5;
+  --bg-surface:     #ffffff;
+  --bg-sidebar:     #f0f0f0;
+  --bg-topbar:      #ffffff;
+  --bg-statusbar:   #f0f0f0;
+  --bg-panel:       #ffffff;
+  --bg-hover:       #f5f5f5;
+  --bg-active:      #ebebeb;
+  --bg-input:       #ffffff;
+  --bg-skeleton:    #e5e5e5;
+
+  --border-default: #e0e0e0;
+  --border-strong:  #c0c0c0;
+  --border-input:   #d0d0d0;
+  --border-focus:   #404040;
+
+  --text-primary:   #111111;
+  --text-secondary: #555555;
+  --text-disabled:  #aaaaaa;
+  --text-placeholder: #aaaaaa;
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-panel: -4px 0 16px rgba(0,0,0,0.08);
+
+  --btn-primary-bg:   #111111;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: transparent;
+  --btn-secondary-border: #d0d0d0;
+  --btn-secondary-text: #111111;
+}
+
+/* ============================================================
+   DARK THEME
+   ============================================================ */
+
+[data-theme="dark"] {
+  --bg-page:        #0f0f0f;
+  --bg-surface:     #1a1a1a;
+  --bg-sidebar:     #141414;
+  --bg-topbar:      #141414;
+  --bg-statusbar:   #0f0f0f;
+  --bg-panel:       #1a1a1a;
+  --bg-hover:       #222222;
+  --bg-active:      #2a2a2a;
+  --bg-input:       #222222;
+  --bg-skeleton:    #2a2a2a;
+
+  --border-default: #2a2a2a;
+  --border-strong:  #3a3a3a;
+  --border-input:   #333333;
+  --border-focus:   #e0e0e0;
+
+  --text-primary:   #f0f0f0;
+  --text-secondary: #888888;
+  --text-disabled:  #444444;
+  --text-placeholder: #555555;
+
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-panel: -4px 0 24px rgba(0,0,0,0.5);
+
+  --btn-primary-bg:   #f0f0f0;
+  --btn-primary-text: #111111;
+  --btn-secondary-bg: transparent;
+  --btn-secondary-border: #333333;
+  --btn-secondary-text: #f0f0f0;
+}
+
+/* ============================================================
+   APPLICATION SHELL
+   ============================================================ */
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  font-size: var(--size-body);
+  color: var(--text-primary);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-rows: var(--topbar-height) 1fr var(--statusbar-height);
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    "topbar  topbar  topbar"
+    "sidebar main    panel"
+    "statusbar statusbar statusbar";
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+
+.topbar {
+  grid-area: topbar;
+  height: var(--topbar-height);
+  background: var(--bg-topbar);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  gap: var(--space-2);
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.topbar__logo {
+  width: var(--sidebar-collapsed);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+}
+
+.topbar__logo-mark {
+  width: 28px;
+  height: 28px;
+  background: var(--text-primary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.topbar__logo-mark span {
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  color: var(--bg-page);
+  letter-spacing: -0.5px;
+}
+
+.topbar__divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-default);
+  flex-shrink: 0;
+}
+
+.topbar__shift {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.topbar__shift-label {
+  font-size: var(--size-small);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.topbar__shift-value {
+  font-size: var(--size-small);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.topbar__shift-countdown {
+  font-size: var(--size-label);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.topbar__spacer {
+  flex: 1;
+}
+
+.topbar__live-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.topbar__stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  cursor: default;
+}
+
+.topbar__stat-label {
+  font-size: var(--size-label);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.topbar__stat-value {
+  font-size: var(--size-label);
+  font-weight: var(--weight-semibold);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.topbar__stat--alert {
+  border-color: var(--priority-critical);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.topbar__stat--alert .topbar__stat-label,
+.topbar__stat--alert .topbar__stat-value {
+  color: var(--priority-critical);
+}
+
+.topbar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  min-width: 160px;
+  position: relative;
+}
+
+.topbar__user:hover {
+  background: var(--bg-hover);
+}
+
+.topbar__user-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-available);
+  flex-shrink: 0;
+  animation: pulse-available 2s infinite;
+}
+
+@keyframes pulse-available {
+  0%, 100% { box-shadow: 0 0 0 0 var(--pulse-available); }
+  50%       { box-shadow: 0 0 0 4px transparent; }
+}
+
+.topbar__user-name {
+  font-size: var(--size-small);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  flex: 1;
+  white-space: nowrap;
+}
+
+.topbar__user-chevron {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.topbar__user-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 200px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  z-index: 200;
+  overflow: hidden;
+}
+
+.topbar__user:hover .topbar__user-dropdown,
+.topbar__user-dropdown:hover {
+  display: block;
+}
+
+.topbar__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 9px var(--space-2);
+  font-size: var(--size-small);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.topbar__dropdown-item:hover {
+  background: var(--bg-hover);
+}
+
+.topbar__dropdown-item--danger {
+  color: var(--alert-error);
+}
+
+.topbar__dropdown-divider {
+  height: 1px;
+  background: var(--border-default);
+  margin: 4px 0;
+}
+
+.topbar__theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  font-size: var(--size-label);
+  color: var(--text-secondary);
+}
+
+.topbar__theme-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   LEFT SIDEBAR
+   ============================================================ */
+
+.sidebar {
+  grid-area: sidebar;
+  width: var(--sidebar-collapsed);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width var(--transition-panel);
+  z-index: 90;
+  flex-shrink: 0;
+}
+
+.sidebar.is-expanded {
+  width: var(--sidebar-expanded);
+}
+
+.sidebar__toggle {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.sidebar.is-expanded .sidebar__toggle {
+  justify-content: flex-end;
+  padding-right: var(--space-2);
+}
+
+.sidebar__toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sidebar__toggle-icon {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform var(--transition-panel);
+}
+
+.sidebar.is-expanded .sidebar__toggle-icon {
+  transform: rotate(180deg);
+}
+
+.sidebar__nav {
+  flex: 1;
+  overflow: hidden;
+  padding: var(--space-1) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar__nav-section {
+  padding: 0;
+}
+
+.sidebar__nav-divider {
+  height: 1px;
+  background: var(--border-default);
+  margin: var(--space-1) var(--space-1);
+}
+
+.sidebar__nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 40px;
+  padding: 0 var(--space-2);
+  cursor: pointer;
+  border-radius: 0;
+  transition: background var(--transition-fast);
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.sidebar__nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sidebar__nav-item.is-active {
+  background: var(--bg-active);
+  color: var(--text-primary);
+}
+
+.sidebar__nav-item.is-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--text-primary);
+  border-radius: 0 2px 2px 0;
+}
+
+.sidebar__nav-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.sidebar__nav-label {
+  font-size: var(--size-small);
+  font-weight: var(--weight-medium);
+  opacity: 0;
+  transition: opacity var(--transition-panel);
+  pointer-events: none;
+}
+
+.sidebar.is-expanded .sidebar__nav-label {
+  opacity: 1;
+}
+
+.sidebar__nav-badge {
+  margin-left: auto;
+  background: var(--priority-critical);
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+  font-family: var(--font-mono);
+  padding: 1px 5px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity var(--transition-panel);
+}
+
+.sidebar.is-expanded .sidebar__nav-badge {
+  opacity: 1;
+}
+
+/* Tooltip for collapsed state */
+.sidebar__nav-item .sidebar__tooltip {
+  display: none;
+  position: absolute;
+  left: calc(var(--sidebar-collapsed) + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  font-size: var(--size-label);
+  font-weight: var(--weight-medium);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  z-index: 300;
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+}
+
+.sidebar:not(.is-expanded) .sidebar__nav-item:hover .sidebar__tooltip {
+  display: block;
+}
+
+.sidebar__bottom {
+  padding: var(--space-1) 0;
+  border-top: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   MAIN SURFACE
+   ============================================================ */
+
+.main-surface {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-page);
+  min-width: 0;
+}
+
+.page-header {
+  height: var(--page-header-height);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  gap: var(--space-2);
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.page-header__title {
+  font-size: var(--size-heading);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.page-header__subtitle {
+  font-size: var(--size-small);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.page-header__divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border-default);
+}
+
+.page-header__filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: var(--size-label);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.filter-btn.is-active {
+  background: var(--bg-active);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-2) var(--space-3);
+}
+
+.content-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content-area::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+/* ============================================================
+   TABLE SYSTEM
+   ============================================================ */
+
+.data-table-wrapper {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.data-table thead {
+  background: var(--bg-sidebar);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.data-table th {
+  height: 40px;
+  padding: 0 var(--space-2);
+  text-align: left;
+  font-size: var(--size-label);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-default);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.data-table th:first-child {
+  padding-left: 0;
+  width: 4px;
+}
+
+.data-table td {
+  height: 48px;
+  padding: 0 var(--space-2);
+  font-size: var(--size-body);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-default);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.data-table td:first-child {
+  padding: 0;
+  width: 4px;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr {
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  position: relative;
+}
+
+.data-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.data-table tbody tr.is-selected {
+  background: var(--bg-active);
+}
+
+/* Priority border */
+.priority-border {
+  display: block;
+  width: 4px;
+  height: 48px;
+}
+
+.priority-border--critical { background: var(--priority-critical); }
+.priority-border--high     { background: var(--priority-high); }
+.priority-border--medium   { background: var(--priority-medium); }
+.priority-border--low      { background: var(--priority-low); }
+.priority-border--none     { background: transparent; }
+
+/* Inline actions — hidden until hover */
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.data-table tbody tr:hover .row-actions {
+  opacity: 1;
+}
+
+.row-action-btn {
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: var(--size-label);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.row-action-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.row-action-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--alert-error);
+  border-color: var(--alert-error);
+}
+
+/* ============================================================
+   STATUS BADGE SYSTEM
+   ============================================================ */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: var(--size-label);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-badge--new         { background: rgba(59,130,246,0.1);  color: #60a5fa; }
+.status-badge--new         .status-dot { background: #3b82f6; }
+
+.status-badge--assigned    { background: rgba(59,130,246,0.1);  color: #60a5fa; }
+.status-badge--assigned    .status-dot { background: #3b82f6; }
+
+.status-badge--inprogress  { background: rgba(59,130,246,0.1);  color: #60a5fa; }
+.status-badge--inprogress  .status-dot { background: #3b82f6; animation: pulse-busy 2s infinite; }
+
+.status-badge--onhold      { background: rgba(249,115,22,0.1);  color: #fb923c; }
+.status-badge--onhold      .status-dot { background: #f97316; }
+
+.status-badge--escalated   { background: rgba(168,85,247,0.1);  color: #c084fc; }
+.status-badge--escalated   .status-dot { background: #a855f7; }
+
+.status-badge--closed      { background: rgba(107,114,128,0.1); color: #9ca3af; }
+.status-badge--closed      .status-dot { background: #6b7280; }
+
+.status-badge--pending     { background: rgba(249,115,22,0.1);  color: #fb923c; }
+.status-badge--pending     .status-dot { background: #f97316; }
+
+.status-badge--approved    { background: rgba(34,197,94,0.1);   color: #4ade80; }
+.status-badge--approved    .status-dot { background: #22c55e; }
+
+.status-badge--rejected    { background: rgba(239,68,68,0.1);   color: #f87171; }
+.status-badge--rejected    .status-dot { background: #ef4444; }
+
+.status-badge--available   { background: rgba(34,197,94,0.1);   color: #4ade80; }
+.status-badge--available   .status-dot { background: #22c55e; animation: pulse-available 2s infinite; }
+
+.status-badge--onbreak     { background: rgba(234,179,8,0.1);   color: #facc15; }
+.status-badge--onbreak     .status-dot { background: #eab308; }
+
+.status-badge--offline     { background: rgba(107,114,128,0.1); color: #9ca3af; }
+.status-badge--offline     .status-dot { background: #6b7280; }
+
+@keyframes pulse-busy {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+  50%       { box-shadow: 0 0 0 4px transparent; }
+}
+
+/* ============================================================
+   SKELETON LOADING
+   ============================================================ */
+
+.skeleton {
+  background: var(--bg-skeleton);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.skeleton-row td {
+  cursor: default;
+}
+
+.skeleton-row:hover {
+  background: transparent !important;
+}
+
+.skeleton-cell {
+  display: inline-block;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-skeleton);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* ============================================================
+   RIGHT PANEL
+   ============================================================ */
+
+.right-panel {
+  grid-area: panel;
+  width: 0;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width var(--transition-panel);
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+.right-panel.is-open {
+  width: var(--panel-width);
+  box-shadow: var(--shadow-panel);
+}
+
+.panel-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.panel-header__status {
+  flex-shrink: 0;
+}
+
+.panel-header__title {
+  flex: 1;
+  font-size: var(--size-subheading);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-header__id {
+  font-size: var(--size-label);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.panel-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.panel-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.panel-critical-strip {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--border-default);
+  background: rgba(239, 68, 68, 0.06);
+  flex-shrink: 0;
+}
+
+.panel-critical-strip__label {
+  font-size: var(--size-label);
+  color: var(--text-secondary);
+}
+
+.panel-critical-strip__value {
+  font-size: var(--size-label);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  color: var(--priority-critical);
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.panel-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.panel-body::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 2px;
+}
+
+.panel-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-field {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-height: 28px;
+}
+
+.panel-field__label {
+  font-size: var(--size-label);
+  color: var(--text-secondary);
+  width: 100px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.panel-field__value {
+  font-size: var(--size-small);
+  color: var(--text-primary);
+  flex: 1;
+  word-break: break-word;
+}
+
+.panel-divider {
+  height: 1px;
+  background: var(--border-default);
+  margin: 0 calc(-1 * var(--space-2));
+}
+
+.panel-section-title {
+  font-size: var(--size-label);
+  font-weight: var(--weight-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.panel-action-zone {
+  padding: var(--space-2);
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  background: var(--bg-panel);
+}
+
+.panel-action-row {
+  display: flex;
+  gap: var(--space-1);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--size-small);
+  font-weight: var(--weight-medium);
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.btn--primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-bg);
+}
+
+.btn--primary:hover {
+  opacity: 0.88;
+}
+
+.btn--secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border-color: var(--btn-secondary-border);
+}
+
+.btn--secondary:hover {
+  background: var(--bg-hover);
+}
+
+.btn--danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--alert-error);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn--danger:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.btn--full {
+  width: 100%;
+}
+
+.btn--sm {
+  padding: 4px 10px;
+  font-size: var(--size-label);
+}
+
+/* ============================================================
+   BOTTOM STATUS BAR
+   ============================================================ */
+
+.statusbar {
+  grid-area: statusbar;
+  height: var(--statusbar-height);
+  background: var(--bg-statusbar);
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  gap: var(--space-2);
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.statusbar__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--size-label);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.statusbar__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.statusbar__dot--connected    { background: var(--status-available); }
+.statusbar__dot--disconnected { background: var(--alert-error); }
+
+.statusbar__divider {
+  width: 1px;
+  height: 12px;
+  background: var(--border-default);
+}
+
+.statusbar__version {
+  margin-left: auto;
+  font-size: var(--size-label);
+  font-family: var(--font-mono);
+  color: var(--text-disabled);
+}
+
+/* ============================================================
+   PLACEHOLDER CONTENT (Phase 1 only)
+   ============================================================ */
+
+.placeholder-surface {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--space-2);
+  color: var(--text-disabled);
+  user-select: none;
+}
+
+.placeholder-surface__icon {
+  font-size: 32px;
+  opacity: 0.3;
+}
+
+.placeholder-surface__label {
+  font-size: var(--size-small);
+  color: var(--text-disabled);
+}
+
+/* ============================================================
+   ALERT BANNERS
+   ============================================================ */
+
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 8px var(--space-3);
+  font-size: var(--size-small);
+  border-bottom: 1px solid transparent;
+  flex-shrink: 0;
+}
+
+.alert-banner--warning {
+  background: rgba(249, 115, 22, 0.08);
+  border-color: rgba(249, 115, 22, 0.2);
+  color: var(--alert-warning);
+}
+
+.alert-banner--critical {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: var(--alert-error);
+}
+
+.alert-banner__dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.6;
+  padding: 0 4px;
+}
+
+.alert-banner__dismiss:hover {
+  opacity: 1;
+}
+
+/* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
+
+.toast-container {
+  position: fixed;
+  bottom: calc(var(--statusbar-height) + var(--space-2));
+  right: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  z-index: 500;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 10px var(--space-2);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  font-size: var(--size-small);
+  color: var(--text-primary);
+  min-width: 240px;
+  max-width: 320px;
+  pointer-events: all;
+  animation: toast-in 200ms ease-out;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.toast__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.toast--success .toast__dot { background: var(--alert-success); }
+.toast--error   .toast__dot { background: var(--alert-error); }
+.toast--info    .toast__dot { background: var(--alert-info); }
+
+</style>
 </head>
 <body>
-<div id="root"></div>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="src/lib/config.js"></script>
-<script src="src/components/components.js"></script>
-<script src="src/screens/screens1.js"></script>
-<script src="src/screens/screens2.js"></script>
-<script src="src/screens/screens3.js"></script>
-<script src="src/screens/screens4.js"></script>
-<script src="src/app.js"></script>
+
+<div class="app-shell" id="appShell">
+
+  <!-- ============================================================
+       TOP BAR
+       ============================================================ -->
+  <header class="topbar" role="banner">
+
+    <div class="topbar__logo">
+      <div class="topbar__logo-mark" aria-label="NEXUS">
+        <span>NX</span>
+      </div>
+    </div>
+
+    <div class="topbar__divider" aria-hidden="true"></div>
+
+    <div class="topbar__shift" aria-label="Current shift information">
+      <span class="topbar__shift-label">Shift</span>
+      <span class="topbar__shift-value">14:00 – 22:00</span>
+      <span class="topbar__shift-countdown" id="shiftCountdown">2h 47m left</span>
+    </div>
+
+    <div class="topbar__spacer" aria-hidden="true"></div>
+
+    <div class="topbar__live-stats" role="status" aria-label="Live operational stats">
+
+      <div class="topbar__stat" title="Unassigned cases in queue">
+        <span class="topbar__stat-label">Queue</span>
+        <span class="topbar__stat-value" id="queueCount">7</span>
+      </div>
+
+      <div class="topbar__divider" aria-hidden="true"></div>
+
+      <div class="topbar__stat topbar__stat--alert" title="Active SLA breaches">
+        <span class="topbar__stat-label">&#9679; Urgent</span>
+        <span class="topbar__stat-value" id="urgentCount">3</span>
+      </div>
+
+    </div>
+
+    <div class="topbar__divider" aria-hidden="true"></div>
+
+    <button
+      class="topbar__theme-toggle"
+      id="themeToggle"
+      aria-label="Toggle theme"
+      title="Toggle Light / Dark mode"
+    >
+      <span id="themeIcon">☀</span>
+      <span id="themeLabel">Light</span>
+    </button>
+
+    <div class="topbar__user" role="button" aria-haspopup="true" aria-label="User menu" tabindex="0">
+      <span class="topbar__user-dot" aria-hidden="true"></span>
+      <span class="topbar__user-name">Ahmed Al-Rashid</span>
+      <span class="topbar__user-chevron" aria-hidden="true">▾</span>
+      <div class="topbar__user-dropdown" role="menu">
+        <button class="topbar__dropdown-item" role="menuitem">
+          <span>⊙</span> My Profile
+        </button>
+        <button class="topbar__dropdown-item" role="menuitem">
+          <span>⚙</span> Preferences
+        </button>
+        <div class="topbar__dropdown-divider" aria-hidden="true"></div>
+        <button class="topbar__dropdown-item topbar__dropdown-item--danger" role="menuitem">
+          <span>⊗</span> Sign Out
+        </button>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- ============================================================
+       LEFT SIDEBAR
+       ============================================================ -->
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+
+    <button
+      class="sidebar__toggle"
+      id="sidebarToggle"
+      aria-label="Toggle sidebar"
+      aria-expanded="false"
+    >
+      <span class="sidebar__toggle-icon" aria-hidden="true">›</span>
+    </button>
+
+    <div class="sidebar__nav" role="list">
+
+      <!-- Primary nav -->
+      <div class="sidebar__nav-section">
+
+        <button class="sidebar__nav-item is-active" role="listitem" data-page="my-work">
+          <span class="sidebar__nav-icon" aria-hidden="true">⊡</span>
+          <span class="sidebar__nav-label">My Work</span>
+          <span class="sidebar__tooltip" aria-hidden="true">My Work</span>
+        </button>
+
+        <button class="sidebar__nav-item" role="listitem" data-page="live-floor">
+          <span class="sidebar__nav-icon" aria-hidden="true">◉</span>
+          <span class="sidebar__nav-label">Live Floor</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Live Floor</span>
+        </button>
+
+        <button class="sidebar__nav-item" role="listitem" data-page="live-queue">
+          <span class="sidebar__nav-icon" aria-hidden="true">≡</span>
+          <span class="sidebar__nav-label">Live Queue</span>
+          <span class="sidebar__nav-badge">7</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Live Queue (7)</span>
+        </button>
+
+      </div>
+
+      <div class="sidebar__nav-divider" aria-hidden="true"></div>
+
+      <div class="sidebar__nav-section">
+
+        <button class="sidebar__nav-item" role="listitem" data-page="cases">
+          <span class="sidebar__nav-icon" aria-hidden="true">◈</span>
+          <span class="sidebar__nav-label">Cases</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Cases</span>
+        </button>
+
+        <button class="sidebar__nav-item" role="listitem" data-page="requests">
+          <span class="sidebar__nav-icon" aria-hidden="true">⊞</span>
+          <span class="sidebar__nav-label">Requests</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Requests</span>
+        </button>
+
+        <button class="sidebar__nav-item" role="listitem" data-page="tasks">
+          <span class="sidebar__nav-icon" aria-hidden="true">✓</span>
+          <span class="sidebar__nav-label">Tasks</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Tasks</span>
+        </button>
+
+      </div>
+
+      <div class="sidebar__nav-divider" aria-hidden="true"></div>
+
+      <div class="sidebar__nav-section">
+
+        <button class="sidebar__nav-item" role="listitem" data-page="schedule">
+          <span class="sidebar__nav-icon" aria-hidden="true">▦</span>
+          <span class="sidebar__nav-label">Schedule</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Schedule</span>
+        </button>
+
+        <button class="sidebar__nav-item" role="listitem" data-page="sla-monitor">
+          <span class="sidebar__nav-icon" aria-hidden="true">◷</span>
+          <span class="sidebar__nav-label">SLA Monitor</span>
+          <span class="sidebar__tooltip" aria-hidden="true">SLA Monitor</span>
+        </button>
+
+        <button class="sidebar__nav-item" role="listitem" data-page="coverage">
+          <span class="sidebar__nav-icon" aria-hidden="true">▤</span>
+          <span class="sidebar__nav-label">Coverage</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Coverage</span>
+        </button>
+
+      </div>
+
+      <div class="sidebar__nav-divider" aria-hidden="true"></div>
+
+      <div class="sidebar__nav-section">
+
+        <button class="sidebar__nav-item" role="listitem" data-page="announcements">
+          <span class="sidebar__nav-icon" aria-hidden="true">◎</span>
+          <span class="sidebar__nav-label">Announcements</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Announcements</span>
+        </button>
+
+        <button class="sidebar__nav-item" role="listitem" data-page="chat">
+          <span class="sidebar__nav-icon" aria-hidden="true">◻</span>
+          <span class="sidebar__nav-label">Chat</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Chat</span>
+        </button>
+
+        <button class="sidebar__nav-item" role="listitem" data-page="reports">
+          <span class="sidebar__nav-icon" aria-hidden="true">▣</span>
+          <span class="sidebar__nav-label">Reports</span>
+          <span class="sidebar__tooltip" aria-hidden="true">Reports</span>
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom: Settings -->
+    <div class="sidebar__bottom">
+      <button class="sidebar__nav-item" role="listitem" data-page="settings">
+        <span class="sidebar__nav-icon" aria-hidden="true">⚙</span>
+        <span class="sidebar__nav-label">Settings</span>
+        <span class="sidebar__tooltip" aria-hidden="true">Settings</span>
+      </button>
+    </div>
+
+  </nav>
+
+  <!-- ============================================================
+       MAIN SURFACE
+       ============================================================ -->
+  <main class="main-surface" id="mainSurface" role="main">
+
+    <!-- Alert Banner (example — dismissible) -->
+    <div class="alert-banner alert-banner--critical" id="alertBanner" role="alert">
+      <span>&#9679;</span>
+      <span><strong>3 cases</strong> have breached SLA — immediate action required.</span>
+      <button class="alert-banner__dismiss" id="dismissBanner" aria-label="Dismiss alert">✕</button>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header" role="toolbar" aria-label="Page controls">
+      <h1 class="page-header__title" id="pageTitle">My Work</h1>
+      <span class="page-header__subtitle" id="pageSubtitle">Ahmed Al-Rashid</span>
+      <div class="page-header__divider" aria-hidden="true"></div>
+      <div class="page-header__filters" role="group" aria-label="Filters">
+        <button class="filter-btn is-active">All</button>
+        <button class="filter-btn">Active</button>
+        <button class="filter-btn">On Hold</button>
+        <button class="filter-btn">Closed</button>
+      </div>
+      <div class="page-header__actions">
+        <button class="btn btn--secondary btn--sm">Export</button>
+        <button class="btn btn--primary btn--sm">+ New Case</button>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area" id="contentArea">
+
+      <!-- Demo table to validate layout -->
+      <div class="data-table-wrapper">
+        <table class="data-table" role="grid" aria-label="Cases table">
+          <thead>
+            <tr>
+              <th aria-label="Priority" style="width:4px;"></th>
+              <th style="width:80px;">Case ID</th>
+              <th style="width:120px;">Status</th>
+              <th>Subject</th>
+              <th style="width:160px;">Assignee</th>
+              <th style="width:100px;">Priority</th>
+              <th style="width:100px;">SLA</th>
+              <th style="width:120px;" aria-label="Actions"></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+
+            <!-- Skeleton rows — loading state -->
+            <tr class="skeleton-row">
+              <td><span class="priority-border priority-border--none"></span></td>
+              <td><span class="skeleton-cell" style="width:48px;"></span></td>
+              <td><span class="skeleton-cell" style="width:80px;"></span></td>
+              <td><span class="skeleton-cell" style="width:70%;"></span></td>
+              <td><span class="skeleton-cell" style="width:100px;"></span></td>
+              <td><span class="skeleton-cell" style="width:60px;"></span></td>
+              <td><span class="skeleton-cell" style="width:60px;"></span></td>
+              <td></td>
+            </tr>
+            <tr class="skeleton-row">
+              <td><span class="priority-border priority-border--none"></span></td>
+              <td><span class="skeleton-cell" style="width:48px;"></span></td>
+              <td><span class="skeleton-cell" style="width:80px;"></span></td>
+              <td><span class="skeleton-cell" style="width:55%;"></span></td>
+              <td><span class="skeleton-cell" style="width:100px;"></span></td>
+              <td><span class="skeleton-cell" style="width:60px;"></span></td>
+              <td><span class="skeleton-cell" style="width:60px;"></span></td>
+              <td></td>
+            </tr>
+            <tr class="skeleton-row">
+              <td><span class="priority-border priority-border--none"></span></td>
+              <td><span class="skeleton-cell" style="width:48px;"></span></td>
+              <td><span class="skeleton-cell" style="width:80px;"></span></td>
+              <td><span class="skeleton-cell" style="width:80%;"></span></td>
+              <td><span class="skeleton-cell" style="width:100px;"></span></td>
+              <td><span class="skeleton-cell" style="width:60px;"></span></td>
+              <td><span class="skeleton-cell" style="width:60px;"></span></td>
+              <td></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ============================================================
+       RIGHT PANEL
+       ============================================================ -->
+  <aside
+    class="right-panel"
+    id="rightPanel"
+    role="complementary"
+    aria-label="Detail panel"
+    aria-hidden="true"
+  >
+
+    <div class="panel-header">
+      <span class="panel-header__status">
+        <span class="status-badge status-badge--inprogress">
+          <span class="status-dot"></span>
+          In Progress
+        </span>
+      </span>
+      <span class="panel-header__id">#1234</span>
+      <span class="panel-header__title">Account access issue</span>
+      <button class="panel-close" id="panelClose" aria-label="Close panel">✕</button>
+    </div>
+
+    <div class="panel-critical-strip" role="status">
+      <span class="panel-critical-strip__label">SLA Remaining</span>
+      <span class="panel-critical-strip__value" id="panelSlaTimer">00:14:22</span>
+    </div>
+
+    <div class="panel-body" id="panelBody">
+
+      <div class="panel-field-group">
+        <div class="panel-field">
+          <span class="panel-field__label">Assigned to</span>
+          <span class="panel-field__value">Ahmed Al-Rashid</span>
+        </div>
+        <div class="panel-field">
+          <span class="panel-field__label">Priority</span>
+          <span class="panel-field__value" style="color: var(--priority-critical);">&#9679; Critical</span>
+        </div>
+        <div class="panel-field">
+          <span class="panel-field__label">Created</span>
+          <span class="panel-field__value">Today, 14:32</span>
+        </div>
+        <div class="panel-field">
+          <span class="panel-field__label">Team</span>
+          <span class="panel-field__value">Support Team A</span>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <div class="panel-field-group">
+        <span class="panel-section-title">Description</span>
+        <p style="font-size: var(--size-small); color: var(--text-primary); line-height: 1.5;">
+          Customer cannot access their account after a password reset attempt.
+          Issue persists across multiple browsers and devices.
+        </p>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <div class="panel-field-group">
+        <span class="panel-section-title">Activity</span>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="panel-field">
+            <span class="panel-field__label" style="font-family:var(--font-mono);font-size:11px;color:var(--text-disabled);">14:32</span>
+            <span class="panel-field__value" style="color:var(--text-secondary);">Case created</span>
+          </div>
+          <div class="panel-field">
+            <span class="panel-field__label" style="font-family:var(--font-mono);font-size:11px;color:var(--text-disabled);">14:35</span>
+            <span class="panel-field__value" style="color:var(--text-secondary);">Assigned to Ahmed</span>
+          </div>
+          <div class="panel-field">
+            <span class="panel-field__label" style="font-family:var(--font-mono);font-size:11px;color:var(--text-disabled);">14:41</span>
+            <span class="panel-field__value" style="color:var(--text-secondary);">Status changed to In Progress</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <div class="panel-field-group">
+        <span class="panel-section-title">Add Comment</span>
+        <textarea
+          style="
+            width:100%;
+            background:var(--bg-input);
+            border:1px solid var(--border-input);
+            border-radius:var(--radius-sm);
+            color:var(--text-primary);
+            font-family:var(--font);
+            font-size:var(--size-small);
+            padding:8px;
+            resize:vertical;
+            min-height:72px;
+            outline:none;
+          "
+          placeholder="Write a comment..."
+          aria-label="Add comment"
+        ></textarea>
+      </div>
+
+    </div>
+
+    <div class="panel-action-zone">
+      <div class="panel-action-row">
+        <button class="btn btn--secondary btn--full">On Hold</button>
+        <button class="btn btn--secondary btn--full">Escalate</button>
+      </div>
+      <button class="btn btn--primary btn--full">Close Case ✓</button>
+    </div>
+
+  </aside>
+
+  <!-- ============================================================
+       BOTTOM STATUS BAR
+       ============================================================ -->
+  <footer class="statusbar" role="contentinfo" aria-label="System status">
+
+    <div class="statusbar__item" role="status" aria-live="polite">
+      <span class="statusbar__dot statusbar__dot--connected" aria-hidden="true"></span>
+      <span id="connectionLabel">Connected</span>
+    </div>
+
+    <div class="statusbar__divider" aria-hidden="true"></div>
+
+    <div class="statusbar__item">
+      <span>Last sync:</span>
+      <span id="lastSync">just now</span>
+    </div>
+
+    <div class="statusbar__divider" aria-hidden="true"></div>
+
+    <div class="statusbar__item">
+      <span id="activeUsers">22</span>
+      <span>online</span>
+    </div>
+
+    <span class="statusbar__version" aria-label="System version">v2.1.0</span>
+
+  </footer>
+
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+
+<script>
+/* ============================================================
+   NEXUS v2.0 — SHELL INTERACTION LOGIC
+   Phase 1 only: layout behavior, no business logic
+   ============================================================ */
+
+(function () {
+  'use strict';
+
+  /* ── Theme ── */
+  const html         = document.documentElement;
+  const themeToggle  = document.getElementById('themeToggle');
+  const themeIcon    = document.getElementById('themeIcon');
+  const themeLabel   = document.getElementById('themeLabel');
+
+  function setTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      themeIcon.textContent  = '☀';
+      themeLabel.textContent = 'Light';
+    } else {
+      themeIcon.textContent  = '☾';
+      themeLabel.textContent = 'Dark';
+    }
+    localStorage.setItem('nexus-theme', theme);
+  }
+
+  themeToggle.addEventListener('click', function () {
+    const current = html.getAttribute('data-theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  });
+
+  const savedTheme = localStorage.getItem('nexus-theme') || 'dark';
+  setTheme(savedTheme);
+
+  /* ── Sidebar toggle ── */
+  const sidebar       = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+
+  sidebarToggle.addEventListener('click', function () {
+    const expanded = sidebar.classList.toggle('is-expanded');
+    sidebarToggle.setAttribute('aria-expanded', expanded.toString());
+  });
+
+  /* ── Sidebar navigation ── */
+  const navItems = document.querySelectorAll('.sidebar__nav-item[data-page]');
+  const pageTitle    = document.getElementById('pageTitle');
+  const pageSubtitle = document.getElementById('pageSubtitle');
+
+  const pageMeta = {
+    'my-work':       { title: 'My Work',       subtitle: 'Ahmed Al-Rashid' },
+    'live-floor':    { title: 'Live Floor',     subtitle: 'Shift 14:00 – 22:00' },
+    'live-queue':    { title: 'Live Queue',     subtitle: '7 unassigned' },
+    'cases':         { title: 'Cases',          subtitle: 'All active cases' },
+    'requests':      { title: 'Requests',       subtitle: 'Pending approval' },
+    'tasks':         { title: 'Tasks',          subtitle: 'Assigned to me' },
+    'schedule':      { title: 'Schedule',       subtitle: 'Week of Apr 7' },
+    'sla-monitor':   { title: 'SLA Monitor',    subtitle: 'Live compliance' },
+    'coverage':      { title: 'Coverage',       subtitle: 'Workforce view' },
+    'announcements': { title: 'Announcements',  subtitle: 'Internal comms' },
+    'chat':          { title: 'Chat',           subtitle: 'Internal messaging' },
+    'reports':       { title: 'Reports',        subtitle: 'Operational analytics' },
+    'settings':      { title: 'Settings',       subtitle: 'System configuration' },
+  };
+
+  navItems.forEach(function (item) {
+    item.addEventListener('click', function () {
+      navItems.forEach(function (i) { i.classList.remove('is-active'); });
+      item.classList.add('is-active');
+
+      const page = item.getAttribute('data-page');
+      const meta = pageMeta[page] || { title: page, subtitle: '' };
+      pageTitle.textContent    = meta.title;
+      pageSubtitle.textContent = meta.subtitle;
+
+      closePanel();
+    });
+  });
+
+  /* ── Right Panel ── */
+  const rightPanel = document.getElementById('rightPanel');
+  const panelClose = document.getElementById('panelClose');
+
+  function openPanel() {
+    rightPanel.classList.add('is-open');
+    rightPanel.setAttribute('aria-hidden', 'false');
+  }
+
+  function closePanel() {
+    rightPanel.classList.remove('is-open');
+    rightPanel.setAttribute('aria-hidden', 'true');
+    document.querySelectorAll('.data-table tbody tr').forEach(function (r) {
+      r.classList.remove('is-selected');
+    });
+  }
+
+  panelClose.addEventListener('click', closePanel);
+
+  /* Table row click → open panel */
+  document.getElementById('tableBody').addEventListener('click', function (e) {
+    const row = e.target.closest('tr');
+    if (!row || row.classList.contains('skeleton-row')) return;
+    document.querySelectorAll('.data-table tbody tr').forEach(function (r) {
+      r.classList.remove('is-selected');
+    });
+    row.classList.add('is-selected');
+    openPanel();
+  });
+
+  /* ── Alert banner dismiss ── */
+  const dismissBanner = document.getElementById('dismissBanner');
+  const alertBanner   = document.getElementById('alertBanner');
+  if (dismissBanner) {
+    dismissBanner.addEventListener('click', function () {
+      alertBanner.style.display = 'none';
+    });
+  }
+
+  /* ── Filter buttons ── */
+  document.querySelectorAll('.filter-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      btn.closest('.page-header__filters')
+        .querySelectorAll('.filter-btn')
+        .forEach(function (b) { b.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+    });
+  });
+
+  /* ── Skeleton → real rows (Phase 1 demo) ── */
+  const DEMO_ROWS = [
+    { priority: 'critical', id: '#1234', status: 'inprogress', statusLabel: 'In Progress',
+      subject: 'Account access issue — password reset failure',
+      assignee: 'Ahmed Al-Rashid', priorityLabel: 'Critical', sla: '00:14:22', slaRed: true },
+    { priority: 'high', id: '#1235', status: 'assigned', statusLabel: 'Assigned',
+      subject: 'Billing discrepancy on invoice #INV-2024-0891',
+      assignee: 'Sara Mohammed', priorityLabel: 'High', sla: '01:02:11', slaRed: false },
+    { priority: 'medium', id: '#1236', status: 'new', statusLabel: 'New',
+      subject: 'Feature request: export to CSV',
+      assignee: '—', priorityLabel: 'Medium', sla: '03:45:00', slaRed: false },
+    { priority: 'low', id: '#1237', status: 'onhold', statusLabel: 'On Hold',
+      subject: 'General inquiry about subscription plans',
+      assignee: 'Khalid Hassan', priorityLabel: 'Low', sla: '06:00:00', slaRed: false },
+    { priority: 'critical', id: '#1238', status: 'escalated', statusLabel: 'Escalated',
+      subject: 'Data export failure — critical production issue',
+      assignee: 'SME: Nora Ali', priorityLabel: 'Critical', sla: '00:03:55', slaRed: true },
+  ];
+
+  function buildRows() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    DEMO_ROWS.forEach(function (row) {
+      const tr = document.createElement('tr');
+      tr.setAttribute('role', 'row');
+      tr.setAttribute('tabindex', '0');
+      tr.innerHTML =
+        '<td><span class="priority-border priority-border--' + row.priority + '"></span></td>' +
+        '<td style="font-family:var(--font-mono);font-size:var(--size-mono);color:var(--text-secondary);">' + row.id + '</td>' +
+        '<td><span class="status-badge status-badge--' + row.status + '"><span class="status-dot"></span>' + row.statusLabel + '</span></td>' +
+        '<td style="color:var(--text-primary);">' + row.subject + '</td>' +
+        '<td style="color:var(--text-secondary);font-size:var(--size-small);">' + row.assignee + '</td>' +
+        '<td style="color:var(--text-secondary);font-size:var(--size-small);">' + row.priorityLabel + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:var(--size-mono);color:' + (row.slaRed ? 'var(--priority-critical)' : 'var(--text-secondary)') + ';">' + row.sla + '</td>' +
+        '<td><div class="row-actions">' +
+          '<button class="row-action-btn" onclick="event.stopPropagation()">Assign</button>' +
+          '<button class="row-action-btn" onclick="event.stopPropagation()">···</button>' +
+        '</div></td>';
+
+      tr.addEventListener('click', function () {
+        document.querySelectorAll('.data-table tbody tr').forEach(function (r) {
+          r.classList.remove('is-selected');
+        });
+        tr.classList.add('is-selected');
+        openPanel();
+      });
+
+      tr.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          tr.click();
+        }
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  setTimeout(buildRows, 800);
+
+  /* ── SLA panel timer ── */
+  let slaSeconds = 862;
+  const panelSlaTimer = document.getElementById('panelSlaTimer');
+
+  function formatTime(s) {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return (h > 0 ? String(h).padStart(2,'0') + ':' : '') +
+           String(m).padStart(2,'0') + ':' +
+           String(sec).padStart(2,'0');
+  }
+
+  setInterval(function () {
+    if (slaSeconds > 0) slaSeconds--;
+    if (panelSlaTimer) panelSlaTimer.textContent = formatTime(slaSeconds);
+  }, 1000);
+
+  /* ── Last sync timestamp ── */
+  const lastSyncEl = document.getElementById('lastSync');
+  let syncSeconds  = 0;
+
+  setInterval(function () {
+    syncSeconds++;
+    if (syncSeconds < 60) {
+      lastSyncEl.textContent = 'just now';
+    } else {
+      const m = Math.floor(syncSeconds / 60);
+      lastSyncEl.textContent = m + 'm ago';
+    }
+  }, 1000);
+
+  /* ── Toast demo ── */
+  function showToast(type, message) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast toast--' + type;
+    toast.innerHTML = '<span class="toast__dot"></span><span>' + message + '</span>';
+    container.appendChild(toast);
+    setTimeout(function () {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 200ms';
+      setTimeout(function () { toast.remove(); }, 200);
+    }, type === 'error' ? 8000 : 3000);
+  }
+
+  setTimeout(function () {
+    showToast('info', 'Phase 1 shell loaded successfully.');
+  }, 1200);
+
+})();
+</script>
 </body>
 </html>
