@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NEXUS — Operations Platform</title>
+<title>NEXUS — Owner Control Center</title>
 <style>
 
 /* ============================================================
@@ -37,54 +38,48 @@
   --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
 
-  --size-display: 24px;
-  --size-heading: 18px;
+  --size-display:    24px;
+  --size-heading:    18px;
   --size-subheading: 14px;
-  --size-body: 14px;
-  --size-small: 13px;
-  --size-label: 12px;
-  --size-mono: 13px;
+  --size-body:       14px;
+  --size-small:      13px;
+  --size-label:      12px;
+  --size-mono:       13px;
 
-  --weight-bold: 700;
+  --weight-bold:     700;
   --weight-semibold: 600;
-  --weight-medium: 500;
-  --weight-regular: 400;
+  --weight-medium:   500;
+  --weight-regular:  400;
 
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
 
-  --transition-fast: 100ms ease;
-  --transition-panel: 200ms ease-out;
+  --transition-fast:    100ms ease;
+  --transition-panel:   200ms ease-out;
   --transition-overlay: 150ms ease;
 
-  /* ── Functional colors — fixed, theme-independent ── */
-  --status-available:     #22c55e;
-  --status-busy:          #3b82f6;
-  --status-break:         #eab308;
-  --status-offline:       #6b7280;
-  --status-escalated:     #a855f7;
-  --status-closed:        #6b7280;
-  --status-onhold:        #f97316;
+  /* Functional colors — fixed, theme-independent */
+  --status-available:  #22c55e;
+  --status-busy:       #3b82f6;
+  --status-break:      #eab308;
+  --status-offline:    #6b7280;
+  --status-escalated:  #a855f7;
 
-  --priority-critical:    #ef4444;
-  --priority-high:        #f97316;
-  --priority-medium:      #eab308;
-  --priority-low:         #86efac;
+  --priority-critical: #ef4444;
+  --priority-high:     #f97316;
+  --priority-medium:   #eab308;
+  --priority-low:      #86efac;
 
-  --alert-error:          #ef4444;
-  --alert-warning:        #f97316;
-  --alert-info:           #3b82f6;
-  --alert-success:        #22c55e;
-
-  --pulse-available: rgba(34, 197, 94, 0.4);
-  --pulse-critical:  rgba(239, 68, 68, 0.4);
+  --alert-error:   #ef4444;
+  --alert-warning: #f97316;
+  --alert-info:    #3b82f6;
+  --alert-success: #22c55e;
 }
 
 /* ============================================================
    LIGHT THEME
    ============================================================ */
-
 [data-theme="light"] {
   --bg-page:        #f5f5f5;
   --bg-surface:     #ffffff;
@@ -96,31 +91,30 @@
   --bg-active:      #ebebeb;
   --bg-input:       #ffffff;
   --bg-skeleton:    #e5e5e5;
+  --bg-section-hd:  #f8f8f8;
 
   --border-default: #e0e0e0;
   --border-strong:  #c0c0c0;
   --border-input:   #d0d0d0;
   --border-focus:   #404040;
 
-  --text-primary:   #111111;
-  --text-secondary: #555555;
-  --text-disabled:  #aaaaaa;
+  --text-primary:     #111111;
+  --text-secondary:   #555555;
+  --text-disabled:    #aaaaaa;
   --text-placeholder: #aaaaaa;
 
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-card:  0 1px 3px rgba(0,0,0,0.08);
   --shadow-panel: -4px 0 16px rgba(0,0,0,0.08);
 
-  --btn-primary-bg:   #111111;
-  --btn-primary-text: #ffffff;
-  --btn-secondary-bg: transparent;
-  --btn-secondary-border: #d0d0d0;
-  --btn-secondary-text: #111111;
+  --btn-primary-bg:        #111111;
+  --btn-primary-text:      #ffffff;
+  --btn-secondary-border:  #d0d0d0;
+  --btn-secondary-text:    #111111;
 }
 
 /* ============================================================
    DARK THEME
    ============================================================ */
-
 [data-theme="dark"] {
   --bg-page:        #0f0f0f;
   --bg-surface:     #1a1a1a;
@@ -132,34 +126,32 @@
   --bg-active:      #2a2a2a;
   --bg-input:       #222222;
   --bg-skeleton:    #2a2a2a;
+  --bg-section-hd:  #161616;
 
   --border-default: #2a2a2a;
   --border-strong:  #3a3a3a;
   --border-input:   #333333;
   --border-focus:   #e0e0e0;
 
-  --text-primary:   #f0f0f0;
-  --text-secondary: #888888;
-  --text-disabled:  #444444;
+  --text-primary:     #f0f0f0;
+  --text-secondary:   #888888;
+  --text-disabled:    #444444;
   --text-placeholder: #555555;
 
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-card:  0 1px 3px rgba(0,0,0,0.4);
   --shadow-panel: -4px 0 24px rgba(0,0,0,0.5);
 
-  --btn-primary-bg:   #f0f0f0;
-  --btn-primary-text: #111111;
-  --btn-secondary-bg: transparent;
+  --btn-primary-bg:       #f0f0f0;
+  --btn-primary-text:     #111111;
   --btn-secondary-border: #333333;
-  --btn-secondary-text: #f0f0f0;
+  --btn-secondary-text:   #f0f0f0;
 }
 
 /* ============================================================
-   APPLICATION SHELL
+   APP SHELL
    ============================================================ */
-
 html, body {
-  height: 100%;
-  width: 100%;
+  height: 100%; width: 100%;
   overflow: hidden;
   font-family: var(--font);
   font-size: var(--size-body);
@@ -173,8 +165,8 @@ html, body {
   grid-template-rows: var(--topbar-height) 1fr var(--statusbar-height);
   grid-template-columns: auto 1fr auto;
   grid-template-areas:
-    "topbar  topbar  topbar"
-    "sidebar main    panel"
+    "topbar   topbar  topbar"
+    "sidebar  main    panel"
     "statusbar statusbar statusbar";
   height: 100vh;
   width: 100vw;
@@ -184,7 +176,6 @@ html, body {
 /* ============================================================
    TOP BAR
    ============================================================ */
-
 .topbar {
   grid-area: topbar;
   height: var(--topbar-height);
@@ -203,19 +194,14 @@ html, body {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: var(--space-1);
   padding: 0 var(--space-2);
 }
 
 .topbar__logo-mark {
-  width: 28px;
-  height: 28px;
+  width: 28px; height: 28px;
   background: var(--text-primary);
   border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
 }
 
 .topbar__logo-mark span {
@@ -226,391 +212,200 @@ html, body {
 }
 
 .topbar__divider {
-  width: 1px;
-  height: 20px;
+  width: 1px; height: 20px;
   background: var(--border-default);
   flex-shrink: 0;
 }
 
 .topbar__shift {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-width: 200px;
-  flex-shrink: 0;
+  display: flex; align-items: center; gap: var(--space-1);
+  min-width: 200px; flex-shrink: 0;
 }
 
-.topbar__shift-label {
-  font-size: var(--size-small);
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.topbar__shift-value {
-  font-size: var(--size-small);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-
+.topbar__shift-label  { font-size: var(--size-small); color: var(--text-secondary); }
+.topbar__shift-value  { font-size: var(--size-small); font-weight: var(--weight-semibold); color: var(--text-primary); }
 .topbar__shift-countdown {
-  font-size: var(--size-label);
-  font-family: var(--font-mono);
+  font-size: var(--size-label); font-family: var(--font-mono);
   color: var(--text-secondary);
   background: var(--bg-hover);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
+  padding: 2px 6px; border-radius: var(--radius-sm);
 }
 
-.topbar__spacer {
-  flex: 1;
-}
+.topbar__spacer { flex: 1; }
 
-.topbar__live-stats {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
+.topbar__live-stats { display: flex; align-items: center; gap: var(--space-1); }
 
 .topbar__stat {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  display: flex; align-items: center; gap: 5px;
   padding: 4px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-default);
   background: var(--bg-surface);
-  cursor: default;
 }
 
-.topbar__stat-label {
-  font-size: var(--size-label);
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
+.topbar__stat-label { font-size: var(--size-label); color: var(--text-secondary); }
+.topbar__stat-value { font-size: var(--size-label); font-weight: var(--weight-semibold); font-family: var(--font-mono); color: var(--text-primary); }
 
-.topbar__stat-value {
-  font-size: var(--size-label);
-  font-weight: var(--weight-semibold);
-  font-family: var(--font-mono);
-  color: var(--text-primary);
-}
-
-.topbar__stat--alert {
-  border-color: var(--priority-critical);
-  background: rgba(239, 68, 68, 0.06);
-}
-
+.topbar__stat--alert { border-color: var(--priority-critical); background: rgba(239,68,68,0.06); }
 .topbar__stat--alert .topbar__stat-label,
-.topbar__stat--alert .topbar__stat-value {
-  color: var(--priority-critical);
-}
+.topbar__stat--alert .topbar__stat-value { color: var(--priority-critical); }
 
-.topbar__user {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+.topbar__theme-toggle {
+  display: flex; align-items: center; gap: 6px;
   padding: 4px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-default);
   background: var(--bg-surface);
   cursor: pointer;
+  font-size: var(--size-label); color: var(--text-secondary);
   transition: background var(--transition-fast);
+}
+.topbar__theme-toggle:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.topbar__user {
+  display: flex; align-items: center; gap: var(--space-1);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  cursor: pointer;
   min-width: 160px;
   position: relative;
+  transition: background var(--transition-fast);
 }
-
-.topbar__user:hover {
-  background: var(--bg-hover);
-}
+.topbar__user:hover { background: var(--bg-hover); }
 
 .topbar__user-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 8px; height: 8px; border-radius: 50%;
   background: var(--status-available);
-  flex-shrink: 0;
-  animation: pulse-available 2s infinite;
+  animation: pulse-green 2s infinite;
+}
+@keyframes pulse-green {
+  0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+  50%      { box-shadow: 0 0 0 4px transparent; }
 }
 
-@keyframes pulse-available {
-  0%, 100% { box-shadow: 0 0 0 0 var(--pulse-available); }
-  50%       { box-shadow: 0 0 0 4px transparent; }
-}
-
-.topbar__user-name {
-  font-size: var(--size-small);
-  font-weight: var(--weight-medium);
-  color: var(--text-primary);
-  flex: 1;
-  white-space: nowrap;
-}
-
-.topbar__user-chevron {
-  font-size: 10px;
-  color: var(--text-secondary);
-}
+.topbar__user-name  { font-size: var(--size-small); font-weight: var(--weight-medium); flex: 1; }
+.topbar__user-chevron { font-size: 10px; color: var(--text-secondary); }
 
 .topbar__user-dropdown {
   display: none;
   position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
+  top: calc(100% + 6px); right: 0;
   width: 200px;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
-  z-index: 200;
-  overflow: hidden;
+  z-index: 200; overflow: hidden;
 }
-
-.topbar__user:hover .topbar__user-dropdown,
-.topbar__user-dropdown:hover {
-  display: block;
-}
+.topbar__user:hover .topbar__user-dropdown { display: block; }
 
 .topbar__dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+  display: flex; align-items: center; gap: var(--space-1);
   padding: 9px var(--space-2);
-  font-size: var(--size-small);
-  color: var(--text-primary);
-  cursor: pointer;
+  font-size: var(--size-small); color: var(--text-primary);
+  cursor: pointer; background: none; border: none; width: 100%; text-align: left;
   transition: background var(--transition-fast);
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
 }
-
-.topbar__dropdown-item:hover {
-  background: var(--bg-hover);
-}
-
-.topbar__dropdown-item--danger {
-  color: var(--alert-error);
-}
-
-.topbar__dropdown-divider {
-  height: 1px;
-  background: var(--border-default);
-  margin: 4px 0;
-}
-
-.topbar__theme-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-default);
-  background: var(--bg-surface);
-  cursor: pointer;
-  transition: background var(--transition-fast);
-  font-size: var(--size-label);
-  color: var(--text-secondary);
-}
-
-.topbar__theme-toggle:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
+.topbar__dropdown-item:hover { background: var(--bg-hover); }
+.topbar__dropdown-item--danger { color: var(--alert-error); }
+.topbar__dropdown-divider { height: 1px; background: var(--border-default); margin: 4px 0; }
 
 /* ============================================================
-   LEFT SIDEBAR
+   SIDEBAR
    ============================================================ */
-
 .sidebar {
   grid-area: sidebar;
   width: var(--sidebar-collapsed);
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border-default);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   overflow: hidden;
   transition: width var(--transition-panel);
-  z-index: 90;
-  flex-shrink: 0;
+  z-index: 90; flex-shrink: 0;
 }
-
-.sidebar.is-expanded {
-  width: var(--sidebar-expanded);
-}
+.sidebar.is-expanded { width: var(--sidebar-expanded); }
 
 .sidebar__toggle {
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   border-bottom: 1px solid var(--border-default);
   color: var(--text-secondary);
   transition: background var(--transition-fast), color var(--transition-fast);
-  flex-shrink: 0;
+  flex-shrink: 0; border: none; background: none;
+  border-bottom: 1px solid var(--border-default);
+  width: 100%;
 }
-
-.sidebar.is-expanded .sidebar__toggle {
-  justify-content: flex-end;
-  padding-right: var(--space-2);
-}
-
-.sidebar__toggle:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.sidebar__toggle-icon {
-  font-size: 16px;
-  line-height: 1;
-  transition: transform var(--transition-panel);
-}
-
-.sidebar.is-expanded .sidebar__toggle-icon {
-  transform: rotate(180deg);
-}
+.sidebar.is-expanded .sidebar__toggle { justify-content: flex-end; padding-right: var(--space-2); }
+.sidebar__toggle:hover { background: var(--bg-hover); color: var(--text-primary); }
+.sidebar__toggle-icon { font-size: 16px; transition: transform var(--transition-panel); }
+.sidebar.is-expanded .sidebar__toggle-icon { transform: rotate(180deg); }
 
 .sidebar__nav {
-  flex: 1;
-  overflow: hidden;
+  flex: 1; overflow: hidden;
   padding: var(--space-1) 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: flex; flex-direction: column; gap: 2px;
 }
 
-.sidebar__nav-section {
-  padding: 0;
-}
-
-.sidebar__nav-divider {
-  height: 1px;
-  background: var(--border-default);
-  margin: var(--space-1) var(--space-1);
-}
+.sidebar__nav-divider { height: 1px; background: var(--border-default); margin: var(--space-1); }
 
 .sidebar__nav-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  height: 40px;
-  padding: 0 var(--space-2);
-  cursor: pointer;
-  border-radius: 0;
-  transition: background var(--transition-fast);
-  position: relative;
-  white-space: nowrap;
-  overflow: hidden;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  color: var(--text-secondary);
-  text-decoration: none;
+  display: flex; align-items: center; gap: var(--space-1);
+  height: 40px; padding: 0 var(--space-2);
+  cursor: pointer; white-space: nowrap; overflow: hidden;
+  border: none; background: none; width: 100%; text-align: left;
+  color: var(--text-secondary); position: relative;
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
-
-.sidebar__nav-item:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.sidebar__nav-item.is-active {
-  background: var(--bg-active);
-  color: var(--text-primary);
-}
-
+.sidebar__nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.sidebar__nav-item.is-active { background: var(--bg-active); color: var(--text-primary); }
 .sidebar__nav-item.is-active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--text-primary);
-  border-radius: 0 2px 2px 0;
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--text-primary); border-radius: 0 2px 2px 0;
 }
 
 .sidebar__nav-icon {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 16px;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 16px;
 }
 
 .sidebar__nav-label {
-  font-size: var(--size-small);
-  font-weight: var(--weight-medium);
-  opacity: 0;
-  transition: opacity var(--transition-panel);
-  pointer-events: none;
+  font-size: var(--size-small); font-weight: var(--weight-medium);
+  opacity: 0; transition: opacity var(--transition-panel); pointer-events: none;
 }
-
-.sidebar.is-expanded .sidebar__nav-label {
-  opacity: 1;
-}
+.sidebar.is-expanded .sidebar__nav-label { opacity: 1; }
 
 .sidebar__nav-badge {
   margin-left: auto;
-  background: var(--priority-critical);
-  color: #fff;
-  font-size: 10px;
-  font-weight: var(--weight-bold);
-  font-family: var(--font-mono);
-  padding: 1px 5px;
-  border-radius: 10px;
-  min-width: 18px;
-  text-align: center;
-  opacity: 0;
-  transition: opacity var(--transition-panel);
+  background: var(--priority-critical); color: #fff;
+  font-size: 10px; font-weight: var(--weight-bold); font-family: var(--font-mono);
+  padding: 1px 5px; border-radius: 10px; min-width: 18px; text-align: center;
+  opacity: 0; transition: opacity var(--transition-panel);
 }
+.sidebar.is-expanded .sidebar__nav-badge { opacity: 1; }
 
-.sidebar.is-expanded .sidebar__nav-badge {
-  opacity: 1;
-}
-
-/* Tooltip for collapsed state */
-.sidebar__nav-item .sidebar__tooltip {
+.sidebar__tooltip {
   display: none;
-  position: absolute;
-  left: calc(var(--sidebar-collapsed) + 8px);
-  top: 50%;
+  position: absolute; left: calc(var(--sidebar-collapsed) + 8px); top: 50%;
   transform: translateY(-50%);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  color: var(--text-primary);
-  font-size: var(--size-label);
-  font-weight: var(--weight-medium);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-  z-index: 300;
-  box-shadow: var(--shadow-card);
-  pointer-events: none;
+  background: var(--bg-surface); border: 1px solid var(--border-default);
+  color: var(--text-primary); font-size: var(--size-label); font-weight: var(--weight-medium);
+  padding: 4px 8px; border-radius: var(--radius-sm);
+  white-space: nowrap; z-index: 300; box-shadow: var(--shadow-card); pointer-events: none;
 }
+.sidebar:not(.is-expanded) .sidebar__nav-item:hover .sidebar__tooltip { display: block; }
 
-.sidebar:not(.is-expanded) .sidebar__nav-item:hover .sidebar__tooltip {
-  display: block;
-}
-
-.sidebar__bottom {
-  padding: var(--space-1) 0;
-  border-top: 1px solid var(--border-default);
-  flex-shrink: 0;
-}
+.sidebar__bottom { padding: var(--space-1) 0; border-top: 1px solid var(--border-default); flex-shrink: 0; }
 
 /* ============================================================
    MAIN SURFACE
    ============================================================ */
-
 .main-surface {
   grid-area: main;
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   overflow: hidden;
   background: var(--bg-page);
   min-width: 0;
@@ -620,199 +415,166 @@ html, body {
   height: var(--page-header-height);
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-default);
-  display: flex;
-  align-items: center;
-  padding: 0 var(--space-3);
-  gap: var(--space-2);
-  flex-shrink: 0;
-  z-index: 50;
+  display: flex; align-items: center;
+  padding: 0 var(--space-3); gap: var(--space-2);
+  flex-shrink: 0; z-index: 50;
 }
 
-.page-header__title {
-  font-size: var(--size-heading);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-
-.page-header__subtitle {
-  font-size: var(--size-small);
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.page-header__divider {
-  width: 1px;
-  height: 16px;
-  background: var(--border-default);
-}
-
-.page-header__filters {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  flex: 1;
-}
-
-.page-header__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  margin-left: auto;
-  flex-shrink: 0;
-}
+.page-header__title    { font-size: var(--size-heading); font-weight: var(--weight-semibold); white-space: nowrap; }
+.page-header__subtitle { font-size: var(--size-small); color: var(--text-secondary); white-space: nowrap; }
+.page-header__divider  { width: 1px; height: 16px; background: var(--border-default); }
+.page-header__filters  { display: flex; align-items: center; gap: var(--space-1); flex: 1; }
+.page-header__actions  { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; flex-shrink: 0; }
 
 .filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  display: flex; align-items: center; gap: 5px;
   padding: 5px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-default);
   background: var(--bg-surface);
   color: var(--text-secondary);
-  font-size: var(--size-label);
-  font-weight: var(--weight-medium);
-  cursor: pointer;
+  font-size: var(--size-label); font-weight: var(--weight-medium);
+  cursor: pointer; white-space: nowrap;
   transition: all var(--transition-fast);
-  white-space: nowrap;
 }
-
-.filter-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  border-color: var(--border-strong);
-}
-
-.filter-btn.is-active {
-  background: var(--bg-active);
-  color: var(--text-primary);
-  border-color: var(--border-strong);
-}
+.filter-btn:hover  { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-strong); }
+.filter-btn.is-active { background: var(--bg-active); color: var(--text-primary); border-color: var(--border-strong); }
 
 .content-area {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  flex: 1; overflow-y: auto; overflow-x: hidden;
   padding: var(--space-2) var(--space-3);
 }
+.content-area::-webkit-scrollbar { width: 6px; }
+.content-area::-webkit-scrollbar-track { background: transparent; }
+.content-area::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
 
-.content-area::-webkit-scrollbar {
-  width: 6px;
+/* ============================================================
+   SYSTEM OVERVIEW STAT ROW
+   ============================================================ */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
 }
 
-.content-area::-webkit-scrollbar-track {
-  background: transparent;
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  display: flex; flex-direction: column; gap: 4px;
 }
 
-.content-area::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 3px;
+.stat-card__label {
+  font-size: var(--size-label);
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+.stat-card__value {
+  font-size: var(--size-display);
+  font-weight: var(--weight-bold);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.stat-card__sub {
+  font-size: var(--size-label);
+  color: var(--text-disabled);
+  font-family: var(--font-mono);
 }
 
 /* ============================================================
-   TABLE SYSTEM
+   SECTION WRAPPER
    ============================================================ */
-
-.data-table-wrapper {
+.occ-section {
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   overflow: hidden;
+  margin-bottom: var(--space-2);
+  display: none;
 }
+.occ-section.is-visible { display: block; }
+
+.occ-section__header {
+  height: 44px;
+  background: var(--bg-section-hd);
+  border-bottom: 1px solid var(--border-default);
+  display: flex; align-items: center;
+  padding: 0 var(--space-2); gap: var(--space-2);
+}
+
+.occ-section__title {
+  font-size: var(--size-subheading);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.occ-section__count {
+  font-size: var(--size-label);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  padding: 2px 6px; border-radius: var(--radius-sm);
+}
+
+.occ-section__actions { margin-left: auto; display: flex; gap: var(--space-1); }
+
+/* ============================================================
+   DATA TABLE
+   ============================================================ */
+.data-table-wrapper { overflow: hidden; }
 
 .data-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
+  width: 100%; border-collapse: collapse; table-layout: fixed;
 }
 
-.data-table thead {
-  background: var(--bg-sidebar);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
+.data-table thead { background: var(--bg-section-hd); }
 
 .data-table th {
-  height: 40px;
-  padding: 0 var(--space-2);
+  height: 36px; padding: 0 var(--space-2);
   text-align: left;
-  font-size: var(--size-label);
-  font-weight: var(--weight-semibold);
-  color: var(--text-secondary);
+  font-size: var(--size-label); font-weight: var(--weight-semibold); color: var(--text-secondary);
   border-bottom: 1px solid var(--border-default);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   user-select: none;
 }
-
-.data-table th:first-child {
-  padding-left: 0;
-  width: 4px;
-}
+.data-table th:first-child { padding-left: var(--space-2); }
 
 .data-table td {
-  height: 48px;
-  padding: 0 var(--space-2);
-  font-size: var(--size-body);
-  color: var(--text-primary);
+  height: 48px; padding: 0 var(--space-2);
+  font-size: var(--size-small); color: var(--text-primary);
   border-bottom: 1px solid var(--border-default);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   vertical-align: middle;
 }
 
-.data-table td:first-child {
-  padding: 0;
-  width: 4px;
-}
-
-.data-table tbody tr:last-child td {
-  border-bottom: none;
-}
+.data-table tbody tr:last-child td { border-bottom: none; }
 
 .data-table tbody tr {
   cursor: pointer;
   transition: background var(--transition-fast);
   position: relative;
 }
+.data-table tbody tr:hover  { background: var(--bg-hover); }
+.data-table tbody tr.is-selected { background: var(--bg-active); }
 
-.data-table tbody tr:hover {
-  background: var(--bg-hover);
+/* Checkbox */
+.cb-cell { width: 40px; text-align: center; }
+.cb {
+  width: 14px; height: 14px; cursor: pointer;
+  accent-color: var(--text-primary);
 }
 
-.data-table tbody tr.is-selected {
-  background: var(--bg-active);
-}
-
-/* Priority border */
-.priority-border {
-  display: block;
-  width: 4px;
-  height: 48px;
-}
-
-.priority-border--critical { background: var(--priority-critical); }
-.priority-border--high     { background: var(--priority-high); }
-.priority-border--medium   { background: var(--priority-medium); }
-.priority-border--low      { background: var(--priority-low); }
-.priority-border--none     { background: transparent; }
-
-/* Inline actions — hidden until hover */
+/* Inline row actions */
 .row-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  opacity: 0;
-  transition: opacity var(--transition-fast);
+  display: flex; align-items: center; gap: 4px;
+  opacity: 0; transition: opacity var(--transition-fast);
 }
-
-.data-table tbody tr:hover .row-actions {
-  opacity: 1;
-}
+.data-table tbody tr:hover .row-actions { opacity: 1; }
 
 .row-action-btn {
   padding: 3px 8px;
@@ -820,514 +582,291 @@ html, body {
   border: 1px solid var(--border-default);
   background: var(--bg-surface);
   color: var(--text-secondary);
-  font-size: var(--size-label);
-  font-weight: var(--weight-medium);
+  font-size: var(--size-label); font-weight: var(--weight-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
 }
-
-.row-action-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  border-color: var(--border-strong);
-}
-
-.row-action-btn--danger:hover {
-  background: rgba(239, 68, 68, 0.08);
-  color: var(--alert-error);
-  border-color: var(--alert-error);
-}
+.row-action-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-strong); }
+.row-action-btn--danger:hover { background: rgba(239,68,68,0.08); color: var(--alert-error); border-color: var(--alert-error); }
 
 /* ============================================================
-   STATUS BADGE SYSTEM
+   STATUS BADGE
    ============================================================ */
-
 .status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: var(--size-label);
-  font-weight: var(--weight-medium);
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 8px; border-radius: 10px;
+  font-size: var(--size-label); font-weight: var(--weight-medium);
   white-space: nowrap;
 }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+.status-badge--active    { background: rgba(34,197,94,0.1);  color: #4ade80; }
+.status-badge--active    .status-dot { background: #22c55e; }
+.status-badge--inactive  { background: rgba(107,114,128,0.1);color: #9ca3af; }
+.status-badge--inactive  .status-dot { background: #6b7280; }
+.status-badge--pending   { background: rgba(234,179,8,0.1);  color: #facc15; }
+.status-badge--pending   .status-dot { background: #eab308; }
+.status-badge--success   { background: rgba(34,197,94,0.1);  color: #4ade80; }
+.status-badge--success   .status-dot { background: #22c55e; }
+.status-badge--failed    { background: rgba(239,68,68,0.1);  color: #f87171; }
+.status-badge--failed    .status-dot { background: #ef4444; }
+.status-badge--partial   { background: rgba(249,115,22,0.1); color: #fb923c; }
+.status-badge--partial   .status-dot { background: #f97316; }
+.status-badge--validating{ background: rgba(59,130,246,0.1); color: #60a5fa; }
+.status-badge--validating .status-dot { background: #3b82f6; }
 
-.status-badge--new         { background: rgba(59,130,246,0.1);  color: #60a5fa; }
-.status-badge--new         .status-dot { background: #3b82f6; }
-
-.status-badge--assigned    { background: rgba(59,130,246,0.1);  color: #60a5fa; }
-.status-badge--assigned    .status-dot { background: #3b82f6; }
-
-.status-badge--inprogress  { background: rgba(59,130,246,0.1);  color: #60a5fa; }
-.status-badge--inprogress  .status-dot { background: #3b82f6; animation: pulse-busy 2s infinite; }
-
-.status-badge--onhold      { background: rgba(249,115,22,0.1);  color: #fb923c; }
-.status-badge--onhold      .status-dot { background: #f97316; }
-
-.status-badge--escalated   { background: rgba(168,85,247,0.1);  color: #c084fc; }
-.status-badge--escalated   .status-dot { background: #a855f7; }
-
-.status-badge--closed      { background: rgba(107,114,128,0.1); color: #9ca3af; }
-.status-badge--closed      .status-dot { background: #6b7280; }
-
-.status-badge--pending     { background: rgba(249,115,22,0.1);  color: #fb923c; }
-.status-badge--pending     .status-dot { background: #f97316; }
-
-.status-badge--approved    { background: rgba(34,197,94,0.1);   color: #4ade80; }
-.status-badge--approved    .status-dot { background: #22c55e; }
-
-.status-badge--rejected    { background: rgba(239,68,68,0.1);   color: #f87171; }
-.status-badge--rejected    .status-dot { background: #ef4444; }
-
-.status-badge--available   { background: rgba(34,197,94,0.1);   color: #4ade80; }
-.status-badge--available   .status-dot { background: #22c55e; animation: pulse-available 2s infinite; }
-
-.status-badge--onbreak     { background: rgba(234,179,8,0.1);   color: #facc15; }
-.status-badge--onbreak     .status-dot { background: #eab308; }
-
-.status-badge--offline     { background: rgba(107,114,128,0.1); color: #9ca3af; }
-.status-badge--offline     .status-dot { background: #6b7280; }
-
-@keyframes pulse-busy {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
-  50%       { box-shadow: 0 0 0 4px transparent; }
-}
-
-/* ============================================================
-   SKELETON LOADING
-   ============================================================ */
-
-.skeleton {
-  background: var(--bg-skeleton);
-  border-radius: var(--radius-sm);
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
-}
-
-.skeleton-row td {
-  cursor: default;
-}
-
-.skeleton-row:hover {
-  background: transparent !important;
-}
-
-.skeleton-cell {
-  display: inline-block;
-  height: 14px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-skeleton);
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
+/* Role badge */
+.role-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 7px; border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: var(--weight-medium);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary); background: var(--bg-hover);
+  white-space: nowrap;
 }
 
 /* ============================================================
    RIGHT PANEL
    ============================================================ */
-
 .right-panel {
   grid-area: panel;
   width: 0;
   background: var(--bg-panel);
   border-left: 1px solid var(--border-default);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   overflow: hidden;
   transition: width var(--transition-panel);
-  box-shadow: none;
   flex-shrink: 0;
 }
-
-.right-panel.is-open {
-  width: var(--panel-width);
-  box-shadow: var(--shadow-panel);
-}
+.right-panel.is-open { width: var(--panel-width); box-shadow: var(--shadow-panel); }
 
 .panel-header {
   height: 56px;
-  display: flex;
-  align-items: center;
-  padding: 0 var(--space-2);
-  gap: var(--space-1);
+  display: flex; align-items: center;
+  padding: 0 var(--space-2); gap: var(--space-1);
   border-bottom: 1px solid var(--border-default);
   flex-shrink: 0;
 }
-
-.panel-header__status {
-  flex-shrink: 0;
-}
-
+.panel-header__status { flex-shrink: 0; }
 .panel-header__title {
-  flex: 1;
-  font-size: var(--size-subheading);
-  font-weight: var(--weight-semibold);
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1; font-size: var(--size-subheading); font-weight: var(--weight-semibold);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
-.panel-header__id {
-  font-size: var(--size-label);
-  font-family: var(--font-mono);
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
+.panel-header__id { font-size: var(--size-label); font-family: var(--font-mono); color: var(--text-secondary); }
 
 .panel-close {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-default);
-  background: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 14px;
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm); border: 1px solid var(--border-default);
+  background: none; color: var(--text-secondary); cursor: pointer; font-size: 14px;
+  transition: all var(--transition-fast); flex-shrink: 0;
 }
-
-.panel-close:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.panel-critical-strip {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  padding: 0 var(--space-2);
-  gap: var(--space-2);
-  border-bottom: 1px solid var(--border-default);
-  background: rgba(239, 68, 68, 0.06);
-  flex-shrink: 0;
-}
-
-.panel-critical-strip__label {
-  font-size: var(--size-label);
-  color: var(--text-secondary);
-}
-
-.panel-critical-strip__value {
-  font-size: var(--size-label);
-  font-family: var(--font-mono);
-  font-weight: var(--weight-semibold);
-  color: var(--priority-critical);
-}
+.panel-close:hover { background: var(--bg-hover); color: var(--text-primary); }
 
 .panel-body {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  flex: 1; overflow-y: auto; overflow-x: hidden;
   padding: var(--space-2);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  display: flex; flex-direction: column; gap: var(--space-2);
 }
-
-.panel-body::-webkit-scrollbar {
-  width: 4px;
-}
-
-.panel-body::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 2px;
-}
-
-.panel-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.panel-field {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-1);
-  min-height: 28px;
-}
-
-.panel-field__label {
-  font-size: var(--size-label);
-  color: var(--text-secondary);
-  width: 100px;
-  flex-shrink: 0;
-  padding-top: 2px;
-}
-
-.panel-field__value {
-  font-size: var(--size-small);
-  color: var(--text-primary);
-  flex: 1;
-  word-break: break-word;
-}
-
-.panel-divider {
-  height: 1px;
-  background: var(--border-default);
-  margin: 0 calc(-1 * var(--space-2));
-}
+.panel-body::-webkit-scrollbar { width: 4px; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
 
 .panel-section-title {
-  font-size: var(--size-label);
-  font-weight: var(--weight-semibold);
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: var(--size-label); font-weight: var(--weight-semibold);
+  color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 6px;
 }
+
+.panel-field { display: flex; align-items: flex-start; gap: var(--space-1); min-height: 28px; }
+.panel-field__label {
+  font-size: var(--size-label); color: var(--text-secondary);
+  width: 110px; flex-shrink: 0; padding-top: 2px;
+}
+.panel-field__value { font-size: var(--size-small); color: var(--text-primary); flex: 1; word-break: break-word; }
+
+.panel-divider { height: 1px; background: var(--border-default); margin: 0 calc(-1 * var(--space-2)); }
 
 .panel-action-zone {
-  padding: var(--space-2);
-  border-top: 1px solid var(--border-default);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  flex-shrink: 0;
-  background: var(--bg-panel);
+  padding: var(--space-2); border-top: 1px solid var(--border-default);
+  display: flex; flex-direction: column; gap: var(--space-1);
+  flex-shrink: 0; background: var(--bg-panel);
 }
+.panel-action-row { display: flex; gap: var(--space-1); }
 
-.panel-action-row {
-  display: flex;
-  gap: var(--space-1);
+/* Form elements inside panel */
+.panel-form-group { display: flex; flex-direction: column; gap: 5px; }
+.panel-label { font-size: var(--size-label); color: var(--text-secondary); font-weight: var(--weight-medium); }
+
+.panel-input, .panel-select, .panel-textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font); font-size: var(--size-small);
+  padding: 7px var(--space-1);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.panel-input:focus, .panel-select:focus, .panel-textarea:focus { border-color: var(--border-focus); }
+.panel-textarea { resize: vertical; min-height: 72px; }
+.panel-select option { background: var(--bg-surface); }
+
+/* Permission matrix */
+.perm-matrix { display: flex; flex-direction: column; gap: 2px; }
+.perm-row {
+  display: flex; align-items: center;
+  padding: 6px var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+.perm-row:hover { background: var(--bg-hover); }
+.perm-row__label { flex: 1; font-size: var(--size-small); color: var(--text-primary); }
+.perm-toggle {
+  position: relative; width: 32px; height: 18px;
+  cursor: pointer; flex-shrink: 0;
+}
+.perm-toggle input { opacity: 0; width: 0; height: 0; }
+.perm-toggle-track {
+  position: absolute; inset: 0;
+  background: var(--border-strong); border-radius: 9px;
+  transition: background var(--transition-fast);
+}
+.perm-toggle input:checked + .perm-toggle-track { background: var(--alert-success); }
+.perm-toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: #fff; border-radius: 50%;
+  transition: transform var(--transition-fast);
+}
+.perm-toggle input:checked ~ .perm-toggle-thumb { transform: translateX(14px); }
+
+/* Import stepper */
+.import-stepper {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: var(--space-2);
+}
+.import-step {
+  display: flex; align-items: center; gap: 6px;
+  font-size: var(--size-label); color: var(--text-disabled);
+  padding: 4px 10px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+}
+.import-step:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.import-step:last-child  { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.import-step + .import-step { border-left: none; }
+.import-step.is-active { background: var(--bg-active); color: var(--text-primary); font-weight: var(--weight-semibold); }
+.import-step.is-done   { color: var(--alert-success); }
+.import-step__num {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--border-strong); color: var(--bg-page);
+  font-size: 10px; font-weight: var(--weight-bold);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.import-step.is-active .import-step__num { background: var(--text-primary); }
+.import-step.is-done   .import-step__num { background: var(--alert-success); }
+
+/* Audit log row — read-only indicator */
+.audit-readonly-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px; border-radius: var(--radius-sm);
+  font-size: 11px; color: var(--text-disabled);
+  border: 1px solid var(--border-default);
 }
 
 /* ============================================================
    BUTTONS
    ============================================================ */
-
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: var(--radius-sm);
-  font-size: var(--size-small);
-  font-weight: var(--weight-medium);
-  font-family: var(--font);
-  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  font-size: var(--size-small); font-weight: var(--weight-medium); font-family: var(--font);
+  cursor: pointer; white-space: nowrap; border: 1px solid transparent;
   transition: all var(--transition-fast);
-  white-space: nowrap;
-  border: 1px solid transparent;
-  text-decoration: none;
 }
-
-.btn--primary {
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
-  border-color: var(--btn-primary-bg);
-}
-
-.btn--primary:hover {
-  opacity: 0.88;
-}
-
-.btn--secondary {
-  background: var(--btn-secondary-bg);
-  color: var(--btn-secondary-text);
-  border-color: var(--btn-secondary-border);
-}
-
-.btn--secondary:hover {
-  background: var(--bg-hover);
-}
-
-.btn--danger {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--alert-error);
-  border-color: rgba(239, 68, 68, 0.3);
-}
-
-.btn--danger:hover {
-  background: rgba(239, 68, 68, 0.18);
-}
-
-.btn--full {
-  width: 100%;
-}
-
-.btn--sm {
-  padding: 4px 10px;
-  font-size: var(--size-label);
-}
+.btn--primary   { background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--btn-primary-bg); }
+.btn--primary:hover { opacity: 0.88; }
+.btn--secondary { background: transparent; color: var(--btn-secondary-text); border-color: var(--btn-secondary-border); }
+.btn--secondary:hover { background: var(--bg-hover); }
+.btn--danger    { background: rgba(239,68,68,0.1); color: var(--alert-error); border-color: rgba(239,68,68,0.3); }
+.btn--danger:hover { background: rgba(239,68,68,0.18); }
+.btn--full { width: 100%; }
+.btn--sm   { padding: 4px 10px; font-size: var(--size-label); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ============================================================
-   BOTTOM STATUS BAR
+   STATUS BAR
    ============================================================ */
-
 .statusbar {
   grid-area: statusbar;
   height: var(--statusbar-height);
   background: var(--bg-statusbar);
   border-top: 1px solid var(--border-default);
-  display: flex;
-  align-items: center;
-  padding: 0 var(--space-2);
-  gap: var(--space-2);
-  z-index: 100;
-  flex-shrink: 0;
+  display: flex; align-items: center;
+  padding: 0 var(--space-2); gap: var(--space-2);
+  z-index: 100; flex-shrink: 0;
 }
-
-.statusbar__item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: var(--size-label);
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.statusbar__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.statusbar__dot--connected    { background: var(--status-available); }
-.statusbar__dot--disconnected { background: var(--alert-error); }
-
-.statusbar__divider {
-  width: 1px;
-  height: 12px;
-  background: var(--border-default);
-}
-
-.statusbar__version {
-  margin-left: auto;
-  font-size: var(--size-label);
-  font-family: var(--font-mono);
-  color: var(--text-disabled);
-}
+.statusbar__item { display: flex; align-items: center; gap: 5px; font-size: var(--size-label); color: var(--text-secondary); }
+.statusbar__dot  { width: 6px; height: 6px; border-radius: 50%; }
+.statusbar__dot--connected { background: var(--status-available); }
+.statusbar__divider { width: 1px; height: 12px; background: var(--border-default); }
+.statusbar__version { margin-left: auto; font-size: var(--size-label); font-family: var(--font-mono); color: var(--text-disabled); }
 
 /* ============================================================
-   PLACEHOLDER CONTENT (Phase 1 only)
+   TOAST
    ============================================================ */
-
-.placeholder-surface {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: var(--space-2);
-  color: var(--text-disabled);
-  user-select: none;
-}
-
-.placeholder-surface__icon {
-  font-size: 32px;
-  opacity: 0.3;
-}
-
-.placeholder-surface__label {
-  font-size: var(--size-small);
-  color: var(--text-disabled);
-}
-
-/* ============================================================
-   ALERT BANNERS
-   ============================================================ */
-
-.alert-banner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 8px var(--space-3);
-  font-size: var(--size-small);
-  border-bottom: 1px solid transparent;
-  flex-shrink: 0;
-}
-
-.alert-banner--warning {
-  background: rgba(249, 115, 22, 0.08);
-  border-color: rgba(249, 115, 22, 0.2);
-  color: var(--alert-warning);
-}
-
-.alert-banner--critical {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.2);
-  color: var(--alert-error);
-}
-
-.alert-banner__dismiss {
-  margin-left: auto;
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  font-size: 14px;
-  opacity: 0.6;
-  padding: 0 4px;
-}
-
-.alert-banner__dismiss:hover {
-  opacity: 1;
-}
-
-/* ============================================================
-   TOAST NOTIFICATIONS
-   ============================================================ */
-
 .toast-container {
   position: fixed;
   bottom: calc(var(--statusbar-height) + var(--space-2));
   right: var(--space-2);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  z-index: 500;
-  pointer-events: none;
+  display: flex; flex-direction: column; gap: var(--space-1);
+  z-index: 500; pointer-events: none;
 }
-
 .toast {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+  display: flex; align-items: center; gap: var(--space-1);
   padding: 10px var(--space-2);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  font-size: var(--size-small);
-  color: var(--text-primary);
-  min-width: 240px;
-  max-width: 320px;
-  pointer-events: all;
-  animation: toast-in 200ms ease-out;
+  background: var(--bg-surface); border: 1px solid var(--border-default);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-card);
+  font-size: var(--size-small); color: var(--text-primary);
+  min-width: 240px; max-width: 320px;
+  pointer-events: all; animation: toast-in 200ms ease-out;
 }
-
-@keyframes toast-in {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-.toast__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
+@keyframes toast-in { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:translateX(0); } }
+.toast__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .toast--success .toast__dot { background: var(--alert-success); }
 .toast--error   .toast__dot { background: var(--alert-error); }
 .toast--info    .toast__dot { background: var(--alert-info); }
+.toast--warning .toast__dot { background: var(--alert-warning); }
+
+/* ============================================================
+   MODAL (destructive only)
+   ============================================================ */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 400;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.is-open { display: flex; }
+.modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  width: 400px; max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+.modal__header {
+  padding: var(--space-2); border-bottom: 1px solid var(--border-default);
+  display: flex; align-items: center; gap: var(--space-1);
+}
+.modal__title { font-size: var(--size-subheading); font-weight: var(--weight-semibold); flex: 1; }
+.modal__body  { padding: var(--space-2); font-size: var(--size-small); color: var(--text-secondary); line-height: 1.6; }
+.modal__footer { padding: var(--space-2); border-top: 1px solid var(--border-default); display: flex; gap: var(--space-1); justify-content: flex-end; }
 
 </style>
 </head>
@@ -1335,675 +874,902 @@ html, body {
 
 <div class="app-shell" id="appShell">
 
-  <!-- ============================================================
-       TOP BAR
-       ============================================================ -->
-  <header class="topbar" role="banner">
-
-    <div class="topbar__logo">
-      <div class="topbar__logo-mark" aria-label="NEXUS">
-        <span>NX</span>
-      </div>
+<!-- ============================================================
+     TOP BAR
+     ============================================================ -->
+<header class="topbar">
+  <div class="topbar__logo">
+    <div class="topbar__logo-mark"><span>NX</span></div>
+  </div>
+  <div class="topbar__divider"></div>
+  <div class="topbar__shift">
+    <span class="topbar__shift-label">Shift</span>
+    <span class="topbar__shift-value">14:00 – 22:00</span>
+    <span class="topbar__shift-countdown" id="shiftCountdown">2h 47m left</span>
+  </div>
+  <div class="topbar__spacer"></div>
+  <div class="topbar__live-stats">
+    <div class="topbar__stat" title="Unassigned cases">
+      <span class="topbar__stat-label">Queue</span>
+      <span class="topbar__stat-value">7</span>
     </div>
-
-    <div class="topbar__divider" aria-hidden="true"></div>
-
-    <div class="topbar__shift" aria-label="Current shift information">
-      <span class="topbar__shift-label">Shift</span>
-      <span class="topbar__shift-value">14:00 – 22:00</span>
-      <span class="topbar__shift-countdown" id="shiftCountdown">2h 47m left</span>
+    <div class="topbar__divider"></div>
+    <div class="topbar__stat topbar__stat--alert" title="SLA breaches">
+      <span class="topbar__stat-label">&#9679; Urgent</span>
+      <span class="topbar__stat-value">3</span>
     </div>
-
-    <div class="topbar__spacer" aria-hidden="true"></div>
-
-    <div class="topbar__live-stats" role="status" aria-label="Live operational stats">
-
-      <div class="topbar__stat" title="Unassigned cases in queue">
-        <span class="topbar__stat-label">Queue</span>
-        <span class="topbar__stat-value" id="queueCount">7</span>
-      </div>
-
-      <div class="topbar__divider" aria-hidden="true"></div>
-
-      <div class="topbar__stat topbar__stat--alert" title="Active SLA breaches">
-        <span class="topbar__stat-label">&#9679; Urgent</span>
-        <span class="topbar__stat-value" id="urgentCount">3</span>
-      </div>
-
+  </div>
+  <div class="topbar__divider"></div>
+  <button class="topbar__theme-toggle" id="themeToggle">
+    <span id="themeIcon">☀</span>
+    <span id="themeLabel">Light</span>
+  </button>
+  <div class="topbar__user">
+    <span class="topbar__user-dot"></span>
+    <span class="topbar__user-name">System Owner</span>
+    <span class="topbar__user-chevron">▾</span>
+    <div class="topbar__user-dropdown">
+      <button class="topbar__dropdown-item"><span>⊙</span> My Profile</button>
+      <button class="topbar__dropdown-item"><span>⚙</span> Preferences</button>
+      <div class="topbar__dropdown-divider"></div>
+      <button class="topbar__dropdown-item topbar__dropdown-item--danger"><span>⊗</span> Sign Out</button>
     </div>
+  </div>
+</header>
 
-    <div class="topbar__divider" aria-hidden="true"></div>
-
-    <button
-      class="topbar__theme-toggle"
-      id="themeToggle"
-      aria-label="Toggle theme"
-      title="Toggle Light / Dark mode"
-    >
-      <span id="themeIcon">☀</span>
-      <span id="themeLabel">Light</span>
-    </button>
-
-    <div class="topbar__user" role="button" aria-haspopup="true" aria-label="User menu" tabindex="0">
-      <span class="topbar__user-dot" aria-hidden="true"></span>
-      <span class="topbar__user-name">Ahmed Al-Rashid</span>
-      <span class="topbar__user-chevron" aria-hidden="true">▾</span>
-      <div class="topbar__user-dropdown" role="menu">
-        <button class="topbar__dropdown-item" role="menuitem">
-          <span>⊙</span> My Profile
-        </button>
-        <button class="topbar__dropdown-item" role="menuitem">
-          <span>⚙</span> Preferences
-        </button>
-        <div class="topbar__dropdown-divider" aria-hidden="true"></div>
-        <button class="topbar__dropdown-item topbar__dropdown-item--danger" role="menuitem">
-          <span>⊗</span> Sign Out
-        </button>
-      </div>
-    </div>
-
-  </header>
-
-  <!-- ============================================================
-       LEFT SIDEBAR
-       ============================================================ -->
-  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
-
-    <button
-      class="sidebar__toggle"
-      id="sidebarToggle"
-      aria-label="Toggle sidebar"
-      aria-expanded="false"
-    >
-      <span class="sidebar__toggle-icon" aria-hidden="true">›</span>
-    </button>
-
-    <div class="sidebar__nav" role="list">
-
-      <!-- Primary nav -->
-      <div class="sidebar__nav-section">
-
-        <button class="sidebar__nav-item is-active" role="listitem" data-page="my-work">
-          <span class="sidebar__nav-icon" aria-hidden="true">⊡</span>
-          <span class="sidebar__nav-label">My Work</span>
-          <span class="sidebar__tooltip" aria-hidden="true">My Work</span>
-        </button>
-
-        <button class="sidebar__nav-item" role="listitem" data-page="live-floor">
-          <span class="sidebar__nav-icon" aria-hidden="true">◉</span>
-          <span class="sidebar__nav-label">Live Floor</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Live Floor</span>
-        </button>
-
-        <button class="sidebar__nav-item" role="listitem" data-page="live-queue">
-          <span class="sidebar__nav-icon" aria-hidden="true">≡</span>
-          <span class="sidebar__nav-label">Live Queue</span>
-          <span class="sidebar__nav-badge">7</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Live Queue (7)</span>
-        </button>
-
-      </div>
-
-      <div class="sidebar__nav-divider" aria-hidden="true"></div>
-
-      <div class="sidebar__nav-section">
-
-        <button class="sidebar__nav-item" role="listitem" data-page="cases">
-          <span class="sidebar__nav-icon" aria-hidden="true">◈</span>
-          <span class="sidebar__nav-label">Cases</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Cases</span>
-        </button>
-
-        <button class="sidebar__nav-item" role="listitem" data-page="requests">
-          <span class="sidebar__nav-icon" aria-hidden="true">⊞</span>
-          <span class="sidebar__nav-label">Requests</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Requests</span>
-        </button>
-
-        <button class="sidebar__nav-item" role="listitem" data-page="tasks">
-          <span class="sidebar__nav-icon" aria-hidden="true">✓</span>
-          <span class="sidebar__nav-label">Tasks</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Tasks</span>
-        </button>
-
-      </div>
-
-      <div class="sidebar__nav-divider" aria-hidden="true"></div>
-
-      <div class="sidebar__nav-section">
-
-        <button class="sidebar__nav-item" role="listitem" data-page="schedule">
-          <span class="sidebar__nav-icon" aria-hidden="true">▦</span>
-          <span class="sidebar__nav-label">Schedule</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Schedule</span>
-        </button>
-
-        <button class="sidebar__nav-item" role="listitem" data-page="sla-monitor">
-          <span class="sidebar__nav-icon" aria-hidden="true">◷</span>
-          <span class="sidebar__nav-label">SLA Monitor</span>
-          <span class="sidebar__tooltip" aria-hidden="true">SLA Monitor</span>
-        </button>
-
-        <button class="sidebar__nav-item" role="listitem" data-page="coverage">
-          <span class="sidebar__nav-icon" aria-hidden="true">▤</span>
-          <span class="sidebar__nav-label">Coverage</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Coverage</span>
-        </button>
-
-      </div>
-
-      <div class="sidebar__nav-divider" aria-hidden="true"></div>
-
-      <div class="sidebar__nav-section">
-
-        <button class="sidebar__nav-item" role="listitem" data-page="announcements">
-          <span class="sidebar__nav-icon" aria-hidden="true">◎</span>
-          <span class="sidebar__nav-label">Announcements</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Announcements</span>
-        </button>
-
-        <button class="sidebar__nav-item" role="listitem" data-page="chat">
-          <span class="sidebar__nav-icon" aria-hidden="true">◻</span>
-          <span class="sidebar__nav-label">Chat</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Chat</span>
-        </button>
-
-        <button class="sidebar__nav-item" role="listitem" data-page="reports">
-          <span class="sidebar__nav-icon" aria-hidden="true">▣</span>
-          <span class="sidebar__nav-label">Reports</span>
-          <span class="sidebar__tooltip" aria-hidden="true">Reports</span>
-        </button>
-
-      </div>
-
-    </div>
-
-    <!-- Bottom: Settings -->
-    <div class="sidebar__bottom">
-      <button class="sidebar__nav-item" role="listitem" data-page="settings">
-        <span class="sidebar__nav-icon" aria-hidden="true">⚙</span>
-        <span class="sidebar__nav-label">Settings</span>
-        <span class="sidebar__tooltip" aria-hidden="true">Settings</span>
+<!-- ============================================================
+     SIDEBAR
+     ============================================================ -->
+<nav class="sidebar" id="sidebar">
+  <button class="sidebar__toggle" id="sidebarToggle" aria-expanded="false">
+    <span class="sidebar__toggle-icon">›</span>
+  </button>
+  <div class="sidebar__nav">
+    <div class="sidebar__nav-section">
+      <button class="sidebar__nav-item" data-page="my-work">
+        <span class="sidebar__nav-icon">⊡</span>
+        <span class="sidebar__nav-label">My Work</span>
+        <span class="sidebar__tooltip">My Work</span>
+      </button>
+      <button class="sidebar__nav-item" data-page="live-floor">
+        <span class="sidebar__nav-icon">◉</span>
+        <span class="sidebar__nav-label">Live Floor</span>
+        <span class="sidebar__tooltip">Live Floor</span>
+      </button>
+      <button class="sidebar__nav-item" data-page="live-queue">
+        <span class="sidebar__nav-icon">≡</span>
+        <span class="sidebar__nav-label">Live Queue</span>
+        <span class="sidebar__nav-badge">7</span>
+        <span class="sidebar__tooltip">Live Queue (7)</span>
       </button>
     </div>
+    <div class="sidebar__nav-divider"></div>
+    <div class="sidebar__nav-section">
+      <button class="sidebar__nav-item" data-page="cases">
+        <span class="sidebar__nav-icon">◈</span>
+        <span class="sidebar__nav-label">Cases</span>
+        <span class="sidebar__tooltip">Cases</span>
+      </button>
+      <button class="sidebar__nav-item" data-page="requests">
+        <span class="sidebar__nav-icon">⊞</span>
+        <span class="sidebar__nav-label">Requests</span>
+        <span class="sidebar__tooltip">Requests</span>
+      </button>
+      <button class="sidebar__nav-item" data-page="tasks">
+        <span class="sidebar__nav-icon">✓</span>
+        <span class="sidebar__nav-label">Tasks</span>
+        <span class="sidebar__tooltip">Tasks</span>
+      </button>
+    </div>
+    <div class="sidebar__nav-divider"></div>
+    <div class="sidebar__nav-section">
+      <button class="sidebar__nav-item" data-page="schedule">
+        <span class="sidebar__nav-icon">▦</span>
+        <span class="sidebar__nav-label">Schedule</span>
+        <span class="sidebar__tooltip">Schedule</span>
+      </button>
+      <button class="sidebar__nav-item" data-page="sla-monitor">
+        <span class="sidebar__nav-icon">◷</span>
+        <span class="sidebar__nav-label">SLA Monitor</span>
+        <span class="sidebar__tooltip">SLA Monitor</span>
+      </button>
+      <button class="sidebar__nav-item" data-page="coverage">
+        <span class="sidebar__nav-icon">▤</span>
+        <span class="sidebar__nav-label">Coverage</span>
+        <span class="sidebar__tooltip">Coverage</span>
+      </button>
+    </div>
+    <div class="sidebar__nav-divider"></div>
+    <div class="sidebar__nav-section">
+      <button class="sidebar__nav-item" data-page="announcements">
+        <span class="sidebar__nav-icon">◎</span>
+        <span class="sidebar__nav-label">Announcements</span>
+        <span class="sidebar__tooltip">Announcements</span>
+      </button>
+      <button class="sidebar__nav-item" data-page="chat">
+        <span class="sidebar__nav-icon">◻</span>
+        <span class="sidebar__nav-label">Chat</span>
+        <span class="sidebar__tooltip">Chat</span>
+      </button>
+      <button class="sidebar__nav-item" data-page="reports">
+        <span class="sidebar__nav-icon">▣</span>
+        <span class="sidebar__nav-label">Reports</span>
+        <span class="sidebar__tooltip">Reports</span>
+      </button>
+    </div>
+  </div>
+  <div class="sidebar__bottom">
+    <button class="sidebar__nav-item is-active" data-page="settings">
+      <span class="sidebar__nav-icon">⚙</span>
+      <span class="sidebar__nav-label">Settings</span>
+      <span class="sidebar__tooltip">Settings</span>
+    </button>
+  </div>
+</nav>
 
-  </nav>
+<!-- ============================================================
+     MAIN SURFACE
+     ============================================================ -->
+<main class="main-surface" id="mainSurface">
 
-  <!-- ============================================================
-       MAIN SURFACE
-       ============================================================ -->
-  <main class="main-surface" id="mainSurface" role="main">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-header__title">Owner Control Center</h1>
+    <span class="page-header__subtitle">System administration</span>
+    <div class="page-header__divider"></div>
+    <div class="page-header__filters" id="sectionTabs" role="tablist">
+      <button class="filter-btn is-active" data-section="overview"       role="tab">Overview</button>
+      <button class="filter-btn"           data-section="users"          role="tab">Users &amp; Accounts</button>
+      <button class="filter-btn"           data-section="roles"          role="tab">Roles &amp; Permissions</button>
+      <button class="filter-btn"           data-section="visibility"     role="tab">Page Visibility</button>
+      <button class="filter-btn"           data-section="delegation"     role="tab">Admin Delegation</button>
+      <button class="filter-btn"           data-section="imports"        role="tab">Imports</button>
+      <button class="filter-btn"           data-section="audit"          role="tab">Audit Log</button>
+    </div>
+    <div class="page-header__actions" id="pageActions">
+      <!-- injected per section -->
+    </div>
+  </div>
 
-    <!-- Alert Banner (example — dismissible) -->
-    <div class="alert-banner alert-banner--critical" id="alertBanner" role="alert">
-      <span>&#9679;</span>
-      <span><strong>3 cases</strong> have breached SLA — immediate action required.</span>
-      <button class="alert-banner__dismiss" id="dismissBanner" aria-label="Dismiss alert">✕</button>
+  <!-- Content Area -->
+  <div class="content-area" id="contentArea">
+
+    <!-- ══════════════════════════════════════════════
+         SECTION 1 — SYSTEM OVERVIEW
+         ══════════════════════════════════════════════ -->
+    <div id="sec-overview" class="occ-section is-visible">
+
+      <div class="stat-row" style="padding:var(--space-2);background:var(--bg-surface);">
+        <div class="stat-card">
+          <span class="stat-card__label">Total Users</span>
+          <span class="stat-card__value">85</span>
+          <span class="stat-card__sub">registered accounts</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__label">Active Sessions</span>
+          <span class="stat-card__value">22</span>
+          <span class="stat-card__sub">currently online</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__label">Pending Imports</span>
+          <span class="stat-card__value">2</span>
+          <span class="stat-card__sub">awaiting validation</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__label">Audit Events Today</span>
+          <span class="stat-card__value">147</span>
+          <span class="stat-card__sub">logged actions</span>
+        </div>
+      </div>
+
+      <!-- Quick-access rows -->
+      <div style="padding:0 var(--space-2) var(--space-2);background:var(--bg-surface);display:flex;flex-direction:column;gap:var(--space-1);">
+        <div style="font-size:var(--size-label);color:var(--text-secondary);font-weight:var(--weight-semibold);text-transform:uppercase;letter-spacing:.5px;padding-top:var(--space-1);">Quick Access</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-1);">
+          <button class="btn btn--secondary" onclick="switchSection('users')">Manage Users</button>
+          <button class="btn btn--secondary" onclick="switchSection('roles')">Edit Permissions</button>
+          <button class="btn btn--secondary" onclick="switchSection('audit')">View Audit Log</button>
+          <button class="btn btn--secondary" onclick="switchSection('delegation')">Delegations</button>
+          <button class="btn btn--secondary" onclick="switchSection('imports')">Import Data</button>
+          <button class="btn btn--secondary" onclick="switchSection('visibility')">Page Visibility</button>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Page Header -->
-    <div class="page-header" role="toolbar" aria-label="Page controls">
-      <h1 class="page-header__title" id="pageTitle">My Work</h1>
-      <span class="page-header__subtitle" id="pageSubtitle">Ahmed Al-Rashid</span>
-      <div class="page-header__divider" aria-hidden="true"></div>
-      <div class="page-header__filters" role="group" aria-label="Filters">
-        <button class="filter-btn is-active">All</button>
-        <button class="filter-btn">Active</button>
-        <button class="filter-btn">On Hold</button>
-        <button class="filter-btn">Closed</button>
+    <!-- ══════════════════════════════════════════════
+         SECTION 2 — USERS & ACCOUNTS
+         ══════════════════════════════════════════════ -->
+    <div id="sec-users" class="occ-section">
+      <div class="occ-section__header">
+        <span class="occ-section__title">Users &amp; Accounts</span>
+        <span class="occ-section__count" id="userCount">85 users</span>
+        <div style="display:flex;align-items:center;gap:var(--space-1);margin-left:var(--space-2);">
+          <input
+            type="text" id="userSearch"
+            placeholder="Search name, email, ID…"
+            style="
+              background:var(--bg-input);border:1px solid var(--border-input);
+              border-radius:var(--radius-sm);color:var(--text-primary);
+              font-family:var(--font);font-size:var(--size-small);
+              padding:5px 10px;outline:none;width:220px;
+            "
+          />
+          <div style="display:flex;gap:4px;">
+            <button class="filter-btn is-active" data-user-filter="all">All</button>
+            <button class="filter-btn" data-user-filter="active">Active</button>
+            <button class="filter-btn" data-user-filter="inactive">Inactive</button>
+            <button class="filter-btn" data-user-filter="pending">Pending</button>
+          </div>
+        </div>
+        <div class="occ-section__actions">
+          <button class="btn btn--primary btn--sm" onclick="openPanel('new-user')">+ Add User</button>
+        </div>
       </div>
-      <div class="page-header__actions">
-        <button class="btn btn--secondary btn--sm">Export</button>
-        <button class="btn btn--primary btn--sm">+ New Case</button>
-      </div>
-    </div>
-
-    <!-- Content Area -->
-    <div class="content-area" id="contentArea">
-
-      <!-- Demo table to validate layout -->
       <div class="data-table-wrapper">
-        <table class="data-table" role="grid" aria-label="Cases table">
+        <table class="data-table" id="usersTable">
           <thead>
             <tr>
-              <th aria-label="Priority" style="width:4px;"></th>
-              <th style="width:80px;">Case ID</th>
-              <th style="width:120px;">Status</th>
-              <th>Subject</th>
-              <th style="width:160px;">Assignee</th>
-              <th style="width:100px;">Priority</th>
-              <th style="width:100px;">SLA</th>
-              <th style="width:120px;" aria-label="Actions"></th>
+              <th class="cb-cell"><input type="checkbox" class="cb" id="selectAllUsers" /></th>
+              <th style="width:100px;">Status</th>
+              <th style="width:90px;">Employee ID</th>
+              <th style="width:180px;">Full Name</th>
+              <th style="width:220px;">Email</th>
+              <th style="width:110px;">Role</th>
+              <th style="width:130px;">Team</th>
+              <th style="width:130px;">Last Active</th>
+              <th style="width:160px;"></th>
             </tr>
           </thead>
-          <tbody id="tableBody">
-
-            <!-- Skeleton rows — loading state -->
-            <tr class="skeleton-row">
-              <td><span class="priority-border priority-border--none"></span></td>
-              <td><span class="skeleton-cell" style="width:48px;"></span></td>
-              <td><span class="skeleton-cell" style="width:80px;"></span></td>
-              <td><span class="skeleton-cell" style="width:70%;"></span></td>
-              <td><span class="skeleton-cell" style="width:100px;"></span></td>
-              <td><span class="skeleton-cell" style="width:60px;"></span></td>
-              <td><span class="skeleton-cell" style="width:60px;"></span></td>
-              <td></td>
-            </tr>
-            <tr class="skeleton-row">
-              <td><span class="priority-border priority-border--none"></span></td>
-              <td><span class="skeleton-cell" style="width:48px;"></span></td>
-              <td><span class="skeleton-cell" style="width:80px;"></span></td>
-              <td><span class="skeleton-cell" style="width:55%;"></span></td>
-              <td><span class="skeleton-cell" style="width:100px;"></span></td>
-              <td><span class="skeleton-cell" style="width:60px;"></span></td>
-              <td><span class="skeleton-cell" style="width:60px;"></span></td>
-              <td></td>
-            </tr>
-            <tr class="skeleton-row">
-              <td><span class="priority-border priority-border--none"></span></td>
-              <td><span class="skeleton-cell" style="width:48px;"></span></td>
-              <td><span class="skeleton-cell" style="width:80px;"></span></td>
-              <td><span class="skeleton-cell" style="width:80%;"></span></td>
-              <td><span class="skeleton-cell" style="width:100px;"></span></td>
-              <td><span class="skeleton-cell" style="width:60px;"></span></td>
-              <td><span class="skeleton-cell" style="width:60px;"></span></td>
-              <td></td>
-            </tr>
-
-          </tbody>
+          <tbody id="usersBody"></tbody>
         </table>
       </div>
-
     </div>
 
-  </main>
-
-  <!-- ============================================================
-       RIGHT PANEL
-       ============================================================ -->
-  <aside
-    class="right-panel"
-    id="rightPanel"
-    role="complementary"
-    aria-label="Detail panel"
-    aria-hidden="true"
-  >
-
-    <div class="panel-header">
-      <span class="panel-header__status">
-        <span class="status-badge status-badge--inprogress">
-          <span class="status-dot"></span>
-          In Progress
-        </span>
-      </span>
-      <span class="panel-header__id">#1234</span>
-      <span class="panel-header__title">Account access issue</span>
-      <button class="panel-close" id="panelClose" aria-label="Close panel">✕</button>
-    </div>
-
-    <div class="panel-critical-strip" role="status">
-      <span class="panel-critical-strip__label">SLA Remaining</span>
-      <span class="panel-critical-strip__value" id="panelSlaTimer">00:14:22</span>
-    </div>
-
-    <div class="panel-body" id="panelBody">
-
-      <div class="panel-field-group">
-        <div class="panel-field">
-          <span class="panel-field__label">Assigned to</span>
-          <span class="panel-field__value">Ahmed Al-Rashid</span>
-        </div>
-        <div class="panel-field">
-          <span class="panel-field__label">Priority</span>
-          <span class="panel-field__value" style="color: var(--priority-critical);">&#9679; Critical</span>
-        </div>
-        <div class="panel-field">
-          <span class="panel-field__label">Created</span>
-          <span class="panel-field__value">Today, 14:32</span>
-        </div>
-        <div class="panel-field">
-          <span class="panel-field__label">Team</span>
-          <span class="panel-field__value">Support Team A</span>
+    <!-- ══════════════════════════════════════════════
+         SECTION 3 — ROLES & PERMISSIONS
+         ══════════════════════════════════════════════ -->
+    <div id="sec-roles" class="occ-section">
+      <div class="occ-section__header">
+        <span class="occ-section__title">Roles &amp; Permissions</span>
+        <span class="occ-section__count">5 roles</span>
+        <div class="occ-section__actions">
+          <button class="btn btn--secondary btn--sm">Duplicate Role</button>
         </div>
       </div>
-
-      <div class="panel-divider"></div>
-
-      <div class="panel-field-group">
-        <span class="panel-section-title">Description</span>
-        <p style="font-size: var(--size-small); color: var(--text-primary); line-height: 1.5;">
-          Customer cannot access their account after a password reset attempt.
-          Issue persists across multiple browsers and devices.
-        </p>
+      <div class="data-table-wrapper">
+        <table class="data-table" id="rolesTable">
+          <thead>
+            <tr>
+              <th style="width:160px;">Role Name</th>
+              <th style="width:120px;">Assigned Users</th>
+              <th style="width:140px;">Pages Accessible</th>
+              <th style="width:120px;">System Role</th>
+              <th style="width:160px;"></th>
+            </tr>
+          </thead>
+          <tbody id="rolesBody"></tbody>
+        </table>
       </div>
+    </div>
 
-      <div class="panel-divider"></div>
+    <!-- ══════════════════════════════════════════════
+         SECTION 4 — PAGE VISIBILITY
+         ══════════════════════════════════════════════ -->
+    <div id="sec-visibility" class="occ-section">
+      <div class="occ-section__header">
+        <span class="occ-section__title">Page Visibility Control</span>
+        <span class="occ-section__count">13 pages</span>
+      </div>
+      <div class="data-table-wrapper">
+        <table class="data-table" id="visibilityTable">
+          <thead>
+            <tr>
+              <th style="width:160px;">Page</th>
+              <th>Visible To (Roles)</th>
+              <th style="width:100px;">Status</th>
+              <th style="width:100px;"></th>
+            </tr>
+          </thead>
+          <tbody id="visibilityBody"></tbody>
+        </table>
+      </div>
+    </div>
 
-      <div class="panel-field-group">
-        <span class="panel-section-title">Activity</span>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div class="panel-field">
-            <span class="panel-field__label" style="font-family:var(--font-mono);font-size:11px;color:var(--text-disabled);">14:32</span>
-            <span class="panel-field__value" style="color:var(--text-secondary);">Case created</span>
+    <!-- ══════════════════════════════════════════════
+         SECTION 5 — ADMIN DELEGATION
+         ══════════════════════════════════════════════ -->
+    <div id="sec-delegation" class="occ-section">
+      <div class="occ-section__header">
+        <span class="occ-section__title">Admin Delegation</span>
+        <span class="occ-section__count" id="delegationCount">3 active</span>
+        <div class="occ-section__actions">
+          <button class="btn btn--primary btn--sm" onclick="openPanel('new-delegation')">+ New Delegation</button>
+        </div>
+      </div>
+      <div class="data-table-wrapper">
+        <table class="data-table" id="delegationTable">
+          <thead>
+            <tr>
+              <th style="width:180px;">Delegated To</th>
+              <th style="width:200px;">Scope</th>
+              <th style="width:140px;">Granted By</th>
+              <th style="width:120px;">Expires</th>
+              <th style="width:100px;">Status</th>
+              <th style="width:160px;"></th>
+            </tr>
+          </thead>
+          <tbody id="delegationBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SECTION 6 — IMPORTS
+         ══════════════════════════════════════════════ -->
+    <div id="sec-imports" class="occ-section">
+      <div class="occ-section__header">
+        <span class="occ-section__title">Data Imports</span>
+        <span class="occ-section__count">Import history</span>
+        <div class="occ-section__actions">
+          <button class="btn btn--primary btn--sm" onclick="openPanel('new-import')">↑ Upload File</button>
+        </div>
+      </div>
+      <div class="data-table-wrapper">
+        <table class="data-table" id="importsTable">
+          <thead>
+            <tr>
+              <th style="width:200px;">File Name</th>
+              <th style="width:120px;">Type</th>
+              <th style="width:150px;">Imported By</th>
+              <th style="width:140px;">Date</th>
+              <th style="width:100px;">Status</th>
+              <th style="width:100px;">Records</th>
+              <th style="width:120px;"></th>
+            </tr>
+          </thead>
+          <tbody id="importsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         SECTION 7 — AUDIT LOG
+         ══════════════════════════════════════════════ -->
+    <div id="sec-audit" class="occ-section">
+      <div class="occ-section__header">
+        <span class="occ-section__title">Audit Log</span>
+        <span class="audit-readonly-badge">⊘ Read-only</span>
+        <div style="display:flex;align-items:center;gap:var(--space-1);margin-left:var(--space-2);">
+          <div style="display:flex;gap:4px;">
+            <button class="filter-btn is-active" data-audit-filter="all">All</button>
+            <button class="filter-btn" data-audit-filter="users">Users</button>
+            <button class="filter-btn" data-audit-filter="roles">Roles</button>
+            <button class="filter-btn" data-audit-filter="imports">Imports</button>
+            <button class="filter-btn" data-audit-filter="delegation">Delegation</button>
           </div>
-          <div class="panel-field">
-            <span class="panel-field__label" style="font-family:var(--font-mono);font-size:11px;color:var(--text-disabled);">14:35</span>
-            <span class="panel-field__value" style="color:var(--text-secondary);">Assigned to Ahmed</span>
-          </div>
-          <div class="panel-field">
-            <span class="panel-field__label" style="font-family:var(--font-mono);font-size:11px;color:var(--text-disabled);">14:41</span>
-            <span class="panel-field__value" style="color:var(--text-secondary);">Status changed to In Progress</span>
-          </div>
         </div>
       </div>
-
-      <div class="panel-divider"></div>
-
-      <div class="panel-field-group">
-        <span class="panel-section-title">Add Comment</span>
-        <textarea
-          style="
-            width:100%;
-            background:var(--bg-input);
-            border:1px solid var(--border-input);
-            border-radius:var(--radius-sm);
-            color:var(--text-primary);
-            font-family:var(--font);
-            font-size:var(--size-small);
-            padding:8px;
-            resize:vertical;
-            min-height:72px;
-            outline:none;
-          "
-          placeholder="Write a comment..."
-          aria-label="Add comment"
-        ></textarea>
+      <div class="data-table-wrapper">
+        <table class="data-table" id="auditTable">
+          <thead>
+            <tr>
+              <th style="width:150px;">Timestamp</th>
+              <th style="width:160px;">Performed By</th>
+              <th style="width:160px;">Action</th>
+              <th style="width:180px;">Target</th>
+              <th style="width:120px;">Section</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="auditBody"></tbody>
+        </table>
       </div>
-
     </div>
 
-    <div class="panel-action-zone">
-      <div class="panel-action-row">
-        <button class="btn btn--secondary btn--full">On Hold</button>
-        <button class="btn btn--secondary btn--full">Escalate</button>
-      </div>
-      <button class="btn btn--primary btn--full">Close Case ✓</button>
+  </div><!-- /content-area -->
+</main>
+
+<!-- ============================================================
+     RIGHT PANEL
+     ============================================================ -->
+<aside class="right-panel" id="rightPanel" aria-hidden="true">
+  <div class="panel-header">
+    <span class="panel-header__title" id="panelTitle">—</span>
+    <button class="panel-close" id="panelClose">✕</button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+  <div class="panel-action-zone" id="panelActions"></div>
+</aside>
+
+<!-- ============================================================
+     STATUS BAR
+     ============================================================ -->
+<footer class="statusbar">
+  <div class="statusbar__item">
+    <span class="statusbar__dot statusbar__dot--connected"></span>
+    <span>Connected</span>
+  </div>
+  <div class="statusbar__divider"></div>
+  <div class="statusbar__item">
+    <span>Last sync:</span>
+    <span id="lastSync">just now</span>
+  </div>
+  <div class="statusbar__divider"></div>
+  <div class="statusbar__item">
+    <span id="activeUsers">22</span>
+    <span>online</span>
+  </div>
+  <span class="statusbar__version">v2.1.0</span>
+</footer>
+
+</div><!-- /app-shell -->
+
+<!-- Destructive Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal__header">
+      <span class="modal__title" id="modalTitle">Confirm Action</span>
+      <button class="panel-close" onclick="closeModal()">✕</button>
     </div>
-
-  </aside>
-
-  <!-- ============================================================
-       BOTTOM STATUS BAR
-       ============================================================ -->
-  <footer class="statusbar" role="contentinfo" aria-label="System status">
-
-    <div class="statusbar__item" role="status" aria-live="polite">
-      <span class="statusbar__dot statusbar__dot--connected" aria-hidden="true"></span>
-      <span id="connectionLabel">Connected</span>
+    <div class="modal__body" id="modalBody">Are you sure?</div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn--danger" id="modalConfirmBtn">Confirm</button>
     </div>
-
-    <div class="statusbar__divider" aria-hidden="true"></div>
-
-    <div class="statusbar__item">
-      <span>Last sync:</span>
-      <span id="lastSync">just now</span>
-    </div>
-
-    <div class="statusbar__divider" aria-hidden="true"></div>
-
-    <div class="statusbar__item">
-      <span id="activeUsers">22</span>
-      <span>online</span>
-    </div>
-
-    <span class="statusbar__version" aria-label="System version">v2.1.0</span>
-
-  </footer>
-
+  </div>
 </div>
 
-<!-- Toast Container -->
-<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+<div class="toast-container" id="toastContainer"></div>
 
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
 <script>
-/* ============================================================
-   NEXUS v2.0 — SHELL INTERACTION LOGIC
-   Phase 1 only: layout behavior, no business logic
-   ============================================================ */
-
 (function () {
-  'use strict';
+'use strict';
 
-  /* ── Theme ── */
-  const html         = document.documentElement;
-  const themeToggle  = document.getElementById('themeToggle');
-  const themeIcon    = document.getElementById('themeIcon');
-  const themeLabel   = document.getElementById('themeLabel');
+/* ── Theme ── */
+const html        = document.documentElement;
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon   = document.getElementById('themeIcon');
+const themeLabel  = document.getElementById('themeLabel');
 
-  function setTheme(theme) {
-    html.setAttribute('data-theme', theme);
-    if (theme === 'dark') {
-      themeIcon.textContent  = '☀';
-      themeLabel.textContent = 'Light';
-    } else {
-      themeIcon.textContent  = '☾';
-      themeLabel.textContent = 'Dark';
+function setTheme(t) {
+  html.setAttribute('data-theme', t);
+  themeIcon.textContent  = t === 'dark' ? '☀' : '☾';
+  themeLabel.textContent = t === 'dark' ? 'Light' : 'Dark';
+  localStorage.setItem('nexus-theme', t);
+}
+themeToggle.addEventListener('click', () => {
+  setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+setTheme(localStorage.getItem('nexus-theme') || 'dark');
+
+/* ── Sidebar ── */
+const sidebar       = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebarToggle');
+sidebarToggle.addEventListener('click', () => {
+  const exp = sidebar.classList.toggle('is-expanded');
+  sidebarToggle.setAttribute('aria-expanded', exp);
+});
+
+document.querySelectorAll('.sidebar__nav-item[data-page]').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar__nav-item').forEach(i => i.classList.remove('is-active'));
+    item.classList.add('is-active');
+    closePanel();
+  });
+});
+
+/* ── Section switching ── */
+const SECTIONS = ['overview','users','roles','visibility','delegation','imports','audit'];
+
+function switchSection(name) {
+  SECTIONS.forEach(s => {
+    document.getElementById('sec-' + s).classList.toggle('is-visible', s === name);
+  });
+  document.querySelectorAll('[data-section]').forEach(btn => {
+    btn.classList.toggle('is-active', btn.dataset.section === name);
+  });
+  closePanel();
+}
+
+document.getElementById('sectionTabs').addEventListener('click', e => {
+  const btn = e.target.closest('[data-section]');
+  if (btn) switchSection(btn.dataset.section);
+});
+
+/* ── Right Panel ── */
+const rightPanel  = document.getElementById('rightPanel');
+const panelTitle  = document.getElementById('panelTitle');
+const panelBody   = document.getElementById('panelBody');
+const panelActions= document.getElementById('panelActions');
+const panelClose  = document.getElementById('panelClose');
+
+function openPanel(type, data) {
+  rightPanel.classList.add('is-open');
+  rightPanel.setAttribute('aria-hidden', 'false');
+  renderPanel(type, data);
+}
+
+function closePanel() {
+  rightPanel.classList.remove('is-open');
+  rightPanel.setAttribute('aria-hidden', 'true');
+  document.querySelectorAll('.data-table tbody tr').forEach(r => r.classList.remove('is-selected'));
+}
+
+panelClose.addEventListener('click', closePanel);
+
+function renderPanel(type, data) {
+  panelBody.innerHTML = '';
+  panelActions.innerHTML = '';
+
+  switch (type) {
+
+    /* ── User detail / edit ── */
+    case 'user-detail': {
+      panelTitle.textContent = data.name;
+      panelBody.innerHTML = `
+        <div class="panel-section-title">Account Information</div>
+        <div class="panel-field"><span class="panel-field__label">Employee ID</span><span class="panel-field__value" style="font-family:var(--font-mono)">${data.id}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Status</span><span class="panel-field__value"><span class="status-badge status-badge--${data.statusKey}"><span class="status-dot"></span>${data.status}</span></span></div>
+        <div class="panel-field"><span class="panel-field__label">Email</span><span class="panel-field__value">${data.email}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Role</span><span class="panel-field__value"><span class="role-badge">${data.role}</span></span></div>
+        <div class="panel-field"><span class="panel-field__label">Team</span><span class="panel-field__value">${data.team}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Last Active</span><span class="panel-field__value" style="color:var(--text-secondary)">${data.lastActive}</span></div>
+        <div class="panel-divider" style="margin:var(--space-1) calc(-1*var(--space-2))"></div>
+        <div class="panel-section-title">Edit Details</div>
+        <div class="panel-form-group">
+          <label class="panel-label">Full Name</label>
+          <input class="panel-input" value="${data.name}" />
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Role</label>
+          <select class="panel-select">
+            ${['Owner','Team Leader','Shift Leader','SME','Agent'].map(r =>
+              `<option ${r===data.role?'selected':''}>${r}</option>`).join('')}
+          </select>
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Team</label>
+          <select class="panel-select">
+            ${['Team Alpha','Team Beta','Team Gamma','Team Delta'].map(t =>
+              `<option ${t===data.team?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Notes</label>
+          <textarea class="panel-textarea" placeholder="Optional notes…"></textarea>
+        </div>
+      `;
+      panelActions.innerHTML = `
+        <div class="panel-action-row">
+          <button class="btn btn--secondary btn--full" onclick="triggerModal('Reset Password','Reset password for <strong>${data.name}</strong>? A reset link will be sent to their email.',()=>showToast('info','Password reset sent.'))">Reset Password</button>
+          <button class="btn btn--danger btn--full" onclick="triggerModal('Deactivate Account','Deactivate account for <strong>${data.name}</strong>? They will lose all access immediately.',()=>showToast('warning','Account deactivated.'))">Deactivate</button>
+        </div>
+        <button class="btn btn--primary btn--full" onclick="showToast('success','User details saved.');logAudit('User Updated','${data.name}','Users & Accounts')">Save Changes</button>
+      `;
+      break;
     }
-    localStorage.setItem('nexus-theme', theme);
-  }
 
-  themeToggle.addEventListener('click', function () {
-    const current = html.getAttribute('data-theme');
-    setTheme(current === 'dark' ? 'light' : 'dark');
-  });
-
-  const savedTheme = localStorage.getItem('nexus-theme') || 'dark';
-  setTheme(savedTheme);
-
-  /* ── Sidebar toggle ── */
-  const sidebar       = document.getElementById('sidebar');
-  const sidebarToggle = document.getElementById('sidebarToggle');
-
-  sidebarToggle.addEventListener('click', function () {
-    const expanded = sidebar.classList.toggle('is-expanded');
-    sidebarToggle.setAttribute('aria-expanded', expanded.toString());
-  });
-
-  /* ── Sidebar navigation ── */
-  const navItems = document.querySelectorAll('.sidebar__nav-item[data-page]');
-  const pageTitle    = document.getElementById('pageTitle');
-  const pageSubtitle = document.getElementById('pageSubtitle');
-
-  const pageMeta = {
-    'my-work':       { title: 'My Work',       subtitle: 'Ahmed Al-Rashid' },
-    'live-floor':    { title: 'Live Floor',     subtitle: 'Shift 14:00 – 22:00' },
-    'live-queue':    { title: 'Live Queue',     subtitle: '7 unassigned' },
-    'cases':         { title: 'Cases',          subtitle: 'All active cases' },
-    'requests':      { title: 'Requests',       subtitle: 'Pending approval' },
-    'tasks':         { title: 'Tasks',          subtitle: 'Assigned to me' },
-    'schedule':      { title: 'Schedule',       subtitle: 'Week of Apr 7' },
-    'sla-monitor':   { title: 'SLA Monitor',    subtitle: 'Live compliance' },
-    'coverage':      { title: 'Coverage',       subtitle: 'Workforce view' },
-    'announcements': { title: 'Announcements',  subtitle: 'Internal comms' },
-    'chat':          { title: 'Chat',           subtitle: 'Internal messaging' },
-    'reports':       { title: 'Reports',        subtitle: 'Operational analytics' },
-    'settings':      { title: 'Settings',       subtitle: 'System configuration' },
-  };
-
-  navItems.forEach(function (item) {
-    item.addEventListener('click', function () {
-      navItems.forEach(function (i) { i.classList.remove('is-active'); });
-      item.classList.add('is-active');
-
-      const page = item.getAttribute('data-page');
-      const meta = pageMeta[page] || { title: page, subtitle: '' };
-      pageTitle.textContent    = meta.title;
-      pageSubtitle.textContent = meta.subtitle;
-
-      closePanel();
-    });
-  });
-
-  /* ── Right Panel ── */
-  const rightPanel = document.getElementById('rightPanel');
-  const panelClose = document.getElementById('panelClose');
-
-  function openPanel() {
-    rightPanel.classList.add('is-open');
-    rightPanel.setAttribute('aria-hidden', 'false');
-  }
-
-  function closePanel() {
-    rightPanel.classList.remove('is-open');
-    rightPanel.setAttribute('aria-hidden', 'true');
-    document.querySelectorAll('.data-table tbody tr').forEach(function (r) {
-      r.classList.remove('is-selected');
-    });
-  }
-
-  panelClose.addEventListener('click', closePanel);
-
-  /* Table row click → open panel */
-  document.getElementById('tableBody').addEventListener('click', function (e) {
-    const row = e.target.closest('tr');
-    if (!row || row.classList.contains('skeleton-row')) return;
-    document.querySelectorAll('.data-table tbody tr').forEach(function (r) {
-      r.classList.remove('is-selected');
-    });
-    row.classList.add('is-selected');
-    openPanel();
-  });
-
-  /* ── Alert banner dismiss ── */
-  const dismissBanner = document.getElementById('dismissBanner');
-  const alertBanner   = document.getElementById('alertBanner');
-  if (dismissBanner) {
-    dismissBanner.addEventListener('click', function () {
-      alertBanner.style.display = 'none';
-    });
-  }
-
-  /* ── Filter buttons ── */
-  document.querySelectorAll('.filter-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      btn.closest('.page-header__filters')
-        .querySelectorAll('.filter-btn')
-        .forEach(function (b) { b.classList.remove('is-active'); });
-      btn.classList.add('is-active');
-    });
-  });
-
-  /* ── Skeleton → real rows (Phase 1 demo) ── */
-  const DEMO_ROWS = [
-    { priority: 'critical', id: '#1234', status: 'inprogress', statusLabel: 'In Progress',
-      subject: 'Account access issue — password reset failure',
-      assignee: 'Ahmed Al-Rashid', priorityLabel: 'Critical', sla: '00:14:22', slaRed: true },
-    { priority: 'high', id: '#1235', status: 'assigned', statusLabel: 'Assigned',
-      subject: 'Billing discrepancy on invoice #INV-2024-0891',
-      assignee: 'Sara Mohammed', priorityLabel: 'High', sla: '01:02:11', slaRed: false },
-    { priority: 'medium', id: '#1236', status: 'new', statusLabel: 'New',
-      subject: 'Feature request: export to CSV',
-      assignee: '—', priorityLabel: 'Medium', sla: '03:45:00', slaRed: false },
-    { priority: 'low', id: '#1237', status: 'onhold', statusLabel: 'On Hold',
-      subject: 'General inquiry about subscription plans',
-      assignee: 'Khalid Hassan', priorityLabel: 'Low', sla: '06:00:00', slaRed: false },
-    { priority: 'critical', id: '#1238', status: 'escalated', statusLabel: 'Escalated',
-      subject: 'Data export failure — critical production issue',
-      assignee: 'SME: Nora Ali', priorityLabel: 'Critical', sla: '00:03:55', slaRed: true },
-  ];
-
-  function buildRows() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '';
-    DEMO_ROWS.forEach(function (row) {
-      const tr = document.createElement('tr');
-      tr.setAttribute('role', 'row');
-      tr.setAttribute('tabindex', '0');
-      tr.innerHTML =
-        '<td><span class="priority-border priority-border--' + row.priority + '"></span></td>' +
-        '<td style="font-family:var(--font-mono);font-size:var(--size-mono);color:var(--text-secondary);">' + row.id + '</td>' +
-        '<td><span class="status-badge status-badge--' + row.status + '"><span class="status-dot"></span>' + row.statusLabel + '</span></td>' +
-        '<td style="color:var(--text-primary);">' + row.subject + '</td>' +
-        '<td style="color:var(--text-secondary);font-size:var(--size-small);">' + row.assignee + '</td>' +
-        '<td style="color:var(--text-secondary);font-size:var(--size-small);">' + row.priorityLabel + '</td>' +
-        '<td style="font-family:var(--font-mono);font-size:var(--size-mono);color:' + (row.slaRed ? 'var(--priority-critical)' : 'var(--text-secondary)') + ';">' + row.sla + '</td>' +
-        '<td><div class="row-actions">' +
-          '<button class="row-action-btn" onclick="event.stopPropagation()">Assign</button>' +
-          '<button class="row-action-btn" onclick="event.stopPropagation()">···</button>' +
-        '</div></td>';
-
-      tr.addEventListener('click', function () {
-        document.querySelectorAll('.data-table tbody tr').forEach(function (r) {
-          r.classList.remove('is-selected');
-        });
-        tr.classList.add('is-selected');
-        openPanel();
-      });
-
-      tr.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          tr.click();
-        }
-      });
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  setTimeout(buildRows, 800);
-
-  /* ── SLA panel timer ── */
-  let slaSeconds = 862;
-  const panelSlaTimer = document.getElementById('panelSlaTimer');
-
-  function formatTime(s) {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    return (h > 0 ? String(h).padStart(2,'0') + ':' : '') +
-           String(m).padStart(2,'0') + ':' +
-           String(sec).padStart(2,'0');
-  }
-
-  setInterval(function () {
-    if (slaSeconds > 0) slaSeconds--;
-    if (panelSlaTimer) panelSlaTimer.textContent = formatTime(slaSeconds);
-  }, 1000);
-
-  /* ── Last sync timestamp ── */
-  const lastSyncEl = document.getElementById('lastSync');
-  let syncSeconds  = 0;
-
-  setInterval(function () {
-    syncSeconds++;
-    if (syncSeconds < 60) {
-      lastSyncEl.textContent = 'just now';
-    } else {
-      const m = Math.floor(syncSeconds / 60);
-      lastSyncEl.textContent = m + 'm ago';
+    /* ── New user form ── */
+    case 'new-user': {
+      panelTitle.textContent = 'Add New User';
+      panelBody.innerHTML = `
+        <div class="panel-section-title">Account Details</div>
+        <div class="panel-form-group">
+          <label class="panel-label">Full Name <span style="color:var(--alert-error)">*</span></label>
+          <input class="panel-input" placeholder="Enter full name" />
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Email Address <span style="color:var(--alert-error)">*</span></label>
+          <input class="panel-input" type="email" placeholder="user@company.com" />
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Employee ID <span style="color:var(--alert-error)">*</span></label>
+          <input class="panel-input" placeholder="EMP-XXXX" />
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Role <span style="color:var(--alert-error)">*</span></label>
+          <select class="panel-select">
+            <option value="">Select role…</option>
+            ${['Owner','Team Leader','Shift Leader','SME','Agent'].map(r => `<option>${r}</option>`).join('')}
+          </select>
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Team</label>
+          <select class="panel-select">
+            <option value="">Select team…</option>
+            ${['Team Alpha','Team Beta','Team Gamma','Team Delta'].map(t => `<option>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Initial Status</label>
+          <select class="panel-select">
+            <option>Active</option>
+            <option>Pending</option>
+          </select>
+        </div>
+      `;
+      panelActions.innerHTML = `
+        <button class="btn btn--secondary btn--full" onclick="closePanel()">Cancel</button>
+        <button class="btn btn--primary btn--full" onclick="showToast('success','User created successfully.');logAudit('User Created','New User','Users & Accounts');closePanel()">Create User</button>
+      `;
+      break;
     }
-  }, 1000);
 
-  /* ── Toast demo ── */
-  function showToast(type, message) {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = 'toast toast--' + type;
-    toast.innerHTML = '<span class="toast__dot"></span><span>' + message + '</span>';
-    container.appendChild(toast);
-    setTimeout(function () {
-      toast.style.opacity = '0';
-      toast.style.transition = 'opacity 200ms';
-      setTimeout(function () { toast.remove(); }, 200);
-    }, type === 'error' ? 8000 : 3000);
+    /* ── Role permissions ── */
+    case 'role-detail': {
+      panelTitle.textContent = data.name + ' — Permissions';
+      const pages = [
+        'My Work','Live Floor','Live Queue','Cases','Requests',
+        'Tasks','Schedule','SLA Monitor','Coverage','Announcements',
+        'Chat','Reports','Settings'
+      ];
+      const defaultOn = {
+        'Owner': pages,
+        'Team Leader': ['My Work','Live Floor','Live Queue','Cases','Requests','Tasks','Schedule','SLA Monitor','Coverage','Announcements','Chat','Reports'],
+        'Shift Leader': ['My Work','Live Floor','Live Queue','Cases','Requests','Tasks','SLA Monitor','Announcements','Chat'],
+        'SME':   ['My Work','Cases','Tasks','Announcements','Chat'],
+        'Agent': ['My Work','Requests','Tasks','Announcements','Chat'],
+      };
+      const on = defaultOn[data.name] || [];
+      panelBody.innerHTML = `
+        <div class="panel-field"><span class="panel-field__label">Role</span><span class="panel-field__value"><span class="role-badge">${data.name}</span></span></div>
+        <div class="panel-field"><span class="panel-field__label">Assigned Users</span><span class="panel-field__value" style="font-family:var(--font-mono)">${data.users}</span></div>
+        <div class="panel-field"><span class="panel-field__label">System Role</span><span class="panel-field__value">${data.system ? '⊘ Protected — cannot be deleted' : '✎ Custom role'}</span></div>
+        <div class="panel-divider" style="margin:var(--space-1) calc(-1*var(--space-2))"></div>
+        <div class="panel-section-title">Page Access</div>
+        <div class="perm-matrix">
+          ${pages.map(p => `
+            <div class="perm-row">
+              <span class="perm-row__label">${p}</span>
+              <label class="perm-toggle">
+                <input type="checkbox" ${on.includes(p)?'checked':''} ${data.name==='Owner'?'disabled':''} onchange="logAudit('Permission Changed','${data.name} → ${p}','Roles & Permissions')" />
+                <span class="perm-toggle-track"></span>
+                <span class="perm-toggle-thumb"></span>
+              </label>
+            </div>`).join('')}
+        </div>
+      `;
+      panelActions.innerHTML = data.system
+        ? `<div style="font-size:var(--size-label);color:var(--text-disabled);text-align:center;padding:4px 0;">System roles are protected from deletion.</div>
+           <button class="btn btn--primary btn--full" onclick="showToast('success','Permissions saved.');logAudit('Role Updated','${data.name}','Roles & Permissions')">Save Permissions</button>`
+        : `<div class="panel-action-row">
+             <button class="btn btn--secondary btn--full" onclick="showToast('info','Role duplicated.')">Duplicate</button>
+             <button class="btn btn--danger btn--full" onclick="triggerModal('Delete Role','Delete role <strong>${data.name}</strong>? This action cannot be undone.',()=>showToast('warning','Role deleted.'))">Delete</button>
+           </div>
+           <button class="btn btn--primary btn--full" onclick="showToast('success','Permissions saved.');logAudit('Role Updated','${data.name}','Roles & Permissions')">Save Permissions</button>`;
+      break;
+    }
+
+    /* ── Page visibility ── */
+    case 'visibility-detail': {
+      panelTitle.textContent = data.page + ' — Visibility';
+      const roles = ['Owner','Team Leader','Shift Leader','SME','Agent'];
+      panelBody.innerHTML = `
+        <div class="panel-field"><span class="panel-field__label">Page</span><span class="panel-field__value">${data.page}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Current Status</span><span class="panel-field__value"><span class="status-badge status-badge--active"><span class="status-dot"></span>Visible</span></span></div>
+        <div class="panel-divider" style="margin:var(--space-1) calc(-1*var(--space-2))"></div>
+        <div class="panel-section-title">Role Visibility</div>
+        <div class="perm-matrix">
+          ${roles.map(r => `
+            <div class="perm-row">
+              <span class="perm-row__label">${r}</span>
+              <label class="perm-toggle">
+                <input type="checkbox" ${data.roles.includes(r)?'checked':''} ${r==='Owner'?'disabled':''} onchange="logAudit('Visibility Changed','${data.page} → ${r}','Page Visibility')" />
+                <span class="perm-toggle-track"></span>
+                <span class="perm-toggle-thumb"></span>
+              </label>
+            </div>`).join('')}
+        </div>
+      `;
+      panelActions.innerHTML = `
+        <button class="btn btn--primary btn--full" onclick="showToast('success','Visibility settings saved.');logAudit('Page Visibility Updated','${data.page}','Page Visibility')">Save Visibility</button>
+      `;
+      break;
+    }
+
+    /* ── Delegation detail ── */
+    case 'delegation-detail': {
+      panelTitle.textContent = 'Delegation — ' + data.to;
+      panelBody.innerHTML = `
+        <div class="panel-section-title">Delegation Details</div>
+        <div class="panel-field"><span class="panel-field__label">Delegated To</span><span class="panel-field__value">${data.to}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Scope</span><span class="panel-field__value">${data.scope}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Granted By</span><span class="panel-field__value">${data.by}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Granted On</span><span class="panel-field__value">${data.granted}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Expires</span><span class="panel-field__value">${data.expires}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Status</span><span class="panel-field__value"><span class="status-badge status-badge--${data.statusKey}"><span class="status-dot"></span>${data.status}</span></span></div>
+        <div class="panel-divider" style="margin:var(--space-1) calc(-1*var(--space-2))"></div>
+        <div class="panel-form-group">
+          <label class="panel-label">Extend Expiry To</label>
+          <input class="panel-input" type="date" />
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Reason for Change</label>
+          <textarea class="panel-textarea" placeholder="Required for audit log…"></textarea>
+        </div>
+      `;
+      panelActions.innerHTML = `
+        <div class="panel-action-row">
+          <button class="btn btn--secondary btn--full" onclick="showToast('info','Delegation extended.');logAudit('Delegation Extended','${data.to}','Admin Delegation')">Extend</button>
+          <button class="btn btn--danger btn--full" onclick="triggerModal('Revoke Delegation','Revoke delegation for <strong>${data.to}</strong>? This will remove their elevated access immediately.',()=>showToast('warning','Delegation revoked.'))">Revoke</button>
+        </div>
+      `;
+      break;
+    }
+
+    /* ── New delegation ── */
+    case 'new-delegation': {
+      panelTitle.textContent = 'New Admin Delegation';
+      panelBody.innerHTML = `
+        <div class="panel-section-title">Delegation Setup</div>
+        <div class="panel-form-group">
+          <label class="panel-label">Delegate To <span style="color:var(--alert-error)">*</span></label>
+          <select class="panel-select">
+            <option value="">Select user…</option>
+            <option>Sara Mohammed (TL)</option>
+            <option>Khalid Hassan (SL)</option>
+            <option>Nora Ali (SME)</option>
+          </select>
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Scope <span style="color:var(--alert-error)">*</span></label>
+          <select class="panel-select">
+            <option value="">Select scope…</option>
+            <option>User Management (read-only)</option>
+            <option>User Management (full)</option>
+            <option>Imports Only</option>
+            <option>Audit Log (read-only)</option>
+            <option>Full Admin (limited)</option>
+          </select>
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Expiry Date <span style="color:var(--alert-error)">*</span></label>
+          <input class="panel-input" type="date" />
+        </div>
+        <div class="panel-form-group">
+          <label class="panel-label">Reason <span style="color:var(--alert-error)">*</span></label>
+          <textarea class="panel-textarea" placeholder="Required — will be logged in audit…"></textarea>
+        </div>
+      `;
+      panelActions.innerHTML = `
+        <button class="btn btn--secondary btn--full" onclick="closePanel()">Cancel</button>
+        <button class="btn btn--primary btn--full" onclick="showToast('success','Delegation created.');logAudit('Delegation Created','New Delegation','Admin Delegation');closePanel()">Create Delegation</button>
+      `;
+      break;
+    }
+
+    /* ── Import — new upload ── */
+    case 'new-import': {
+      panelTitle.textContent = 'Import Data';
+      let step = 1;
+      function renderImportStep(s) {
+        panelBody.innerHTML = `
+          <div class="import-stepper">
+            <div class="import-step ${s>=1?'is-active':''} ${s>1?'is-done':''}">
+              <span class="import-step__num">${s>1?'✓':'1'}</span> Preview
+            </div>
+            <div class="import-step ${s>=2?'is-active':''} ${s>2?'is-done':''}">
+              <span class="import-step__num">${s>2?'✓':'2'}</span> Validate
+            </div>
+            <div class="import-step ${s>=3?'is-active':''}">
+              <span class="import-step__num">3</span> Apply
+            </div>
+          </div>
+          ${s===1 ? `
+            <div class="panel-section-title">Step 1 — Preview</div>
+            <div class="panel-form-group">
+              <label class="panel-label">Import Type <span style="color:var(--alert-error)">*</span></label>
+              <select class="panel-select">
+                <option>Users</option><option>Schedules</option><option>Teams</option>
+              </select>
+            </div>
+            <div class="panel-form-group">
+              <label class="panel-label">File (CSV / XLSX)</label>
+              <input class="panel-input" type="file" accept=".csv,.xlsx" />
+            </div>
+            <div style="background:var(--bg-hover);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:var(--space-1);font-size:var(--size-label);color:var(--text-secondary);">
+              Preview: 85 rows detected — 6 columns matched
+            </div>
+          ` : s===2 ? `
+            <div class="panel-section-title">Step 2 — Validate</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;gap:8px;font-size:var(--size-small);"><span style="color:var(--alert-success)">✓</span> 82 rows valid</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:var(--size-small);"><span style="color:var(--alert-warning)">⚠</span> 2 rows — duplicate email detected</div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:var(--size-small);"><span style="color:var(--alert-error)">✕</span> 1 row — missing required field (Role)</div>
+            </div>
+            <div class="panel-form-group" style="margin-top:var(--space-1)">
+              <label class="panel-label">On Duplicate</label>
+              <select class="panel-select"><option>Skip</option><option>Overwrite</option></select>
+            </div>
+          ` : `
+            <div class="panel-section-title">Step 3 — Apply</div>
+            <div style="font-size:var(--size-small);color:var(--text-secondary);line-height:1.6;">
+              <strong style="color:var(--text-primary)">82 records</strong> will be imported.<br>
+              2 duplicates will be skipped.<br>
+              1 invalid row will be excluded.<br><br>
+              This action will be logged in the Audit Log.
+            </div>
+            <div class="panel-form-group" style="margin-top:var(--space-1)">
+              <label class="panel-label">Confirm Reason</label>
+              <textarea class="panel-textarea" placeholder="Required for audit log…"></textarea>
+            </div>
+          `}
+        `;
+        panelActions.innerHTML = `
+          <div class="panel-action-row">
+            ${s>1 ? `<button class="btn btn--secondary" onclick="renderImportStep(${s-1})">← Back</button>` : ''}
+            ${s<3
+              ? `<button class="btn btn--primary btn--full" onclick="renderImportStep(${s+1})">${s===1?'Validate →':'Apply →'}</button>`
+              : `<button class="btn btn--primary btn--full" onclick="showToast('success','Import applied — 82 records created.');logAudit('Import Applied','users_import.csv','Imports');closePanel()">Apply Import</button>`
+            }
+          </div>
+        `;
+      }
+      renderImportStep(1);
+      break;
+    }
+
+    /* ── Import history detail ── */
+    case 'import-detail': {
+      panelTitle.textContent = data.file;
+      panelBody.innerHTML = `
+        <div class="panel-section-title">Import Summary</div>
+        <div class="panel-field"><span class="panel-field__label">File</span><span class="panel-field__value" style="font-family:var(--font-mono)">${data.file}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Type</span><span class="panel-field__value">${data.type}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Imported By</span><span class="panel-field__value">${data.by}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Date</span><span class="panel-field__value">${data.date}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Status</span><span class="panel-field__value"><span class="status-badge status-badge--${data.statusKey}"><span class="status-dot"></span>${data.status}</span></span></div>
+        <div class="panel-field"><span class="panel-field__label">Records</span><span class="panel-field__value" style="font-family:var(--font-mono)">${data.records}</span></div>
+        ${data.statusKey==='failed'||data.statusKey==='partial' ? `
+          <div class="panel-divider" style="margin:var(--space-1) calc(-1*var(--space-2))"></div>
+          <div class="panel-section-title">Error Log</div>
+          <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-sm);padding:var(--space-1);font-size:var(--size-label);font-family:var(--font-mono);color:var(--alert-error);line-height:1.8;">
+            Row 14: Missing required field — Role<br>
+            Row 31: Duplicate email — skipped<br>
+            Row 58: Invalid date format in hire_date
+          </div>` : ''}
+      `;
+      panelActions.innerHTML = `<div style="font-size:var(--size-label);color:var(--text-disabled);text-align:center;">Import records are read-only.</div>`;
+      break;
+    }
+
+    /* ── Audit entry ── */
+    case 'audit-detail': {
+      panelTitle.textContent = 'Audit Entry';
+      panelBody.innerHTML = `
+        <div class="panel-section-title">Entry Details</div>
+        <div class="panel-field"><span class="panel-field__label">Timestamp</span><span class="panel-field__value" style="font-family:var(--font-mono)">${data.time}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Performed By</span><span class="panel-field__value">${data.by}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Action</span><span class="panel-field__value">${data.action}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Target</span><span class="panel-field__value">${data.target}</span></div>
+        <div class="panel-field"><span class="panel-field__label">Section</span><span class="panel-field__value">${data.section}</span></div>
+        <div class="panel-divider" style="margin:var(--space-1) calc(-1*var(--space-2))"></div>
+        <div class="panel-section-title">Details</div>
+        <div style="background:var(--bg-hover);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:var(--space-1);font-size:var(--size-small);color:var(--text-secondary);line-height:1.6;">${data.details}</div>
+        <div class="panel-divider" style="margin:var(--space-1) calc(-1*var(--space-2))"></div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:var(--size-label);color:var(--text-disabled);">
+          <span>⊘</span> This entry is read-only and cannot be modified.
+        </div>
+      `;
+      panelActions.innerHTML = '';
+      break;
+    }
+
+    default:
+      panelTitle.textContent = '—';
   }
+}
 
-  setTimeout(function () {
-    showToast('info', 'Phase 1 shell loaded successfully.');
-  }, 1200);
-
-})();
-</script>
-</body>
-</html>
+/* ── Demo data ── */
+const USERS = [
+  { id:'EMP-001', name:'Ahmed Al-Rashid',  email:'ahmed@nexus.io',   role:'Owner',        team:'Management',  status:'Active',   statusKey:'active',   lastActive:'Just now' },
+  { id:'EMP-002', name:'Sara Mohammed',    email:'sara@nexus.io',    role:'Team Leader',  team:'Team Alpha',  status:'Active',   statusKey:'active',   lastActive:'5m ago' },
+  { id:'EMP-003', name:'Khalid Hassan',    email:'khalid@nexus.io',  role:'Shift Leader', team:'Team Beta',   status:'Active',   statusKey:'active',   lastActive:'12m ago' },
+  { id:'EMP-004', name:'Nora Ali',         email:'nora@nexus.io',    role:'SME',          team:'Team Alpha',  status:'Active',   statusKey:'active',   lastActive:'1h ago' },
+  { id:'EMP-005', name:'Omar Saeed',       email:'omar@nexus.io',    role:'Agent',        team:'Team Beta',   status:'Active',   statusKey:'active',   lastActive:'3m ago' },
+  { id:'EMP-006', name:'Fatima Al-Zahra',  email:'fatima@nexus.io',  role:'Agent',        team:'Team Alpha',  status:'Active',   statusKey:'active',   lastActive:'8m ago' },
+  { id:'EMP-007', name:'Yusuf Ibrahim',    email:'yusuf@nexus.io',   
