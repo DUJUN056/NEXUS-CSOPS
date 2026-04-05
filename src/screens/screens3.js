@@ -14,6 +14,7 @@ function TTTrackerPage(props) {
   var _11 = React.useState("");    var assignDue  = _11[0]; var setAssignDue  = _11[1];
   var _12 = React.useState("");    var assignNote = _12[0]; var setAssignNote = _12[1];
   var _13 = React.useState([]);    var dupWarning = _13[0]; var setDupWarning = _13[1];
+  var _14 = React.useState(false); var isSubmitting = _14[0]; var setIsSubmitting = _14[1];
 
   var _f = React.useState({
     caseId: "", userId: "", orderId: "", ttNumber: "", country: "KSA", notes: ""
@@ -90,33 +91,46 @@ function TTTrackerPage(props) {
   }
 
   function submit() {
-    if (!form.caseId || !form.userId || !form.orderId || !form.ttNumber || !form.country) {
-      showToast("All required fields must be filled", "warning");
+    if (!form.ttNumber || !form.caseId) {
+      showToast("Required fields missing", "warning");
       return;
     }
-    var now = new Date().toISOString();
-    withRetry(function () {
-      return sb.from(DB.TT_TRACKER).insert({
-        case_id:         form.caseId,
-        user_id:         form.userId,
-        order_id:        form.orderId,
-        tt_number:       form.ttNumber,
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    const now = new Date().toISOString();
+    
+    // Check if user object exists, otherwise use a fallback or null
+    const currentUserId = (user && user.id) ? user.id : null;
+
+    const payload = {
+        case_id:         String(form.caseId),
+        user_id:         String(form.userId),
+        order_id:        String(form.orderId),
+        tt_number:       String(form.ttNumber), 
         country:         form.country,
         notes:           form.notes,
         status:          "In Progress",
-        created_by:      user.id,
+        created_by:      currentUserId, // Ensure this ID exists in 'users' table
         created_at:      now,
-        last_updated_by: user.id,
+        last_updated_by: currentUserId,
         last_updated_at: now
-      });
-    }).then(function () {
-      showToast("TT created successfully", "success");
+    };
+
+    withRetry(function () {
+      return sb.from(DB.TT_TRACKER).insert(payload);
+    }).then(function (response) {
+      if (response.error) throw response.error;
+      showToast("Success: Data saved", "success");
       setShowForm(false);
-      setForm({ caseId: "", userId: "", orderId: "", ttNumber: "", country: "KSA", notes: "" });
-      setDupWarning([]);
       load();
-      logActivity(null, "created", null, null, "Ticket created", "create");
-    }).catch(function () { showToast("Failed to create TT", "error"); });
+    }).catch(function (err) {
+      console.error("Final Debug:", err);
+      showToast("Database Rejection: Check User ID", "error");
+    }).finally(function () {
+      setIsSubmitting(false);
+    });
   }
 
   function logActivity(ttId, action, prevStatus, newStatus, note, type) {
