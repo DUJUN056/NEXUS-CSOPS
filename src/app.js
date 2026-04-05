@@ -154,10 +154,7 @@ function PageRouter(props) {
   };
 
   var Component = pages[page];
-  
-  if (Component) {
-    return React.createElement(Component, p);
-  }
+  if (Component) return React.createElement(Component, p);
 
   return React.createElement(window.EmptyState, {
     icon: "❓",
@@ -204,6 +201,7 @@ function Sidebar(props) {
       ]
     }
   ];
+
   if (window.RC.isMgr(user)) {
     nav.push({
       group: "Management", items: [
@@ -220,9 +218,8 @@ function Sidebar(props) {
       ]
     });
   }
-  return React.createElement("div", {
-    className: "nx-sidebar" + (isOpen ? " open" : "")
-  },
+
+  return React.createElement("div", { className: "nx-sidebar" + (isOpen ? " open" : "") },
     React.createElement("div", { className: "nx-sidebar-logo" },
       React.createElement("span", { style: { fontSize: 20 } }, "⚡"),
       React.createElement("span", null, "NEXUS-CSOPS")
@@ -256,10 +253,7 @@ function Sidebar(props) {
         );
       })
     ),
-    React.createElement("button", {
-      className: "nx-sidebar-logout",
-      onClick: onLogout
-    }, "Sign Out")
+    React.createElement("button", { className: "nx-sidebar-logout", onClick: onLogout }, "Sign Out")
   );
 }
 
@@ -267,6 +261,7 @@ function LoginPage(props) {
   var _1 = React.useState(""); var email = _1[0]; var setEmail = _1[1];
   var _2 = React.useState(""); var password = _2[0]; var setPassword = _2[1];
   var _3 = React.useState(false); var loading = _3[0]; var setLoading = _3[1];
+  
   function handleLogin(e) {
     e.preventDefault();
     if (!email || !password) { window.showToast("Enter email and password", "warning"); return }
@@ -281,88 +276,36 @@ function LoginPage(props) {
       if (emp) {
         props.onLogin(emp);
         window.showToast("Welcome " + (emp.full_name || ""), "success");
-      } else {
-        window.showToast("Profile not found", "error");
       }
     }).catch(function (e) {
       window.showToast(e.message || "Login failed", "error");
     }).finally(function () { setLoading(false) });
   }
-  return React.createElement("div", {
-    style: {
-      minHeight: "100vh", display: "flex", alignItems: "center",
-      justifyContent: "center", background: "var(--bg)", padding: 24
-    }
-  },
-    React.createElement("div", {
-      style: {
-        width: "100%", maxWidth: 400,
-        background: "var(--card)",
-        border: "1px solid var(--border)",
-        borderRadius: "var(--radius)",
-        padding: 40,
-        boxShadow: "0 20px 60px rgba(0,0,0,0.5)"
-      }
-    },
-      React.createElement("div", { style: { textAlign: "center", marginBottom: 32 } },
-        React.createElement("div", { style: { fontSize: 48, marginBottom: 8 } }, "⚡"),
-        React.createElement("h1", {
-          style: {
-            fontSize: 24, fontWeight: 900, color: "var(--primary)",
-            fontFamily: "'Space Grotesk',sans-serif"
-          }
-        }, "NEXUS-CSOPS"),
-        React.createElement("p", {
-          style: {
-            fontSize: 13, color: "var(--text-muted)", marginTop: 4,
-            fontFamily: "'Space Grotesk',sans-serif"
-          }
-        }, "CS Operations v4.1.0")
+
+  return React.createElement("div", { className: "nx-login-page" },
+    React.createElement("div", { className: "nx-login-card" },
+      React.createElement("div", { className: "nx-login-header" },
+        React.createElement("div", { style: { fontSize: 48 } }, "⚡"),
+        React.createElement("h1", null, "NEXUS-CSOPS"),
+        React.createElement("p", null, "CS Operations v4.1.0")
       ),
-      React.createElement("form", {
-        onSubmit: handleLogin,
-        style: { display: "flex", flexDirection: "column", gap: 16 }
-      },
+      React.createElement("form", { onSubmit: handleLogin, className: "nx-login-form" },
         React.createElement("div", null,
-          React.createElement("label", {
-            style: {
-              fontSize: 11, fontWeight: 700, color: "var(--text-muted)",
-              display: "block", marginBottom: 6,
-              fontFamily: "'Space Grotesk',sans-serif"
-            }
-          }, "EMAIL"),
+          React.createElement("label", null, "EMAIL"),
           React.createElement("input", {
-            type: "email", className: "nx-input",
-            placeholder: "your@email.com",
-            value: email,
-            onChange: function (e) { setEmail(e.target.value) },
-            style: { fontSize: 16 }
+            type: "email", className: "nx-input", placeholder: "your@email.com",
+            value: email, onChange: function (e) { setEmail(e.target.value) }
           })
         ),
         React.createElement("div", null,
-          React.createElement("label", {
-            style: {
-              fontSize: 11, fontWeight: 700, color: "var(--text-muted)",
-              display: "block", marginBottom: 6,
-              fontFamily: "'Space Grotesk',sans-serif"
-            }
-          }, "PASSWORD"),
+          React.createElement("label", null, "PASSWORD"),
           React.createElement("input", {
-            type: "password", className: "nx-input",
-            placeholder: "password",
-            value: password,
-            onChange: function (e) { setPassword(e.target.value) },
-            style: { fontSize: 16 }
+            type: "password", className: "nx-input", placeholder: "password",
+            value: password, onChange: function (e) { setPassword(e.target.value) }
           })
         ),
         React.createElement("button", {
-          type: "submit",
-          className: "nx-btn nx-btn-primary",
-          disabled: loading,
-          style: {
-            width: "100%", padding: "14px",
-            fontSize: 15, fontWeight: 800, marginTop: 8
-          }
+          type: "submit", className: "nx-btn nx-btn-primary", disabled: loading
         }, loading ? React.createElement(window.Spinner, { size: "sm" }) : "Sign In")
       )
     )
@@ -405,63 +348,32 @@ function App() {
     };
   }, []);
 
-  React.useEffect(function () {
-    if (sidebarOpen) { document.body.style.overflow = "hidden" }
-    else { document.body.style.overflow = "" }
-    return function () { document.body.style.overflow = "" };
-  }, [sidebarOpen]);
-
-  function handleSetPage(pg) {
-    setPage(pg);
-    setSidebarOpen(false);
-    var c = document.querySelector(".nx-content");
-    if (c) c.scrollTop = 0;
-  }
-
   function handleLogout() {
     stopHeartbeat();
     if (user) {
       window.sb.from(window.DB.EMPLOYEES)
-        .update({
-          is_online: false,
-          status: "offline",
-          last_seen: new Date().toISOString()
-        })
-        .eq("id", user.id)
-        .then(function () { }).catch(function () { });
+        .update({ is_online: false, status: "offline", last_seen: new Date().toISOString() })
+        .eq("id", user.id).then(function(){}).catch(function(){});
     }
     window.ChannelMgr.unsubAll();
     window.sb.auth.signOut().then(function () {
       setUser(null);
       setPage("Updates Feed");
       window.showToast("Signed out", "success");
-    }).catch(function () { window.showToast("Sign out failed", "error") });
+    });
   }
 
   if (loading) {
-    return React.createElement("div", {
-      style: {
-        minHeight: "100vh", display: "flex", alignItems: "center",
-        justifyContent: "center", flexDirection: "column",
-        gap: 16, background: "var(--bg)"
-      }
-    },
+    return React.createElement("div", { className: "nx-loading-screen" },
       React.createElement(window.Spinner, { size: "lg" }),
-      React.createElement("p", {
-        style: {
-          color: "var(--text-muted)", fontSize: 13,
-          fontFamily: "'Space Grotesk',sans-serif"
-        }
-      }, "⚡ NEXUS-CSOPS Loading...")
+      React.createElement("p", null, "⚡ NEXUS-CSOPS Loading...")
     );
   }
 
-  if (!user) {
-    return React.createElement(React.Fragment, null,
-      React.createElement(window.ToastContainer, null),
-      React.createElement(LoginPage, { onLogin: setUser })
-    );
-  }
+  if (!user) return React.createElement(React.Fragment, null,
+    React.createElement(window.ToastContainer, null),
+    React.createElement(LoginPage, { onLogin: setUser })
+  );
 
   return React.createElement(React.Fragment, null,
     React.createElement(window.ToastContainer, null),
@@ -472,32 +384,17 @@ function App() {
           onClick: function () { setSidebarOpen(false) }
         }),
         React.createElement(Sidebar, {
-          user: user,
-          page: page,
-          setPage: handleSetPage,
-          onLogout: handleLogout,
-          isOpen: sidebarOpen
+          user: user, page: page, setPage: function(pg){ setPage(pg); setSidebarOpen(false); },
+          onLogout: handleLogout, isOpen: sidebarOpen
         }),
         React.createElement("div", { className: "nx-main" },
           React.createElement("div", { className: "nx-mobile-header" },
-            React.createElement("button", {
-              className: "nx-hamburger",
-              onClick: function () { setSidebarOpen(true) }
-            }, "☰"),
-            React.createElement("span", {
-              style: {
-                fontWeight: 900, color: "var(--primary)", fontSize: 16,
-                fontFamily: "'Space Grotesk',sans-serif"
-              }
-            }, "⚡ NEXUS"),
+            React.createElement("button", { className: "nx-hamburger", onClick: function(){ setSidebarOpen(true) } }, "☰"),
+            React.createElement("span", { className: "nx-brand-text" }, "⚡ NEXUS"),
             React.createElement(window.NxAvatar, { user: user, size: "xs" })
           ),
           React.createElement("div", { className: "nx-content" },
-            React.createElement(PageRouter, {
-              page: page,
-              user: user,
-              setPage: handleSetPage
-            })
+            React.createElement(PageRouter, { page: page, user: user, setPage: setPage })
           )
         )
       )
@@ -510,9 +407,8 @@ function App() {
     var theme = window.ThemeMgr.get();
     document.documentElement.setAttribute("data-theme", theme);
     var rootEl = document.getElementById("root");
-    if (!rootEl) { console.error("[NEXUS] root not found"); return }
-    ReactDOM.createRoot(rootEl).render(React.createElement(App, null));
-    console.log("[NEXUS-CSOPS] v4.1.0 Started");
+    if (!rootEl) return;
+    ReactDOM.createRoot(rootEl).render(React.createElement(App));
   } catch (e) {
     console.error("[NEXUS-CSOPS] Fatal:", e);
   }

@@ -1,370 +1,215 @@
-function MyBreakSchedulePage(props){
-  var user=props.user;
-  var _1=React.useState([]);var items=_1[0];var setItems=_1[1];
-  var _2=React.useState(true);var loading=_2[0];var setLoading=_2[1];
+// [NEXUS-CSOPS] Core Application Screens (Part 2)
+// STATUS: SOVEREIGN COMPLIANCE ENFORCED
+// LANGUAGE: ENGLISH ONLY
 
-  React.useEffect(function(){load()},[]);
+(function() {
+  const React = window.React;
 
-  function load(){
-    withRetry(function(){
-      return sb.from(DB.BREAK_SCHEDULES)
-        .select("*")
-        .eq("employee_id",user.id)
-        .order("created_at",{ascending:false})
-        .limit(30);
-    }).then(function(r){setItems(r.data||[])})
-    .catch(function(){})
-    .finally(function(){setLoading(false)});
-  }
+  // --- 1. Updates Feed Page ---
+  window.UpdatesFeedPage = function(props) {
+    var user = props.user;
+    var _1 = React.useState([]); var feeds = _1[0]; var setFeeds = _1[1];
+    var _2 = React.useState(true); var loading = _2[0]; var setLoading = _2[1];
+    var _3 = React.useState({}); var acks = _3[0]; var setAcks = _3[1];
+    var _4 = React.useState("all"); var filter = _4[0]; var setFilter = _4[1];
+    var canCreate = ["Owner", "Team Leader", "Shift Leader", "SME"].indexOf(user.role) > -1;
 
-  if(loading)return React.createElement(LoadingPage,{message:"Loading Breaks..."});
+    React.useEffect(function() {
+      load();
+      if (window.ChannelMgr) {
+        window.ChannelMgr.sub("feed", window.DB.UPDATES_FEED, null, load);
+      }
+      return function() { if (window.ChannelMgr) window.ChannelMgr.unsub("feed"); };
+    }, []);
 
-  return React.createElement("div",{className:"nx-page-enter"},
-    React.createElement(PageHeader,{title:"My Break Schedule",icon:"☕",subtitle:"Your scheduled breaks"}),
-    items.length===0?React.createElement(EmptyState,{icon:"☕",title:"No breaks scheduled",desc:"Your break schedule will appear here"}):
-    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
-      items.map(function(b){
-        return React.createElement("div",{key:b.id,className:"nx-card",style:{padding:14}},
-          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}},
-            React.createElement("div",null,
-              React.createElement("div",{style:{fontWeight:700,fontSize:13,color:"var(--text)",fontFamily:"'Space Grotesk',sans-serif"}},
-                b.break_type||"Break"
-              ),
-              React.createElement("div",{style:{fontSize:12,color:"var(--text-muted)",marginTop:2,fontFamily:"'Space Grotesk',sans-serif"}},
-                fmtDate(b.date)
-              )
-            ),
-            React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
-              React.createElement("span",{style:{fontSize:13,color:"var(--text-sub)",fontWeight:600,fontFamily:"'Space Grotesk',sans-serif"}},
-                (b.start_time||"--")+" to "+(b.end_time||"--")
-              ),
-              b.department?React.createElement("span",{style:{fontSize:11,color:"var(--text-muted)",fontFamily:"'Space Grotesk',sans-serif"}},b.department):null
-            )
+    function load() {
+      window.withRetry(function() {
+        return window.sb.from(window.DB.UPDATES_FEED)
+          .select("*,by:employees!updates_feed_created_by_fkey(full_name,role)")
+          .order("is_pinned", { ascending: false })
+          .order("created_at", { ascending: false });
+      }).then(function(r) {
+        var data = r.data || [];
+        var filtered = data.filter(function(item) {
+          if (item.expires_at && new Date(item.expires_at) < new Date()) return false;
+          if (item.target_type === "all") return true;
+          if (item.target_type === "role") {
+            var roles = Array.isArray(item.target_roles) ? item.target_roles : [];
+            return roles.indexOf(user.role) > -1;
+          }
+          if (item.target_type === "department") {
+            return item.target_dept === user.department || user.department === "Both" || item.target_dept === "Both";
+          }
+          return true;
+        });
+        setFeeds(filtered);
+      }).catch(function() { window.showToast("Failed to load updates", "error") })
+        .finally(function() { setLoading(false) });
+
+      window.withRetry(function() {
+        return window.sb.from("feed_acknowledgments")
+          .select("feed_id,status")
+          .eq("employee_id", user.id);
+      }).then(function(r) {
+        var map = {};
+        (r.data || []).forEach(function(a) { map[a.feed_id] = a.status });
+        setAcks(map);
+      }).catch(function() { });
+    }
+
+    function ack(id, status) {
+      window.sb.from("feed_acknowledgments").upsert(
+        { feed_id: id, employee_id: user.id, status: status || "read" },
+        { onConflict: "feed_id,employee_id" }
+      ).then(function() {
+        setAcks(function(p) { var n = Object.assign({}, p); n[id] = status || "read"; return n });
+      }).catch(function() { });
+    }
+
+    var typesCfg = {
+      urgent: { c: "#EF4444", i: "🚨", l: "Urgent" },
+      task: { c: "#3B82F6", i: "📌", l: "Task" },
+      announcement: { c: "#8B5CF6", i: "📢", l: "Announcement" },
+      update: { c: "#10B981", i: "📊", l: "Update" }
+    };
+
+    var shown = filter === "all" ? feeds : feeds.filter(function(f) { return f.type === filter });
+
+    if (loading) return React.createElement(window.LoadingPage, { message: "Loading Updates..." });
+
+    return React.createElement("div", { className: "nx-page-enter" },
+      React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, flexWrap: "wrap", gap: 12 } },
+        React.createElement("div", null,
+          React.createElement("h1", { style: { fontSize: 22, fontWeight: 900, color: "var(--text)", fontFamily: "'Space Grotesk',sans-serif" } },
+            user.role === "Agent" ? "My Tasks" : "Updates Feed"
           ),
-          b.notes?React.createElement("div",{style:{fontSize:12,color:"var(--text-sub)",marginTop:8,fontFamily:"'Space Grotesk',sans-serif"}},b.notes):null
-        );
-      })
-    )
-  );
-}
-
-function MyRequestsPage(props){
-  var user=props.user;
-  var _1=React.useState([]);var items=_1[0];var setItems=_1[1];
-  var _2=React.useState(true);var loading=_2[0];var setLoading=_2[1];
-  var _3=React.useState(false);var showForm=_3[0];var setShowForm=_3[1];
-  var _4=React.useState({type:"leave",notes:""});var form=_4[0];var setForm=_4[1];
-
-  React.useEffect(function(){load()},[]);
-
-  function load(){
-    withRetry(function(){
-      return sb.from(DB.MY_REQUESTS)
-        .select("*")
-        .eq("employee_id",user.id)
-        .order("created_at",{ascending:false});
-    }).then(function(r){setItems(r.data||[])})
-    .catch(function(){})
-    .finally(function(){setLoading(false)});
-  }
-
-  function submit(){
-    if(!form.notes){showToast("Details required","warning");return}
-    withRetry(function(){
-      return sb.from(DB.MY_REQUESTS).insert({
-        employee_id:user.id,
-        type:form.type,
-        notes:form.notes,
-        status:"pending"
-      });
-    }).then(function(){
-      showToast("Submitted","success");
-      setShowForm(false);
-      setForm({type:"leave",notes:""});
-      load();
-    }).catch(function(){showToast("Failed","error")});
-  }
-
-  if(loading)return React.createElement(LoadingPage,{message:"Loading Requests..."});
-
-  return React.createElement("div",{className:"nx-page-enter"},
-    React.createElement(PageHeader,{
-      title:"My Requests",icon:"📋",
-      subtitle:items.length+" requests",
-      actions:React.createElement("button",{
-        className:"nx-btn nx-btn-primary nx-btn-sm",
-        onClick:function(){setShowForm(function(v){return!v})}
-      },showForm?"Cancel":"+ New")
-    }),
-    showForm?React.createElement("div",{className:"nx-card",style:{padding:20,marginBottom:16}},
-      React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:12}},
-        React.createElement("select",{
-          className:"nx-input",
-          value:form.type,
-          onChange:function(e){setForm(function(f){return Object.assign({},f,{type:e.target.value})})}
-        },
-          React.createElement("option",{value:"leave"},"Leave"),
-          React.createElement("option",{value:"wfh"},"WFH"),
-          React.createElement("option",{value:"swap"},"Shift Swap"),
-          React.createElement("option",{value:"other"},"Other")
+          React.createElement("p", { style: { fontSize: 13, color: "var(--text-muted)", marginTop: 4, fontFamily: "'Space Grotesk',sans-serif" } }, feeds.length + " items")
         ),
-        React.createElement("textarea",{
-          className:"nx-input",
-          placeholder:"Details...",
-          rows:3,
-          value:form.notes,
-          onChange:function(e){setForm(function(f){return Object.assign({},f,{notes:e.target.value})})}
-        }),
-        React.createElement("button",{className:"nx-btn nx-btn-primary",onClick:submit},"Submit")
-      )
-    ):null,
-    items.length===0?React.createElement(EmptyState,{icon:"📋",title:"No requests yet"}):
-    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
-      items.map(function(item){
-        return React.createElement("div",{key:item.id,className:"nx-card",style:{padding:14}},
-          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}},
-            React.createElement("div",null,
-              React.createElement("span",{style:{fontWeight:700,fontSize:13,textTransform:"capitalize",color:"var(--text)",fontFamily:"'Space Grotesk',sans-serif"}},item.type),
-              item.notes?React.createElement("div",{style:{fontSize:12,color:"var(--text-sub)",marginTop:4,fontFamily:"'Space Grotesk',sans-serif"}},item.notes):null
-            ),
-            React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}},
-              React.createElement(StatusBadge,{status:item.status}),
-              React.createElement("span",{style:{fontSize:10,color:"var(--text-muted)",fontFamily:"'Space Grotesk',sans-serif"}},
-                new Date(item.created_at).toLocaleString()
+        canCreate ? React.createElement("button", {
+          className: "nx-btn nx-btn-primary",
+          onClick: function() { window.showToast("Create update — coming soon", "info") }
+        }, "+ New Update") : null
+      ),
+      React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" } },
+        ["all", "urgent", "task", "announcement", "update"].map(function(f) {
+          var tc = typesCfg[f];
+          return React.createElement("button", {
+            key: f, onClick: function() { setFilter(f) },
+            style: {
+              background: filter === f ? "rgba(0,255,136,0.1)" : "var(--card2)",
+              border: "1px solid " + (filter === f ? "var(--primary)" : "var(--border)"),
+              color: filter === f ? "var(--primary)" : "var(--text-sub)",
+              borderRadius: 20, padding: "5px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Space Grotesk',sans-serif"
+            }
+          }, f === "all" ? "All" : tc ? tc.i + " " + tc.l : f);
+        })
+      ),
+      shown.length === 0 ? React.createElement(window.EmptyState, { icon: "📭", title: "No updates found" }) :
+        React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
+          shown.map(function(f) {
+            var tc = typesCfg[f.type] || typesCfg.update;
+            var ackd = acks[f.id];
+            return React.createElement("div", {
+              key: f.id, className: "nx-card",
+              style: { padding: 16, borderLeft: "3px solid " + tc.c, opacity: ackd ? 0.85 : 1 }
+            },
+              f.is_pinned ? React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: "#F59E0B", marginBottom: 8, fontFamily: "'Space Grotesk',sans-serif" } }, "📌 PINNED") : null,
+              React.createElement("div", { style: { display: "flex", gap: 12, alignItems: "flex-start", flexWrap: "wrap" } },
+                React.createElement("div", { style: { width: 44, height: 44, borderRadius: 12, flexShrink: 0, background: tc.c + "18", border: "1px solid " + tc.c + "30", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 } }, tc.i),
+                React.createElement("div", { style: { flex: 1, minWidth: 180 } },
+                  React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 } },
+                    React.createElement("span", { style: { fontSize: 14, fontWeight: 700, color: "var(--text)", fontFamily: "'Space Grotesk',sans-serif" } }, f.title),
+                    React.createElement("span", { style: { fontSize: 10, fontWeight: 700, color: tc.c, background: tc.c + "18", border: "1px solid " + tc.c + "30", padding: "2px 8px", borderRadius: 20, fontFamily: "'Space Grotesk',sans-serif" } }, tc.l)
+                  ),
+                  React.createElement("p", { style: { fontSize: 13, color: "var(--text-sub)", lineHeight: 1.6, marginBottom: 8, fontFamily: "'Space Grotesk',sans-serif" } }, f.content),
+                  React.createElement("div", { style: { fontSize: 11, color: "var(--text-muted)", fontFamily: "'Space Grotesk',sans-serif" } },
+                    (f.by ? f.by.full_name : "System") + " · " + new Date(f.created_at).toLocaleString()
+                  )
+                ),
+                React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 } },
+                  !ackd ? React.createElement("button", { className: "nx-btn nx-btn-secondary nx-btn-sm", onClick: function() { ack(f.id, "read") } }, "✓ Read") : null,
+                  f.type === "task" && ackd !== "done" ? React.createElement("button", { className: "nx-btn nx-btn-primary nx-btn-sm", onClick: function() { ack(f.id, "done") } }, "✅ Done") : null,
+                  ackd ? React.createElement("span", { style: { fontSize: 11, color: "var(--primary)", fontWeight: 700, fontFamily: "'Space Grotesk',sans-serif" } }, ackd === "done" ? "✅ Done" : "✓ Read") : null
+                )
               )
-            )
-          )
-        );
-      })
-    )
-  );
-}
-
-function ShiftHandoverPage(props){
-  var user=props.user;
-  var _1=React.useState([]);var items=_1[0];var setItems=_1[1];
-  var _2=React.useState(true);var loading=_2[0];var setLoading=_2[1];
-  var _3=React.useState(false);var showForm=_3[0];var setShowForm=_3[1];
-  var _4=React.useState({to_employee:"",notes:""});var form=_4[0];var setForm=_4[1];
-  var _5=React.useState([]);var emps=_5[0];var setEmps=_5[1];
-
-  React.useEffect(function(){load();loadEmps()},[]);
-
-  function load(){
-    withRetry(function(){
-      return sb.from(DB.SHIFT_HANDOVER)
-        .select("*,from:employees!from_employee(full_name),to:employees!to_employee(full_name)")
-        .order("created_at",{ascending:false})
-        .limit(20);
-    }).then(function(r){setItems(r.data||[])})
-    .catch(function(){})
-    .finally(function(){setLoading(false)});
-  }
-
-  function loadEmps(){
-    withRetry(function(){
-      return sb.from(DB.EMPLOYEES)
-        .select("id,full_name")
-        .eq("is_active",true)
-        .neq("id",user.id);
-    }).then(function(r){setEmps(r.data||[])}).catch(function(){});
-  }
-
-  function submit(){
-    if(!form.to_employee){showToast("Select recipient","warning");return}
-    withRetry(function(){
-      return sb.from(DB.SHIFT_HANDOVER).insert({
-        from_employee:user.id,
-        to_employee:form.to_employee,
-        shift_date:new Date().toISOString().split("T")[0],
-        notes:form.notes,
-        open_cases:[],
-        pending_tasks:[],
-        status:"pending"
-      });
-    }).then(function(){
-      showToast("Submitted","success");
-      setShowForm(false);
-      setForm({to_employee:"",notes:""});
-      load();
-    }).catch(function(){showToast("Failed","error")});
-  }
-
-  if(loading)return React.createElement(LoadingPage,{message:"Loading Handovers..."});
-
-  return React.createElement("div",{className:"nx-page-enter"},
-    React.createElement(PageHeader,{
-      title:"Shift Handover",icon:"🔄",
-      subtitle:"Shift transitions",
-      actions:React.createElement("button",{
-        className:"nx-btn nx-btn-primary nx-btn-sm",
-        onClick:function(){setShowForm(function(v){return!v})}
-      },showForm?"Cancel":"+ New")
-    }),
-    showForm?React.createElement("div",{className:"nx-card",style:{padding:20,marginBottom:16}},
-      React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:12}},
-        React.createElement("select",{
-          className:"nx-input",
-          value:form.to_employee,
-          onChange:function(e){setForm(function(f){return Object.assign({},f,{to_employee:e.target.value})})}
-        },
-          React.createElement("option",{value:""},"Select recipient..."),
-          emps.map(function(e){
-            return React.createElement("option",{key:e.id,value:e.id},e.full_name);
+            );
           })
-        ),
-        React.createElement("textarea",{
-          className:"nx-input",
-          placeholder:"Notes...",
-          rows:3,
-          value:form.notes,
-          onChange:function(e){setForm(function(f){return Object.assign({},f,{notes:e.target.value})})}
-        }),
-        React.createElement("button",{className:"nx-btn nx-btn-primary",onClick:submit},"Submit")
-      )
-    ):null,
-    items.length===0?React.createElement(EmptyState,{icon:"🔄",title:"No handovers yet"}):
-    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
-      items.map(function(item){
-        return React.createElement("div",{key:item.id,className:"nx-card",style:{padding:14}},
-          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}},
-            React.createElement("div",null,
-              React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"var(--text)",fontFamily:"'Space Grotesk',sans-serif"}},
-                (item.from?item.from.full_name:"--")+" → "+(item.to?item.to.full_name:"--")
-              ),
-              item.notes?React.createElement("div",{style:{fontSize:12,color:"var(--text-sub)",marginTop:4,fontFamily:"'Space Grotesk',sans-serif"}},item.notes):null,
-              React.createElement("div",{style:{fontSize:11,color:"var(--text-muted)",marginTop:4,fontFamily:"'Space Grotesk',sans-serif"}},
-                fmtDate(item.shift_date)
-              )
-            ),
-            React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}},
-              React.createElement(StatusBadge,{status:item.status}),
-              React.createElement("span",{style:{fontSize:10,color:"var(--text-muted)",fontFamily:"'Space Grotesk',sans-serif"}},
-                new Date(item.created_at).toLocaleString()
-              )
-            )
-          )
-        );
-      })
-    )
-  );
-}
+        )
+    );
+  };
 
-function CaseHandoverPage(props){
-  var user=props.user;
-  var _1=React.useState([]);var items=_1[0];var setItems=_1[1];
-  var _2=React.useState(true);var loading=_2[0];var setLoading=_2[1];
-  var _3=React.useState(false);var showForm=_3[0];var setShowForm=_3[1];
-  var _4=React.useState({to_employee:"",case_id:"",notes:""});var form=_4[0];var setForm=_4[1];
-  var _5=React.useState([]);var emps=_5[0];var setEmps=_5[1];
+  // --- 2. Live Floor Page ---
+  window.LiveFloorPage = function(props) {
+    var user = props.user;
+    var _1 = React.useState([]); var emps = _1[0]; var setEmps = _1[1];
+    var _2 = React.useState(true); var loading = _2[0]; var setLoading = _2[1];
+    var _3 = React.useState(""); var search = _3[0]; var setSearch = _3[1];
+    var _4 = React.useState("all"); var statusFilter = _4[0]; var setStatusFilter = _4[1];
 
-  React.useEffect(function(){load();loadEmps()},[]);
-
-  function load(){
-    withRetry(function(){
-      return sb.from(DB.CASE_HANDOVER)
-        .select("*,from:employees!from_employee(full_name),to:employees!to_employee(full_name)")
-        .order("created_at",{ascending:false})
-        .limit(20);
-    }).then(function(r){setItems(r.data||[])})
-    .catch(function(){})
-    .finally(function(){setLoading(false)});
-  }
-
-  function loadEmps(){
-    withRetry(function(){
-      return sb.from(DB.EMPLOYEES)
-        .select("id,full_name")
-        .eq("is_active",true)
-        .neq("id",user.id);
-    }).then(function(r){setEmps(r.data||[])}).catch(function(){});
-  }
-
-  function submit(){
-    if(!form.to_employee){showToast("Select recipient","warning");return}
-    if(!form.case_id){showToast("Case ID required","warning");return}
-    withRetry(function(){
-      return sb.from(DB.CASE_HANDOVER).insert({
-        from_employee:user.id,
-        to_employee:form.to_employee,
-        case_id:form.case_id,
-        notes:form.notes,
-        status:"pending",
-        handover_date:new Date().toISOString().split("T")[0]
-      });
-    }).then(function(){
-      showToast("Submitted","success");
-      setShowForm(false);
-      setForm({to_employee:"",case_id:"",notes:""});
+    React.useEffect(function() {
       load();
-    }).catch(function(){showToast("Failed","error")});
-  }
+      if (window.ChannelMgr) {
+        window.ChannelMgr.sub("livefloor", window.DB.EMPLOYEES, null, load);
+      }
+      return function() { if (window.ChannelMgr) window.ChannelMgr.unsub("livefloor"); };
+    }, []);
 
-  if(loading)return React.createElement(LoadingPage,{message:"Loading Case Handovers..."});
+    function load() {
+      window.withRetry(function() {
+        return window.sb.from(window.DB.EMPLOYEES)
+          .select("id,full_name,role,department,status,is_online,last_seen,avatar_url")
+          .eq("is_active", true)
+          .order("full_name");
+      }).then(function(r) { setEmps(r.data || []) })
+        .catch(function() { window.showToast("Failed to load floor", "error") })
+        .finally(function() { setLoading(false) });
+    }
 
-  return React.createElement("div",{className:"nx-page-enter"},
-    React.createElement(PageHeader,{
-      title:"Case Handover",icon:"📁",
-      subtitle:"Case transitions",
-      actions:React.createElement("button",{
-        className:"nx-btn nx-btn-primary nx-btn-sm",
-        onClick:function(){setShowForm(function(v){return!v})}
-      },showForm?"Cancel":"+ New")
-    }),
-    showForm?React.createElement("div",{className:"nx-card",style:{padding:20,marginBottom:16}},
-      React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:12}},
-        React.createElement("select",{
-          className:"nx-input",
-          value:form.to_employee,
-          onChange:function(e){setForm(function(f){return Object.assign({},f,{to_employee:e.target.value})})}
+    var online = emps.filter(function(e) { return e.is_online }).length;
+    var shown = emps.filter(function(e) {
+      var matchSearch = !search || e.full_name.toLowerCase().indexOf(search.toLowerCase()) > -1;
+      var matchStatus = statusFilter === "all" || e.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+
+    if (loading) return React.createElement(window.LoadingPage, { message: "Loading Live Floor..." });
+
+    return React.createElement("div", { className: "nx-page-enter" },
+      React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, flexWrap: "wrap", gap: 12 } },
+        React.createElement("div", null,
+          React.createElement("h1", { style: { fontSize: 22, fontWeight: 900, color: "var(--text)", fontFamily: "'Space Grotesk',sans-serif" } }, "🖥️ Live Floor"),
+          React.createElement("p", { style: { fontSize: 13, color: "var(--text-muted)", marginTop: 4, fontFamily: "'Space Grotesk',sans-serif" } }, online + " online · " + emps.length + " total")
+        )
+      ),
+      React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" } },
+        React.createElement(window.SearchInput, { value: search, onChange: setSearch, placeholder: "Search agents..." }),
+        React.createElement("select", {
+          className: "nx-input", style: { width: "auto", minWidth: 130 },
+          value: statusFilter, onChange: function(e) { setStatusFilter(e.target.value) }
         },
-          React.createElement("option",{value:""},"Select recipient..."),
-          emps.map(function(e){
-            return React.createElement("option",{key:e.id,value:e.id},e.full_name);
+          React.createElement("option", { value: "all" }, "All Status"),
+          Object.keys(window.STATUS_MAP || {}).map(function(k) {
+            return React.createElement("option", { key: k, value: k }, window.STATUS_MAP[k].label);
           })
-        ),
-        React.createElement("input",{
-          className:"nx-input",
-          placeholder:"Case ID...",
-          value:form.case_id,
-          onChange:function(e){setForm(function(f){return Object.assign({},f,{case_id:e.target.value})})}
-        }),
-        React.createElement("textarea",{
-          className:"nx-input",
-          placeholder:"Notes...",
-          rows:3,
-          value:form.notes,
-          onChange:function(e){setForm(function(f){return Object.assign({},f,{notes:e.target.value})})}
-        }),
-        React.createElement("button",{className:"nx-btn nx-btn-primary",onClick:submit},"Submit")
-      )
-    ):null,
-    items.length===0?React.createElement(EmptyState,{icon:"📁",title:"No case handovers yet"}):
-    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:8}},
-      items.map(function(item){
-        return React.createElement("div",{key:item.id,className:"nx-card",style:{padding:14}},
-          React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}},
-            React.createElement("div",null,
-              React.createElement("div",{style:{fontSize:13,fontWeight:700,color:"var(--text)",fontFamily:"'Space Grotesk',sans-serif"}},
-                (item.from?item.from.full_name:"--")+" → "+(item.to?item.to.full_name:"--")
+        )
+      ),
+      React.createElement("div", { className: "nx-grid-4" },
+        shown.map(function(emp) {
+          return React.createElement("div", { key: emp.id, className: "nx-card", style: { padding: 16 } },
+            React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 10 } },
+              React.createElement("div", { style: { position: "relative" } },
+                React.createElement(window.NxAvatar, { user: emp, size: "md" }),
+                React.createElement("div", { style: { position: "absolute", bottom: 0, right: 0, width: 10, height: 10, borderRadius: "50%", background: emp.is_online ? "#22C55E" : "#6B7280", border: "2px solid var(--card)" } })
               ),
-              item.case_id?React.createElement("div",{style:{fontSize:12,color:"var(--primary)",marginTop:4,fontWeight:600,fontFamily:"'Space Grotesk',sans-serif"}},
-                "Case: "+item.case_id
-              ):null,
-              item.notes?React.createElement("div",{style:{fontSize:12,color:"var(--text-sub)",marginTop:4,fontFamily:"'Space Grotesk',sans-serif"}},item.notes):null,
-              React.createElement("div",{style:{fontSize:11,color:"var(--text-muted)",marginTop:4,fontFamily:"'Space Grotesk',sans-serif"}},
-                fmtDate(item.handover_date)
+              React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                React.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "'Space Grotesk',sans-serif" } }, emp.full_name),
+                React.createElement(window.RoleBadge, { role: emp.role })
               )
             ),
-            React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}},
-              React.createElement(StatusBadge,{status:item.status}),
-              React.createElement("span",{style:{fontSize:10,color:"var(--text-muted)",fontFamily:"'Space Grotesk',sans-serif"}},
-                new Date(item.created_at).toLocaleString()
-              )
-            )
-          )
-        );
-      })
-    )
-  );
-}
+            React.createElement(window.StatusBadge, { status: emp.status || "unknown" })
+          );
+        })
+      )
+    );
+  };
+})();
