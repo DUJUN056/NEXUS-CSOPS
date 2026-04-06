@@ -232,9 +232,9 @@ function TTTrackerPage(props) {
     var s = filters.search.toLowerCase();
     if (s) {
       var match =
-        (x.case_id   && x.case_id.toLowerCase().includes(s))   ||
-        (x.user_id   && x.user_id.toLowerCase().includes(s))   ||
-        (x.tt_number && x.tt_number.toLowerCase().includes(s));
+        (x.case_id   && x.case_id.toString().toLowerCase().includes(s))   ||
+        (x.user_id   && x.user_id.toString().toLowerCase().includes(s))   ||
+        (x.tt_number && x.tt_number.toString().toLowerCase().includes(s));
       if (!match) return false;
     }
     if (filters.status     !== "All" && x.status       !== filters.status)     return false;
