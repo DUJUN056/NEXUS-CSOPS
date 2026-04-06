@@ -1,6 +1,10 @@
 {
+  "version": 2,
+  "buildCommand": null,
+  "outputDirectory": ".",
   "routes": [
     { "src": "/src/(.*)", "dest": "/src/$1" },
+    { "src": "/(.*)\\.html", "dest": "/$1.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
