@@ -1,10 +1,10 @@
 {
-  "version": 2,
-  "buildCommand": null,
+  "buildCommand": "echo done",
   "outputDirectory": ".",
   "routes": [
     { "src": "/src/(.*)", "dest": "/src/$1" },
-    { "src": "/(.*)\\.html", "dest": "/$1.html" },
+    { "src": "/(.*)\\.css", "dest": "/$1.css" },
+    { "src": "/(.*)\\.js", "dest": "/$1.js" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
